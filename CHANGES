@@ -1,0 +1,27 @@
+Shadowbox.js Changelog
+
+version 3.0
+
+- A major rewrite/reorganization of the code
+- Greatly simplified setup process by eliminating all load* methods and using
+  options to specify language/adapter/player(s) instead
+- Separated Shadowbox skin into its own class (Shadowbox.skin) that should
+  simplify skin customization
+- Made public many methods and properties that had previously been private and
+  eliminated redundant accessor methods (such as getVersion, getPlugins, etc.)
+- Introduced dependence on swfobject version 2 for Flash embedding. Included
+  support for express install
+- Added flashVersion, flashVars, and flashParams options for passing options
+  directly to swfobject
+- Added support for loading Shadowbox onDOMReady instead of waiting for
+  window.onload
+- Removed dependency on document.write for loading script dependencies
+- Added support for Internet Explorer 8
+- Added support for CSS selectors via Sizzle.js
+- Switched from PHP to Ruby's rake for build/packaging system
+- Introduced Shadowbox.js License version 1.0
+- Numerous other bug fixes and overall speed improvements
+
+versions 1.0-2.0
+
+- Was too lazy (or too disorganized) to keep a detailed log of changes :)

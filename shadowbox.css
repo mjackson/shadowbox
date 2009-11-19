@@ -1,0 +1,179 @@
+/**
+ * The default CSS for Shadowbox.
+ *
+ * This file is part of Shadowbox.
+ *
+ * Shadowbox is an online media viewer application that supports all of the
+ * web's most popular media publishing formats. Shadowbox is written entirely
+ * in JavaScript and CSS and is highly customizable. Using Shadowbox, website
+ * authors can showcase a wide assortment of media in all major browsers without
+ * navigating users away from the linking page.
+ *
+ * You should have received a license with this distribution explaining the terms
+ * under which Shadowbox may be used. If you did not, you may obtain a copy of the
+ * license at http://shadowbox-js.com/LICENSE
+ *
+ * @author      Michael J. I. Jackson <michael@mjijackson.com>
+ * @copyright   2007-2009 Michael J. I. Jackson
+ */
+
+/*_____________________________________________  container, overlay, & wrapper  */
+#sb-container, #sb-wrapper {
+  text-align: left; /* reset left alignment */
+}
+#sb-container, #sb-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+#sb-container {
+  height: 100%;
+  display: none;
+  visibility: hidden;
+  z-index: 999;
+}
+body > #sb-container {
+  /* use position:fixed in modern browsers */
+  position: fixed;
+}
+#sb-overlay {
+  /* needed in IE6 where sb-container uses position:absolute */
+  height: expression(document.documentElement.clientHeight + 'px');
+}
+#sb-container > #sb-overlay {
+  /* use for sb-container position:fixed */
+  height: 100%;
+}
+
+/*_________________________________________________________________  wrapper  */
+#sb-wrapper {
+  position: relative;
+}
+#sb-wrapper img {
+  border: none;
+}
+
+/*____________________________________________________________________  body  */
+#sb-body {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #303030;
+}
+#sb-body-inner {
+  position: relative;
+  height: 100%;
+}
+#sb-content.html {
+  height: 100%;
+  overflow: auto; /* make html content scrollable */
+}
+
+/*_________________________________________________________________  loading  */
+#sb-loading {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  padding-top: 10px;
+}
+#sb-body, #sb-loading {
+  background-color: #060606; /* should match loading image background color */
+}
+
+/*____________________________________________________________  title & info  */
+#sb-title, #sb-info {
+  position: relative;
+  margin: 0; /* these must have no vertical margin or padding */
+  padding: 0;
+  overflow: hidden;
+}
+#sb-title-inner, #sb-info-inner {
+  position: relative;
+  font-family: 'Lucida Grande', Tahoma, sans-serif;
+  line-height: 16px;
+}
+#sb-title, #sb-title-inner {
+  height: 26px;
+}
+#sb-title-inner {
+  font-size: 16px;
+  padding: 5px 0;
+  color: #fff;
+}
+#sb-info, #sb-info-inner {
+  height: 20px;
+}
+#sb-info-inner {
+  font-size: 12px;
+  color: #fff;
+}
+
+/*_____________________________________________________________________  nav  */
+#sb-nav {
+  float: right;
+  height: 16px;
+  padding: 2px 0;
+  width: 45%;
+}
+#sb-nav a {
+  display: block;
+  float: right;
+  height: 16px;
+  width: 16px;
+  margin-left: 3px;
+  cursor: pointer;
+}
+#sb-nav-close {
+  background-image: url(resources/close.png);
+  background-repeat: no-repeat;
+}
+#sb-nav-next {
+  background-image: url(resources/next.png);
+  background-repeat: no-repeat;
+}
+#sb-nav-previous {
+  background-image: url(resources/previous.png);
+  background-repeat: no-repeat;
+}
+#sb-nav-play {
+  background-image: url(resources/play.png);
+  background-repeat: no-repeat;
+}
+#sb-nav-pause {
+  background-image: url(resources/pause.png);
+  background-repeat: no-repeat;
+}
+
+/*_________________________________________________________________  counter  */
+#sb-counter {
+  float: left;
+  padding: 2px 0;
+  width: 45%;
+}
+#sb-counter a {
+  padding: 0 4px 0 0;
+  text-decoration: none;
+  cursor: pointer;
+  color: #fff;
+}
+#sb-counter a.sb-counter-current {
+  text-decoration: underline;
+}
+
+/*________________________________________________________________  messages  */
+div.sb-message {
+  font-family: 'Lucida Grande', Tahoma, sans-serif;
+  font-size: 12px;
+  padding: 10px;
+  text-align: center;
+}
+div.sb-message a:link, div.sb-message a:visited {
+  color: #fff;
+  text-decoration: underline;
+}
