@@ -1,7 +1,9 @@
+require 'fileutils'
+
 def compress_js(input_path, output_path)
   Dir.chdir(File.dirname(__FILE__)) do
-    compressor = File.join('libraries', 'yuicompressor', 'yuicompressor-2.4.2.jar')
-    `java -jar #{compressor} #{input_path} -o #{output_path}`
+    compressor = File.join('tools', 'yuicompressor', 'yuicompressor-2.4.2.jar')
+    %x<java -jar #{compressor} #{input_path} -o #{output_path}>
   end
 end
 
@@ -14,39 +16,34 @@ def compress_css(input_path, output_path)
   File.open(output_path, 'w') {|file| file.puts css }
 end
 
-desc %{Creates a build directory with compressed versions of the code}
+desc %{Creates compressed versions of the source code in the build directory}
 task :build do
-  require 'pathname'
+  source_dir = File.dirname(__FILE__) + '/source'
+  build_dir  = File.dirname(__FILE__) + '/build'
 
-  chdir(File.dirname(__FILE__)) do
-    build_dir = Pathname.new('../build').expand_path
-    build_dir.mkpath unless build_dir.exist?
+  Dir.glob(source_dir + '/**/*').each do |source_file|
+    next if File.directory?(source_file)
 
-    # compile source files to build directory
-    Pathname.glob('**/*').each do |path|
-      next unless path.file?
+    # skip mediaplayer and psd
+    next if source_file =~ /(mediaplayer|\.psd$)/i
 
-      # exclude Rakefile, PSD's, mediaplayer, and yuicompressor
-      next if path.to_s =~ /(yuicompressor|mediaplayer|(rakefile|\.psd)$)/i
+    build_file = build_dir + source_file[source_dir.size..source_file.size]
 
-      build_file = Pathname.new build_dir.to_s + '/' + path.to_s
+    if File.exist?(build_file)
+      next unless File.mtime(build_file) < File.mtime(source_file)
+    else
+      build_file_dir = File.dirname(build_file)
+      FileUtils.mkdir_p(build_file_dir) unless File.exist?(build_file_dir)
+    end
 
-      unless build_file.exist?
-        dir = build_file.dirname
-        dir.mkpath unless dir.exist?
-      else
-        next unless build_file.mtime < path.mtime
-      end
-
-      if path.to_s =~ /\.js$/
-        puts "compress #{path} #{build_file}"
-        compress_js(path.to_s, build_file)
-      elsif path.to_s =~ /\.css$/
-        puts "compress #{path} #{build_file}"
-        compress_css(path.to_s, build_file)
-      else
-        cp path.to_s, build_file.to_s
-      end
+    if source_file =~ /\.js$/
+      puts "compress #{source_file} #{build_file}"
+      compress_js(source_file, build_file)
+    elsif source_file =~ /\.css$/
+      puts "compress #{source_file} #{build_file}"
+      compress_css(source_file, build_file)
+    else
+      cp source_file, build_file
     end
   end
 
@@ -57,17 +54,18 @@ end
 
 desc %{Prunes the build directory of any files that were removed from source since the last build}
 task :prune do
-  chdir(File.dirname(__FILE__)) do
-    src_files = Dir['**/*']
-    bld_dir = File.expand_path('../build')
+  source_dir = File.dirname(__FILE__) + '/source'
+  build_dir  = File.dirname(__FILE__) + '/build'
+  source_files = Dir.glob(source_dir + '/**/*')
 
-    Dir[bld_dir + '/**/*'].each do |path|
-      unless src_files.include?(path[(bld_dir.size + 1)..path.size])
-        if File.directory?(path)
-          sh %<rm -rf #{path}>
-        else
-          sh %<rm #{path}>
-        end
+  Dir.glob(build_dir + '/**/*').each do |build_file|
+    next unless File.exist?(build_file)
+    source_file = source_dir + build_file[build_dir.size..build_file.size]
+    unless source_files.include?(source_file)
+      if File.directory?(build_file)
+        FileUtils.rm_rf(build_file)
+      else
+        FileUtils.rm_f(build_file)
       end
     end
   end

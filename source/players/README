@@ -1,0 +1,35 @@
+A Shadowbox "player" is a class that is used specifically for displaying a
+particular medium. For example, an image player is included for displaying
+images, a QuickTime player is included for playing QuickTime movies, etc.
+
+All players should implement the same interface. This makes it possible for the
+Shadowbox class to know what methods to call and properties to check on player
+objects.
+
+The interface is described here, with some simple explanations of how each
+method and/or property is to be used.
+
+METHOD/PROPERTY     DESCRIPTION
+
+height              (Number) The height of the object (in pixels)
+width               (Number) The width of the object (in pixels)
+ready               (optional, Boolean) True if the content is ready to be
+                    loaded, false otherwise. Useful when the script should wait
+                    until the content loads before proceeding (see below)
+resizable           (optional, Boolean) True if the content can be dynamically
+                    resized by the script (e.g. images, but not most movie
+                    formats)
+append()            Appends this object to the DOM
+remove()            Removes this object from the DOM
+onLoad()            (optional) Called after the content is loaded and the
+                    loading layer is hidden
+onWindowResize()    (optional) Called when the window is resized
+
+If the ready property is set to false, the script will wait until it is set true
+before proceeding to call the onReady callback. This property should be changed
+in some callback function within the player class itself.
+
+In this case, the object's height and width do not need to be made available
+immediately (because they may not initially be known). However, in the same
+callback, the height and width should be set. See the Shadowbox.img class (in
+shadowbox-img.js) for an example of this behavior.
