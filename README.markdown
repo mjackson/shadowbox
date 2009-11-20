@@ -19,4 +19,4 @@ You should have received a license with this distribution explaining the terms
 under which Shadowbox may be used. If you did not, you may obtain a copy of the
 license at [http://shadowbox-js.com/LICENSE](http://shadowbox-js.com/LICENSE).
 
-<small>Shadowbox is copyright 2007-2009 Michael J. I. Jackson, all rights reserved.</small>
+<small>Shadowbox is copyright 2007-2009 Michael J. I. Jackson</small>
