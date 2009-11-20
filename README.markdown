@@ -15,21 +15,26 @@ on the Shadowbox website.
 
 ### How to Build
 
-The Shadowbox build scripts are written in [Ruby](http://www.ruby-lang.org/). Using
-them you can compile custom versions of the source code that meet the requirements
-of your project while minimizing the number of HTTP requests the client must make from
-the server. This helps your page to load faster and seem more responsive to your
+A build script is provided that makes it easy to create your own custom compilations
+of the Shadowbox library. Using a compiled, minimized version of the code will
+reduce file size and the number of HTTP requests the client must make from your
+web server. This helps your page to load faster and appear more responsive to your
 users.
 
+The Shadowbox build script is written in [Ruby](http://www.ruby-lang.org/) and uses
+the [YUI Compressor](http://developer.yahoo.com/yui/compressor/) to minimize the code.
+Thus, you will need to have Ruby and Java installed on your machine in order to run
+it. If your machine does not meet these requirements, you can always use the
+[web interface](http://shadowbox-js.com/download.html) to build your script instead.
 
+To run the script, execute the following command from the project root directory:
 
+    $ bin/build
 
-If you change something in the source code, you can generate compressed versions
-of the code by executing
+This creates a build with all of the default options. To see what options are
+available to you, as well as their default values, use the `--help` flag:
 
-    $ rake build
-
-from the project root directory. If you'd
+    $ bin/build --help
 
 ### License
 
