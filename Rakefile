@@ -1,10 +1,8 @@
 require 'fileutils'
 
 def compress_js(input_path, output_path)
-  Dir.chdir(File.dirname(__FILE__)) do
-    compressor = File.join('tools', 'yuicompressor', 'yuicompressor-2.4.2.jar')
-    %x<java -jar #{compressor} #{input_path} -o #{output_path}>
-  end
+  compressor = File.dirname(__FILE__) + '/tools/yuicompressor/yuicompressor-2.4.2.jar'
+  %x<java -jar #{compressor} #{input_path} -o #{output_path}>
 end
 
 def compress_css(input_path, output_path)
@@ -17,7 +15,7 @@ def compress_css(input_path, output_path)
 end
 
 desc %{Creates compressed versions of the source code in the build directory}
-task :build do
+task :default do
   source_dir = File.dirname(__FILE__) + '/source'
   build_dir  = File.dirname(__FILE__) + '/build'
 
@@ -70,4 +68,3 @@ task :prune do
     end
   end
 end
-
