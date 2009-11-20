@@ -1,3 +1,7 @@
+require 'md5'
+require 'optparse'
+require 'fileutils'
+
 module Shadowbox
   @source_dir = File.dirname(__FILE__) + '/../source'
 
@@ -28,14 +32,7 @@ module Shadowbox
       @valid_languages.include?(language)
     end
   end
-end
 
-require 'fileutils'
-require 'md5'
-require 'optparse'
-require File.dirname(__FILE__)
-
-module Shadowbox
   class Builder
     attr_reader :argv, :errors, :version, :adapter, :compress, :format, :language, :output, :players
     attr_reader :sizzle, :swfobject
