@@ -1,35 +1,36 @@
-require 'optparse'
 require 'fileutils'
+require 'optparse'
 require 'erb'
 
 module Shadowbox
-  @source_dir = File.dirname(__FILE__) + '/../source'
+  @source_dir = File.dirname(__FILE__) + '/../lib'
 
   # get the current version of the code from the source
   @current_version = File.open(@source_dir + '/shadowbox.js') do |f|
     f.read.match(/version: ['"]([\w.]+)['"]/)[1]
   end
 
-  %w{adapters players languages}.each do |p|
-    valid = Dir.glob(@source_dir + "/#{p}/*.js").map do |f|
-      f.match(/shadowbox-(.+?)\.js/)[1]
+  %w{adapters players languages}.each do |dir|
+    available = Dir.glob(@source_dir + "/#{dir}/*.js").map do |file|
+      file.match(/shadowbox-(.+?)\.js/)[1]
     end
-    instance_variable_set("@valid_#{p}".to_sym, valid)
+    instance_variable_set("@available_#{p}".to_sym, available)
   end
 
   class << self
-    attr_reader :source_dir, :current_version, :valid_adapters, :valid_players, :valid_languages
+    attr_reader :source_dir, :current_version
+    attr_reader :available_adapters, :available_players, :available_languages
 
     def valid_adapter?(adapter)
-      @valid_adapters.include?(adapter)
+      @available_adapters.include?(adapter)
     end
 
     def valid_player?(player)
-      @valid_players.include?(player)
+      @available_players.include?(player)
     end
 
     def valid_language?(language)
-      @valid_languages.include?(language)
+      @available_languages.include?(language)
     end
   end
 
@@ -64,7 +65,7 @@ module Shadowbox
       @force      = false
       @language   = 'en'
       @target     = "./shadowbox-#{@version}"
-      @players    = ['img']
+      @players    = Shadowbox.available_players
       @sizzle     = false
       @swfobject  = false
 
@@ -96,7 +97,7 @@ module Shadowbox
 
       @errors << %{Invalid adapter: #{@adapter}} unless Shadowbox.valid_adapter?(@adapter)
       @errors << %{Invalid language: #{@language}} unless Shadowbox.valid_language?(@language)
-      invalid_players = @players.select {|player| !Shadowbox.valid_player?(player) }
+      invalid_players = @players.reject {|player| Shadowbox.valid_player?(player) }
       @errors << %{Invalid player(s): #{invalid_players.join(',')}} if invalid_players.any?
       output_dir = File.dirname(@target)
       if !File.writable?(output_dir)
@@ -114,9 +115,9 @@ module Shadowbox
     end
 
     def run
-      source = File.dirname(__FILE__) + '/../' + (@compress ? 'build' : 'source')
+      source = Shadowbox.source_dir
 
-      # compile all js files into one (including sizzle and swfobject)
+      # create javascript file list
       jsfiles = [
         "shadowbox.js",
         "adapters/shadowbox-#{@adapter}.js",
@@ -124,13 +125,18 @@ module Shadowbox
       ] + @players.map {|player| "players/shadowbox-#{player}.js" }
       jsfiles << "libraries/sizzle/sizzle.js" if @sizzle
       jsfiles << "libraries/swfobject/swfobject.js" if @swfobject
-      js = jsfiles.map {|file| File.read(File.join(source, file)) }
+
+      # compile js
+      js = jsfiles.map {|file| read_js(File.join(source, file)) }
       js << %<Shadowbox.options.players=["#{@players.join('","')}"];>
       js << %<Shadowbox.options.useSizzle=#{@sizzle};>
       File.open("#{@target}/shadowbox.js", 'w') {|file| file.print js.join("\n") }
 
+      # compile css
+      css = read_css(File.join(source, "shadowbox.css"))
+      File.open("#{@target}/shadowbox.css", 'w') {|file| file.print css }
+
       # copy all other resources
-      FileUtils.cp    "#{source}/shadowbox.css",        "#{@target}/"
       FileUtils.cp_r  "#{source}/resources",            "#{@target}/"
       FileUtils.mkdir "#{@target}/libraries"
       FileUtils.cp_r  "#{source}/libraries/sizzle",     "#{@target}/libraries/" if @sizzle
@@ -138,6 +144,28 @@ module Shadowbox
 
       FileUtils.cp File.dirname(__FILE__) + '/../README.markdown', "#{@target}/"
       File.open("#{@target}/BUILD", 'w') {|file| file.print notice }
+    end
+
+    def read_js(input_file)
+      @compress ? compress_js(input_file) : File.read(input_file)
+    end
+
+    def read_css(input_file)
+      @compress ? compress_css(input_file) : File.read(input_file)
+    end
+
+    def compress_js(input_file)
+      compressor = File.dirname(__FILE__) + '/tools/yuicompressor/yuicompressor-2.4.2.jar'
+      %x<java -jar #{compressor} #{input_file}>
+    end
+
+    def compress_css(input_file)
+      css = File.read(input_file)
+      css.gsub!(/\/\*.*?\*\//m, '')
+      css.gsub!(/^\s+/, '')
+      css.gsub!(/(,|:)\s+/, '\1')
+      css.gsub!(/\s+\{/, '{')
+      css
     end
 
     def notice

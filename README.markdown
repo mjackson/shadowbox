@@ -13,6 +13,24 @@ For more information, please see the [Shadowbox website](http://shadowbox-js.com
 For detailed usage instructions, please see [the usage page](http://shadowbox-js.com/usage.html)
 on the Shadowbox website.
 
+### How to Build
+
+The Shadowbox build scripts are written in [Ruby](http://www.ruby-lang.org/). Using
+them you can compile custom versions of the source code that meet the requirements
+of your project while minimizing the number of HTTP requests the client must make from
+the server. This helps your page to load faster and seem more responsive to your
+users.
+
+
+
+
+If you change something in the source code, you can generate compressed versions
+of the code by executing
+
+    $ rake build
+
+from the project root directory. If you'd
+
 ### License
 
 You should have received a license with this distribution explaining the terms
