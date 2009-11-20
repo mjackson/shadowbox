@@ -142,7 +142,8 @@ module Shadowbox
       FileUtils.cp_r  "#{source}/libraries/sizzle",     "#{@target}/libraries/" if @sizzle
       FileUtils.cp_r  "#{source}/libraries/swfobject",  "#{@target}/libraries/" if @swfobject
 
-      FileUtils.cp File.dirname(__FILE__) + '/../README.markdown', "#{@target}/"
+      FileUtils.cp File.dirname(__FILE__) + '/../README', "#{@target}/"
+      FileUtils.cp File.dirname(__FILE__) + '/../LICENSE', "#{@target}/"
       File.open("#{@target}/BUILD", 'w') {|file| file.print notice }
     end
 
