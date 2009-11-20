@@ -14,7 +14,7 @@ module Shadowbox
     available = Dir.glob(@source_dir + "/#{dir}/*.js").map do |file|
       file.match(/shadowbox-(.+?)\.js/)[1]
     end
-    instance_variable_set("@available_#{p}".to_sym, available)
+    instance_variable_set("@available_#{dir}".to_sym, available)
   end
 
   class << self
@@ -107,7 +107,7 @@ module Shadowbox
           FileUtils.rm_rf(@target)
           FileUtils.mkdir_p(@target)
         else
-          @errors << %{Target directory already exists}
+          @errors << %{Target directory (#{@target}) already exists, use --force to overwrite}
         end
       else
         FileUtils.mkdir_p(@target)
@@ -155,11 +155,13 @@ module Shadowbox
     end
 
     def compress_js(input_file)
-      compressor = File.dirname(__FILE__) + '/tools/yuicompressor/yuicompressor-2.4.2.jar'
+      puts "compressing " + File.basename(input_file)
+      compressor = File.dirname(__FILE__) + '/yuicompressor/yuicompressor-2.4.2.jar'
       %x<java -jar #{compressor} #{input_file}>
     end
 
     def compress_css(input_file)
+      puts "compressing " + File.basename(input_file)
       css = File.read(input_file)
       css.gsub!(/\/\*.*?\*\//m, '')
       css.gsub!(/^\s+/, '')
