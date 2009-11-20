@@ -1,34 +1,51 @@
-Copyright 2007-2009 Michael J. I. Jackson
-http://mjijackson.com
-All rights reserved.
+Copyright 2007-2009 Michael J. I. Jackson, all rights reserved.
 
-Shadowbox.js License version 1.0
+The following licenses are applicable to version 3.0 of the Shadowbox.js library
+and greater. The term "library" is used throughout to mean all code, images, and
+documentation that are distributed as part of the library.
 
-This license is applicable to version 3.0 of the code and greater until superseded
-by a later version.
 
-Shadowbox.js is available for use under the terms of two separate, yet similar
-licenses. The first of these may be exercised by individuals and organizations
-who employ the software for non-commercial uses. This license grants the licensee
-the following privileges:
+Shadowbox.js Non-Commercial License version 1.0
 
-  - Use
+Under the terms of this license, the licensee is granted the following privileges:
 
-    The software, including code, images, and documentation may be used in a web
-    site or application that is not used for commercial purposes.
+  - The right to use the library as part of a website or application that is not
+    used for commercial purposes
 
-  - Modification
+  - The right to modify the library to suit his purpose.
 
-    The software, including code, images, and documentation may be modified by the
-    user to suit his purpose.
+Under no circumstance is the licensee permitted to redistribute the source code,
+images, or documentation contained in the library. All redistribution rights
+remain with the copyright holder unless specific prior written permission is
+obtained.
 
-The second type of license may be obtained for a fee from the copyright holder and
-removes the non-commercial restriction from the terms of use. This commercial
-license may be obtained for one developer or multiple developers in the same
-organization or company.
+Under no circumstance shall this copyright notice or list of conditions be
+modified or removed from the code distribution in either source or binary form.
 
-Under neither license is the licensee permitted to redistribute the source code,
-images, or documentation contained in this project. All redistribution rights
+This software is provided by the copyright holder and contributors "as is" and
+any express or implied warranties, including, but not limited to, the implied
+warranties of merchantability and fitness for a particular purpose are disclaimed.
+
+In no event shall the copyright holder or contributors be liable for any direct,
+indirect, incidental, special, exemplary, or consequential damages (including, but
+not limited to, procurement of substitute goods or services; loss of use, data, or
+profits; or business interruption) however caused and on any theory of liability,
+whether in contract, strict liability, or tort (including negligence or otherwise)
+arising in any way out of the use of this software, even if advised of the
+possibility of such damage.
+
+
+Shadowbox.js Commercial License version 1.0
+
+Under the terms of this license, the licensee is granted the following privileges:
+
+  - The right to use the library as part of a website or application that is
+    used for commercial purposes
+
+  - The right to modify the library to suit his purpose.
+
+Under no circumstance is the licensee permitted to redistribute the source code,
+images, or documentation contained in the library. All redistribution rights
 remain with the copyright holder unless specific prior written permission is
 obtained.
 
