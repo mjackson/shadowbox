@@ -3,7 +3,7 @@ require 'optparse'
 require 'erb'
 
 module Shadowbox
-  @source_dir = File.dirname(__FILE__) + '/../lib'
+  @source_dir = File.expand_path(File.dirname(__FILE__) + '/../lib')
 
   # get the current version of the code from the source
   @current_version = File.open(@source_dir + '/shadowbox.js') do |f|
@@ -12,14 +12,19 @@ module Shadowbox
 
   %w{adapters players languages}.each do |dir|
     available = Dir.glob(@source_dir + "/#{dir}/*.js").map do |file|
-      file.match(/shadowbox-(.+?)\.js/)[1]
+      file.match(/shadowbox-([-a-zA-Z]+?)\.js/)[1]
     end
     instance_variable_set("@available_#{dir}".to_sym, available)
   end
 
+  @default_adapter = "base"
+  @default_players = @available_players.dup
+  @default_language = "en"
+
   class << self
     attr_reader :source_dir, :current_version
     attr_reader :available_adapters, :available_players, :available_languages
+    attr_reader :default_adapter, :default_players, :default_language
 
     def valid_adapter?(adapter)
       @available_adapters.include?(adapter)
@@ -60,12 +65,12 @@ module Shadowbox
       @errors     = []
 
       @version    = Shadowbox.current_version
-      @adapter    = 'base'
+      @adapter    = Shadowbox.default_adapter
       @compress   = false
       @force      = false
-      @language   = 'en'
+      @language   = Shadowbox.default_language
       @target     = "./shadowbox-#{@version}"
-      @players    = Shadowbox.available_players
+      @players    = Shadowbox.default_players
       @sizzle     = false
       @swfobject  = false
 
