@@ -12,7 +12,7 @@ module Shadowbox
 
   %w{adapters players languages}.each do |dir|
     available = Dir.glob(@source_dir + "/#{dir}/*.js").map do |file|
-      file.match(/shadowbox-([-a-zA-Z]+?)\.js/)[1]
+      file.match(/shadowbox-([-a-zA-Z]+?)\.js$/)[1]
     end
     instance_variable_set("@available_#{dir}".to_sym, available)
   end
