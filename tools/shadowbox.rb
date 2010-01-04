@@ -40,13 +40,10 @@ module Shadowbox
   end
 
   class Builder
-    attr_reader :argv, :errors
-
     NOTICE = %q{
-    This directory contains a custom build of the Shadowbox Media Viewer script, and
-    contains only a subset of the features available. All of the files necessary to
-    run Shadowbox have been combined into as few as possible in order to decrease load
-    time and the number of server requests that need to be made.
+    This directory contains a custom build of Shadowbox, and contains only a subset
+    of its available features. All files necessary to run Shadowbox are combined into
+    as few as possible in order to maximize efficiency in load and execution time.
 
     This particular build includes support for the following features:
 
@@ -54,102 +51,33 @@ module Shadowbox
     Adapter:  <%=@adapter%>
     Players:  <%=@players.join(', ')%>
 
-    <%="Support for CSS selectors is also included via Sizzle.js <http://sizzlejs.com/>." if @sizzle%>
+    <%="Support for CSS selectors is also included via Sizzle.js <http://sizzlejs.com/>." if @use_sizzle%>
     <%="The code was compressed using the YUI Compressor <http://developer.yahoo.com/yui/compressor/>." if @compress%>
 
     For more information, please visit the Shadowbox website at http://shadowbox-js.com/.
     }.gsub(/^    /, '')
 
-    def initialize(argv)
-      @argv       = argv
-      @errors     = []
-
-      @version    = Shadowbox.current_version
-      @adapter    = Shadowbox.default_adapter
-      @compress   = false
-      @force      = false
-      @language   = Shadowbox.default_language
-      @target     = "./shadowbox-#{@version}"
-      @players    = Shadowbox.default_players
-      @sizzle     = false
-      @swfobject  = false
-
-      parse!
+    class << self
+      attr_reader :compressor
     end
 
-    def parser
-      @parser ||= OptionParser.new do |opts|
-        opts.banner = "Usage: #{$PROGRAM_NAME} [options]"
-        opts.separator ""
-        opts.on("-aADAPTER", "--adapter=ADAPTER", %{The adapter to use, defaults to "#{@adapter}"}) {|adapter| @adapter = adapter }
-        opts.on("-c", "--compress", %{Use compressed versions of the code}) { @compress = true }
-        opts.on("-f", "--force", %{Clobber a target directory if one already exists}) { @force = true }
-        opts.on("-lLANGUAGE", "--language=LANGUAGE", %{The language to use, defaults to "#{@language}"}) {|language| @language = language }
-        opts.on("-pPLAYERS", "--players=PLAYERS", %{A comma-separated list of players to include, defaults to "#{@players.join(',')}"}) {|players| @players = players.split(',') }
-        opts.on("-s", "--sizzle", "Include CSS selector support using Sizzle.js") { @sizzle = true }
-        opts.on("-tTARGET", "--target=TARGET", %{The target directory, defaults to #{@target}}) {|target| @target = target }
-        opts.on_tail("-h", "--help", "Show this message") { puts opts; exit }
-      end
-    end
+    attr_reader :errors
+    attr_accessor :compress, :adapter, :language, :players
+    attr_accessor :use_sizzle, :use_swfobject, :target, :overwrite
 
-    def parse!
-      parser.parse! @argv
-      @target = File.expand_path(@target)
-      @players.uniq!
+    def initialize
+      @errors = []
 
-      # include swfobject if swf or flv players are being used
-      @swfobject = @players.include?('swf') || @players.include?('flv')
+      @compress = false
+      @version  = Shadowbox.current_version
+      @adapter  = Shadowbox.default_adapter
+      @language = Shadowbox.default_language
+      @players  = Shadowbox.default_players
 
-      @errors << %{Invalid adapter: #{@adapter}} unless Shadowbox.valid_adapter?(@adapter)
-      @errors << %{Invalid language: #{@language}} unless Shadowbox.valid_language?(@language)
-      invalid_players = @players.reject {|player| Shadowbox.valid_player?(player) }
-      @errors << %{Invalid player(s): #{invalid_players.join(',')}} if invalid_players.any?
-      output_dir = File.dirname(@target)
-      if !File.writable?(output_dir)
-        @errors << %{Output directory (#{output_dir}) is not writable}
-      elsif File.exist?(@target)
-        if @force
-          FileUtils.rm_rf(@target)
-          FileUtils.mkdir_p(@target)
-        else
-          @errors << %{Target directory (#{@target}) already exists, use --force to overwrite}
-        end
-      else
-        FileUtils.mkdir_p(@target)
-      end
-    end
-
-    def run
-      source = Shadowbox.source_dir
-
-      # create javascript file list
-      jsfiles = [
-        "shadowbox.js",
-        "adapters/shadowbox-#{@adapter}.js",
-        "languages/shadowbox-#{@language}.js"
-      ] + @players.map {|player| "players/shadowbox-#{player}.js" }
-      jsfiles << "libraries/sizzle/sizzle.js" if @sizzle
-      jsfiles << "libraries/swfobject/swfobject.js" if @swfobject
-
-      # compile js
-      js = jsfiles.map {|file| read_js(File.join(source, file)) }
-      js << %<Shadowbox.options.players=["#{@players.join('","')}"];>
-      js << %<Shadowbox.options.useSizzle=#{@sizzle};>
-      File.open("#{@target}/shadowbox.js", 'w') {|file| file.print js.join("\n") }
-
-      # compile css
-      css = read_css(File.join(source, "shadowbox.css"))
-      File.open("#{@target}/shadowbox.css", 'w') {|file| file.print css }
-
-      # copy all other resources
-      FileUtils.cp_r  "#{source}/resources",            "#{@target}/"
-      FileUtils.mkdir "#{@target}/libraries"
-      FileUtils.cp_r  "#{source}/libraries/sizzle",     "#{@target}/libraries/" if @sizzle
-      FileUtils.cp_r  "#{source}/libraries/swfobject",  "#{@target}/libraries/" if @swfobject
-
-      FileUtils.cp File.dirname(__FILE__) + '/../README', "#{@target}/"
-      FileUtils.cp File.dirname(__FILE__) + '/../LICENSE', "#{@target}/"
-      File.open("#{@target}/BUILD", 'w') {|file| file.print notice }
+      @use_sizzle     = false
+      @use_swfobject  = false # will be set automatically if needed
+      @target         = "build"
+      @overwrite      = true
     end
 
     def read_js(input_file)
@@ -161,13 +89,11 @@ module Shadowbox
     end
 
     def compress_js(input_file)
-      puts "compressing " + File.basename(input_file)
       compressor = File.dirname(__FILE__) + '/yuicompressor/yuicompressor-2.4.2.jar'
       %x<java -jar #{compressor} #{input_file}>
     end
 
     def compress_css(input_file)
-      puts "compressing " + File.basename(input_file)
       css = File.read(input_file)
       css.gsub!(/\/\*.*?\*\//m, '')
       css.gsub!(/^\s+/, '')
@@ -181,13 +107,71 @@ module Shadowbox
       template.result(binding)
     end
 
-    def errors!
-      abort(@errors.join("\n")) if @errors.any?
+    def run
+      @errors = []
+
+      # include swfobject if swf or flv players are being used
+      @players.uniq!
+      @use_swfobject = @players.include?('swf') || @players.include?('flv')
+
+      @errors << %{Invalid adapter: #{@adapter}} unless Shadowbox.valid_adapter?(@adapter)
+      @errors << %{Invalid language: #{@language}} unless Shadowbox.valid_language?(@language)
+      invalid_players = @players.reject {|player| Shadowbox.valid_player?(player) }
+      @errors << %{Invalid player(s): #{invalid_players.join(',')}} if invalid_players.any?
+
+      make_target unless @errors.any?
+
+      # stop here if there are any errors
+      return false if @errors.any?
+
+      source = Shadowbox.source_dir
+
+      # create javascript file list
+      jsfiles = []
+      jsfiles << "shadowbox.js"
+      jsfiles << "adapters/shadowbox-#{@adapter}.js"
+      jsfiles << "languages/shadowbox-#{@language}.js"
+      jsfiles += @players.map {|player| "players/shadowbox-#{player}.js" }
+      jsfiles << "libraries/sizzle/sizzle.js" if @use_sizzle
+      jsfiles << "libraries/swfobject/swfobject.js" if @use_swfobject
+
+      # compile js
+      js = jsfiles.map {|file| read_js(File.join(source, file)) }
+      js << %<Shadowbox.options.players=["#{@players.join('","')}"];>
+      js << %<Shadowbox.options.useSizzle=#{@use_sizzle};>
+      File.open(File.join(@target, "shadowbox.js"), 'w') {|f| f.print js.join("\n") }
+
+      # compile css
+      css = read_css(File.join(source, "shadowbox.css"))
+      File.open(File.join(@target, "shadowbox.css"), 'w') {|f| f.print css }
+
+      # copy all other resources
+      FileUtils.cp_r  "#{source}/resources",            "#{@target}/"
+      FileUtils.mkdir "#{@target}/libraries"
+      FileUtils.cp_r  "#{source}/libraries/sizzle",     "#{@target}/libraries/" if @use_sizzle
+      FileUtils.cp_r  "#{source}/libraries/swfobject",  "#{@target}/libraries/" if @use_swfobject
+
+      FileUtils.cp File.dirname(__FILE__) + '/../README', "#{@target}/"
+      FileUtils.cp File.dirname(__FILE__) + '/../LICENSE', "#{@target}/"
+      File.open(File.join(@target, "BUILD"), 'w') {|f| f.print notice }
+
+      true
     end
 
-    def run!
-      errors!
-      run
+    def make_target
+      target_dir = File.dirname(@target)
+      if !File.writable?(target_dir)
+        @errors << %{Target directory (#{target_dir}) is not writable}
+      elsif File.exist?(@target)
+        if @overwrite
+          FileUtils.rm_rf(@target)
+          FileUtils.mkdir_p(@target)
+        else
+          @errors << %{Target directory (#{@target}) already exists}
+        end
+      else
+        FileUtils.mkdir_p(@target)
+      end
     end
   end
 end

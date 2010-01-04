@@ -1,4 +1,5 @@
-### Overview
+Overview
+--------
 
 Shadowbox is an online media viewing application that supports all of the web's
 most popular media publishing formats. Shadowbox is written entirely in
@@ -6,14 +7,16 @@ JavaScript and CSS and is highly customizable. Using Shadowbox, website authors
 can display a wide assortment of media in all major browsers without navigating
 users away from the linking page.
 
-For more information, please see the [Shadowbox website](http://shadowbox-js.com/).
+For more information, please see http://shadowbox-js.com/.
 
-### Usage
+Usage
+-----
 
-For detailed usage instructions, please see [the usage page](http://shadowbox-js.com/usage.html)
-on the Shadowbox website.
+For detailed usage instructions, please see the usage page at
+http://shadowbox-js.com/usage.html.
 
-### How to Build
+How to Build
+------------
 
 A build script is provided that makes it easy to create your own custom compilations
 of the Shadowbox library. Using a compiled, minimized version of the code will
@@ -21,11 +24,11 @@ reduce file size and the number of HTTP requests the client must make from your
 web server. This helps your page to load faster and appear more responsive to your
 users.
 
-The Shadowbox build script is written in [Ruby](http://www.ruby-lang.org/) and uses
-the [YUI Compressor](http://developer.yahoo.com/yui/compressor/) to minimize the code.
+The Shadowbox build scripts are written in Ruby (http://www.ruby-lang.org/) and use
+the YUI Compressor (http://developer.yahoo.com/yui/compressor/) to minimize the code.
 Thus, you will need to have Ruby and Java installed on your machine in order to run
-it. If your machine does not meet these requirements, you can always use the
-[web interface](http://shadowbox-js.com/download.html) to build your script instead.
+them. If your machine does not meet these requirements, you can always use the
+web interface at http://shadowbox-js.com/download.html to build your script instead.
 
 To run the script, execute the following command from the project root directory:
 
@@ -36,10 +39,9 @@ available to you, as well as their default values, use the `--help` flag:
 
     $ bin/build --help
 
-### License
+License
+-------
 
 You should have received a license with this distribution explaining the terms
 under which Shadowbox may be used. If you did not, you may obtain a copy of the
-license at [http://shadowbox-js.com/LICENSE](http://shadowbox-js.com/LICENSE).
-
-<small>Copyright 2007-2009 Michael J. I. Jackson</small>
+license at http://shadowbox-js.com/LICENSE.
