@@ -57,10 +57,6 @@ module Shadowbox
     For more information, please visit the Shadowbox website at http://shadowbox-js.com/.
     }.gsub(/^    /, '')
 
-    class << self
-      attr_reader :compressor
-    end
-
     attr_reader :errors
     attr_accessor :compress, :adapter, :language, :players
     attr_accessor :use_sizzle, :use_swfobject, :target, :overwrite
@@ -68,16 +64,15 @@ module Shadowbox
     def initialize
       @errors = []
 
-      @compress = false
       @version  = Shadowbox.current_version
       @adapter  = Shadowbox.default_adapter
       @language = Shadowbox.default_language
       @players  = Shadowbox.default_players
-
       @use_sizzle     = false
       @use_swfobject  = false # will be set automatically if needed
       @target         = "build"
       @overwrite      = true
+      @compress       = false
     end
 
     def read_js(input_file)
