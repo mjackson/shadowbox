@@ -1,20 +1,9 @@
 /**
- * The default CSS for Shadowbox.
+ * The default CSS for Shadowbox. See http://shadowbox-js.com/ for more information.
  *
- * This file is part of Shadowbox.
- *
- * Shadowbox is an online media viewer application that supports all of the
- * web's most popular media publishing formats. Shadowbox is written entirely
- * in JavaScript and CSS and is highly customizable. Using Shadowbox, website
- * authors can showcase a wide assortment of media in all major browsers without
- * navigating users away from the linking page.
- *
- * You should have received a license with this distribution explaining the terms
- * under which Shadowbox may be used. If you did not, you may obtain a copy of the
- * license at http://shadowbox-js.com/LICENSE
- *
- * @author      Michael J. I. Jackson <michael@mjijackson.com>
+ * @author      Michael J. I. Jackson <mjijackson@gmail.com>
  * @copyright   2007-2010 Michael J. I. Jackson
+ * @license     http://shadowbox-js.com/LICENSE
  */
 
 /*_____________________________________________  container, overlay, & wrapper  */
@@ -130,23 +119,23 @@ body > #sb-container {
   cursor: pointer;
 }
 #sb-nav-close {
-  background-image: url(resources/close.png);
+  background-image: url(assets/close.png);
   background-repeat: no-repeat;
 }
 #sb-nav-next {
-  background-image: url(resources/next.png);
+  background-image: url(assets/next.png);
   background-repeat: no-repeat;
 }
 #sb-nav-previous {
-  background-image: url(resources/previous.png);
+  background-image: url(assets/previous.png);
   background-repeat: no-repeat;
 }
 #sb-nav-play {
-  background-image: url(resources/play.png);
+  background-image: url(assets/play.png);
   background-repeat: no-repeat;
 }
 #sb-nav-pause {
-  background-image: url(resources/pause.png);
+  background-image: url(assets/pause.png);
   background-repeat: no-repeat;
 }
 

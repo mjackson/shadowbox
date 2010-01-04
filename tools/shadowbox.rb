@@ -129,11 +129,11 @@ module Shadowbox
       # create javascript file list
       jsfiles = []
       jsfiles << "shadowbox.js"
-      jsfiles << "adapters/shadowbox-#{@adapter}.js"
-      jsfiles << "languages/shadowbox-#{@language}.js"
-      jsfiles += @players.map {|player| "players/shadowbox-#{player}.js" }
-      jsfiles << "libraries/sizzle/sizzle.js" if @use_sizzle
-      jsfiles << "libraries/swfobject/swfobject.js" if @use_swfobject
+      jsfiles << File.join("adapters", "shadowbox-#{@adapter}.js")
+      jsfiles << File.join("languages", "shadowbox-#{@language}.js")
+      jsfiles += @players.map {|player| File.join("players", "shadowbox-#{player}.js") }
+      jsfiles << File.join("libraries", "sizzle", "sizzle.js") if @use_sizzle
+      jsfiles << File.join("libraries", "swfobject", "swfobject.js") if @use_swfobject
 
       # compile js
       js = jsfiles.map {|file| read_js(File.join(source, file)) }
@@ -145,14 +145,17 @@ module Shadowbox
       css = read_css(File.join(source, "shadowbox.css"))
       File.open(File.join(@target, "shadowbox.css"), 'w') {|f| f.print css }
 
-      # copy all other resources
-      FileUtils.cp_r  "#{source}/resources",            "#{@target}/"
-      FileUtils.mkdir "#{@target}/libraries"
-      FileUtils.cp_r  "#{source}/libraries/sizzle",     "#{@target}/libraries/" if @use_sizzle
-      FileUtils.cp_r  "#{source}/libraries/swfobject",  "#{@target}/libraries/" if @use_swfobject
+      # copy all other assets
+      assets = File.join(@target, "assets")
+      FileUtils.mkdir assets
+      FileUtils.cp    Dir[File.join(source, "assets", "*.png")],    assets
+      libraries = File.join(@target, "libraries")
+      FileUtils.mkdir libraries
+      FileUtils.cp_r  File.join(source, "libraries", "sizzle"),     libraries if @use_sizzle
+      FileUtils.cp_r  File.join(source, "libraries", "swfobject"),  libraries if @use_swfobject
 
-      FileUtils.cp File.dirname(__FILE__) + '/../README', "#{@target}/"
-      FileUtils.cp File.dirname(__FILE__) + '/../LICENSE', "#{@target}/"
+      FileUtils.cp File.dirname(__FILE__) + '/../README', @target
+      FileUtils.cp File.dirname(__FILE__) + '/../LICENSE', @target
       File.open(File.join(@target, "BUILD"), 'w') {|f| f.print notice }
 
       true
