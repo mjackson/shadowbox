@@ -2,17 +2,10 @@ require 'rake/clean'
 require 'yaml'
 require 'tools/shadowbox'
 
-def source_version
-  Shadowbox.current_version
-end
-
-def package(ext)
-  "shadowbox-" + source_version + ext
-end
-
-def build_config
-  'tools/build.conf'
-end
+def source_version; Shadowbox.current_version end
+def package(ext); "shadowbox-" + source_version + ext end
+def build_config; 'tools/build.conf' end
+def build_target; 'build' end
 
 task :default => [:build]
 
@@ -22,17 +15,26 @@ task :build do
   params = YAML.load_file(build_config)
 
   builder = Shadowbox::Builder.new
-  builder.target = 'build'
+  builder.target = build_target
   builder.overwrite = true
-  %w{adapter language players use_sizzle compress}.each do |c|
-    builder.send("#{c}=", params[c]) if params.has_key?(c)
+  params.each do |key, value|
+    writer = key + '='
+    builder.send(writer, value) if builder.respond_to?(writer)
   end
 
   fail builder.errors.join("\n") unless builder.run
+
+  if params['compile']
+    js = File.join(builder.target, 'shadowbox.js')
+    Shadowbox.compile(js, js)
+    css = File.join(builder.target, 'shadowbox.css')
+    Shadowbox.compile(css, css)
+  end
+
   puts "Complete!"
 end
 
-CLEAN.include 'build'
+CLEAN.include build_target
 
 desc "Build packages."
 task :package => %w{.tar.gz .zip}.map {|ext| package(ext) }

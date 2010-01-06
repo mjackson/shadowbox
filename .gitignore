@@ -1,2 +1,5 @@
 *.swp
 .DS_Store
+tmp
+pkg
+build

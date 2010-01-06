@@ -21,6 +21,8 @@ module Shadowbox
   @default_players = @available_players.dup
   @default_language = "en"
 
+  @js_compiler = File.join(File.dirname(__FILE__), 'closure-compiler-20091217.jar')
+
   class << self
     attr_reader :source_dir, :current_version
     attr_reader :available_adapters, :available_players, :available_languages
@@ -37,6 +39,28 @@ module Shadowbox
     def valid_language?(language)
       @available_languages.include?(language)
     end
+
+    def compile(file, output=nil)
+      result = case file
+               when /\.js$/
+                 %x<java -jar #{@js_compiler} --js #{file}>
+               when /\.css$/
+                 css = File.read(file)
+                 css.gsub!(/\/\*.*?\*\//m, '')
+                 css.gsub!(/^\s+/, '')
+                 css.gsub!(/(,|:)\s+/, '\1')
+                 css.gsub!(/\s+\{/, '{')
+                 css
+               else
+                 raise ArgumentError
+               end
+
+      if output
+        File.open(output, 'w') {|f| f.print result }
+      else
+        $stdout.puts result
+      end
+    end
   end
 
   class Builder
@@ -52,54 +76,36 @@ module Shadowbox
     Players:  <%=@players.join(', ')%>
 
     <%="Support for CSS selectors is also included via Sizzle.js <http://sizzlejs.com/>." if @use_sizzle%>
-    <%="The code was compressed using the YUI Compressor <http://developer.yahoo.com/yui/compressor/>." if @compress%>
 
     For more information, please visit the Shadowbox website at http://shadowbox-js.com/.
     }.gsub(/^    /, '')
 
     attr_reader :errors
-    attr_accessor :compress, :adapter, :language, :players
-    attr_accessor :use_sizzle, :use_swfobject, :target, :overwrite
+    attr_accessor :adapter, :language, :players, :use_sizzle, :use_swfobject, :target, :overwrite
 
     def initialize
-      @errors = []
-
-      @version  = Shadowbox.current_version
-      @adapter  = Shadowbox.default_adapter
-      @language = Shadowbox.default_language
-      @players  = Shadowbox.default_players
-      @use_sizzle     = false
-      @use_swfobject  = false # will be set automatically if needed
-      @target         = "build"
-      @overwrite      = true
-      @compress       = false
-    end
-
-    def read_js(input_file)
-      @compress ? compress_js(input_file) : File.read(input_file)
-    end
-
-    def read_css(input_file)
-      @compress ? compress_css(input_file) : File.read(input_file)
-    end
-
-    def compress_js(input_file)
-      compressor = File.dirname(__FILE__) + '/yuicompressor/yuicompressor-2.4.2.jar'
-      %x<java -jar #{compressor} #{input_file}>
-    end
-
-    def compress_css(input_file)
-      css = File.read(input_file)
-      css.gsub!(/\/\*.*?\*\//m, '')
-      css.gsub!(/^\s+/, '')
-      css.gsub!(/(,|:)\s+/, '\1')
-      css.gsub!(/\s+\{/, '{')
-      css
+      @errors        = []
+      @version       = Shadowbox.current_version
+      @adapter       = Shadowbox.default_adapter
+      @language      = Shadowbox.default_language
+      @players       = Shadowbox.default_players
+      @use_sizzle    = false
+      @use_swfobject = false # will be set automatically if needed
+      @target        = "build"
+      @overwrite     = true
     end
 
     def notice
       template = ERB.new(NOTICE)
       template.result(binding)
+    end
+
+    def source(*args)
+      File.join(Shadowbox.source_dir, *args)
+    end
+
+    def target(*args)
+      File.join(@target, *args)
     end
 
     def run
@@ -119,39 +125,36 @@ module Shadowbox
       # stop here if there are any errors
       return false if @errors.any?
 
-      source = Shadowbox.source_dir
-
       # create javascript file list
       jsfiles = []
       jsfiles << "shadowbox.js"
-      jsfiles << File.join("adapters", "shadowbox-#{@adapter}.js")
-      jsfiles << File.join("languages", "shadowbox-#{@language}.js")
-      jsfiles += @players.map {|player| File.join("players", "shadowbox-#{player}.js") }
-      jsfiles << File.join("libraries", "sizzle", "sizzle.js") if @use_sizzle
-      jsfiles << File.join("libraries", "swfobject", "swfobject.js") if @use_swfobject
+      jsfiles << ["adapters", "shadowbox-#{@adapter}.js"]
+      jsfiles << ["languages", "shadowbox-#{@language}.js"]
+      jsfiles += @players.map {|player| ["players", "shadowbox-#{player}.js"] }
+      jsfiles << ["libraries", "sizzle", "sizzle.js"] if @use_sizzle
+      jsfiles << ["libraries", "swfobject", "swfobject.js"] if @use_swfobject
 
       # compile js
-      js = jsfiles.map {|file| read_js(File.join(source, file)) }
+      js = jsfiles.map {|paths| File.read(source(*paths)) }
       js << %<Shadowbox.options.players=["#{@players.join('","')}"];>
       js << %<Shadowbox.options.useSizzle=#{@use_sizzle};>
-      File.open(File.join(@target, "shadowbox.js"), 'w') {|f| f.print js.join("\n") }
-
-      # compile css
-      css = read_css(File.join(source, "shadowbox.css"))
-      File.open(File.join(@target, "shadowbox.css"), 'w') {|f| f.print css }
+      File.open(target("shadowbox.js"), 'w') {|f| f.print js.join("\n") }
 
       # copy all other assets
-      assets = File.join(@target, "assets")
-      FileUtils.mkdir assets
-      FileUtils.cp    Dir[File.join(source, "assets", "*.png")],    assets
-      libraries = File.join(@target, "libraries")
-      FileUtils.mkdir libraries
-      FileUtils.cp_r  File.join(source, "libraries", "sizzle"),     libraries if @use_sizzle
-      FileUtils.cp_r  File.join(source, "libraries", "swfobject"),  libraries if @use_swfobject
+      FileUtils.cp source("shadowbox.css"), target("shadowbox.css")
+      FileUtils.mkdir target("assets")
+      Dir[source("assets", "*.png")].each do |file|
+        FileUtils.cp file, target("assets")
+      end
+      if @use_sizzle || @use_swfobject
+        FileUtils.mkdir target("libraries")
+        FileUtils.cp_r source("libraries", "sizzle"), target("libraries") if @use_sizzle
+        FileUtils.cp_r source("libraries", "swfobject"), target("libraries") if @use_swfobject
+      end
 
-      FileUtils.cp File.dirname(__FILE__) + '/../README', @target
-      FileUtils.cp File.dirname(__FILE__) + '/../LICENSE', @target
-      File.open(File.join(@target, "BUILD"), 'w') {|f| f.print notice }
+      FileUtils.cp source("..", "README"), target
+      FileUtils.cp source("..", "LICENSE"), target
+      File.open(target("BUILD"), 'w') {|f| f.print notice }
 
       true
     end
