@@ -3,7 +3,7 @@ require 'optparse'
 require 'erb'
 
 module Shadowbox
-  @source_dir = File.expand_path(File.dirname(__FILE__) + '/../lib')
+  @source_dir = File.expand_path(File.dirname(__FILE__) + '/../source')
 
   # get the current version of the code from the source
   @current_version = File.open(@source_dir + '/shadowbox.js') do |f|
