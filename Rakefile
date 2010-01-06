@@ -4,7 +4,7 @@ require 'tools/shadowbox'
 
 def source_version; Shadowbox.current_version end
 def package(ext); "shadowbox-" + source_version + ext end
-def build_config; 'tools/build.conf' end
+def build_config; 'tools/build.yml' end
 def build_target; 'build' end
 
 task :default => [:build]
@@ -24,11 +24,11 @@ task :build do
 
   fail builder.errors.join("\n") unless builder.run
 
-  if params['compile']
+  if params['compress']
     js = File.join(builder.target, 'shadowbox.js')
-    Shadowbox.compile(js, js)
+    Shadowbox.compress(js, js)
     css = File.join(builder.target, 'shadowbox.css')
-    Shadowbox.compile(css, css)
+    Shadowbox.compress(css, css)
   end
 
   puts "Complete!"

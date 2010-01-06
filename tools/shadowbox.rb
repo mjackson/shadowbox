@@ -21,7 +21,7 @@ module Shadowbox
   @default_players = @available_players.dup
   @default_language = "en"
 
-  @js_compiler = File.join(File.dirname(__FILE__), 'closure-compiler-20091217.jar')
+  @compiler = File.join(File.dirname(__FILE__), 'closure-compiler-20091217.jar')
 
   class << self
     attr_reader :source_dir, :current_version
@@ -40,10 +40,10 @@ module Shadowbox
       @available_languages.include?(language)
     end
 
-    def compile(file, output=nil)
+    def compress(file, outfile=nil)
       result = case file
                when /\.js$/
-                 %x<java -jar #{@js_compiler} --js #{file}>
+                 %x<java -jar #{@compiler} --js #{file}>
                when /\.css$/
                  css = File.read(file)
                  css.gsub!(/\/\*.*?\*\//m, '')
@@ -55,8 +55,8 @@ module Shadowbox
                  raise ArgumentError
                end
 
-      if output
-        File.open(output, 'w') {|f| f.print result }
+      if outfile
+        File.open(outfile, 'w') {|f| f.print result }
       else
         $stdout.puts result
       end
