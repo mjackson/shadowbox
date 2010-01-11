@@ -85,13 +85,13 @@ function empty(el) {
  * format('Hello {world}', {world: "World"}); // "Hello World"
  *
  * @param   {String}        str         The format spec string
- * @param   {Array|Object}  replace     The array of replacement values
+ * @param   {Array|Object}  replace     The array/object of replacement values
  * @return  {String}                    The formatted string
  * @private
  */
 function sprintf(str, replace) {
-    return str.replace(/\{(\d+)\}/g, function(match, i) {
-        return replace[match[1]];
+    return str.replace(/\{(\w+?)\}/g, function(match, i) {
+        return replace[i];
     });
 }
 
