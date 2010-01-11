@@ -404,17 +404,17 @@ K.resizeContent = function(height, width, top, left, anim, callback) {
     switch (S.options.animSequence) {
     case "hw":
         adjustHeight(dims.innerHeight, dims.top, anim, function(){
-            adjustWidth(dims.width, dims.left, anim, cb);
+            adjustWidth(dims.width, dims.left, anim, callback);
         });
         break;
     case "wh":
         adjustWidth(dims.width, dims.left, anim, function(){
-            adjustHeight(dims.innerHeight, dims.top, anim, cb);
+            adjustHeight(dims.innerHeight, dims.top, anim, callback);
         });
         break;
     default: // sync
         adjustWidth(dims.width, dims.left, anim);
-        adjustHeight(dims.innerHeight, dims.top, anim, cb);
+        adjustHeight(dims.innerHeight, dims.top, anim, callback);
     }
 }
 
@@ -458,9 +458,9 @@ function toggleTroubleElements(on) {
  * @private
  */
 function toggleVisible(callback) {
-    var overlay = U.get('sb-overlay'),
-        container = U.get('sb-container'),
-        wrapper = U.get('sb-wrapper');
+    var overlay = get("sb-overlay"),
+        container = get("sb-container"),
+        wrapper = get("sb-wrapper");
 
     if (callback) {
         if (S.isIE6) {
@@ -480,7 +480,7 @@ function toggleVisible(callback) {
             wrapper.style.display = "none"; // cleared in onLoad
         }
 
-        container.style.visibility = 'visible';
+        container.style.visibility = "visible";
 
         if (overlayOn) {
             animate(overlay, "opacity", parseFloat(S.options.overlayOpacity), S.options.fadeDuration, callback);
@@ -707,8 +707,8 @@ function showBars(callback) {
  * @private
  */
 function adjustHeight(height, top, anim, callback) {
-    var body = U.get("sb-body"),
-        wrapper = U.get("sb-wrapper"),
+    var body = get("sb-body"),
+        wrapper = get("sb-wrapper"),
         duration = (anim ? S.options.resizeDuration : 0);
 
     animate(body, "height", height, duration);
@@ -743,9 +743,9 @@ function adjustWidth(width, left, anim, callback) {
  * @private
  */
 function setDimensions(height, width, resizable){
-    var sbi = U.get("sb-body-inner")
-        sw = U.get("sb-wrapper"),
-        so = U.get("sb-overlay"),
+    var sbi = get("sb-body-inner")
+        sw = get("sb-wrapper"),
+        so = get("sb-overlay"),
         tb = sw.offsetHeight - sbi.offsetHeight,
         lr = sw.offsetWidth - sbi.offsetWidth,
         maxHeight = so.offsetHeight, // measure overlay to get viewport size for IE6
