@@ -3,41 +3,41 @@ require 'optparse'
 require 'erb'
 
 module Shadowbox
-  @source_dir = File.expand_path(File.dirname(__FILE__) + '/../source')
+  @source_dir = File.expand_path(File.dirname(__FILE__) + '/../source-new')
 
   # get the current version of the code from the source
-  @current_version = File.open(@source_dir + '/shadowbox.js') do |f|
+  @current_version = File.open(@source_dir + '/core.js') do |f|
     f.read.match(/version: ['"]([\w.]+)['"]/)[1]
   end
 
-  %w{adapters players languages}.each do |dir|
+  %w{adapters languages players}.each do |dir|
     available = Dir.glob(@source_dir + "/#{dir}/*.js").map do |file|
-      file.match(/shadowbox-([-a-zA-Z]+?)\.js$/)[1]
+      File.basename(file, ".js")
     end
     instance_variable_set("@available_#{dir}".to_sym, available)
   end
 
   @default_adapter = "base"
-  @default_players = @available_players.dup
   @default_language = "en"
+  @default_players = @available_players.dup
 
-  @compiler = File.join(File.dirname(__FILE__), 'closure-compiler-20091217.jar')
+  @compiler = File.join(File.dirname(__FILE__), 'compiler-20091217.jar')
 
   class << self
     attr_reader :source_dir, :current_version
-    attr_reader :available_adapters, :available_players, :available_languages
-    attr_reader :default_adapter, :default_players, :default_language
+    attr_reader :available_adapters, :available_languages, :available_players
+    attr_reader :default_adapter, :default_language, :default_players
 
     def valid_adapter?(adapter)
       @available_adapters.include?(adapter)
     end
 
-    def valid_player?(player)
-      @available_players.include?(player)
-    end
-
     def valid_language?(language)
       @available_languages.include?(language)
+    end
+
+    def valid_player?(player)
+      @available_players.include?(player)
     end
 
     def compress(file, outfile=nil)

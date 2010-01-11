@@ -1,5 +1,8 @@
 ---
 
+# The directory to output the build to
+target: build
+
 # May be the name of any adapter in lib/adapters
 adapter: base
 
@@ -10,7 +13,7 @@ language: en
 players: [flv, html, iframe, img, qt, swf, wmp]
 
 # YES to include Sizzle.js, NO to exclude
-use_sizzle: YES
+css_support: YES
 
 # YES to compress the code, NO to use the source code
 compress: YES

@@ -1,51 +1,88 @@
-require 'rake/clean'
 require 'yaml'
 require 'tools/shadowbox'
 
-def source_version; Shadowbox.current_version end
-def package(ext); "shadowbox-" + source_version + ext end
-def build_config; 'tools/build.yml' end
-def build_target; 'build' end
+CONFIG = ENV['CONFIG'] || "build.yml"
+unless File.exist?(CONFIG)
+  puts "Cannot find configuration file #{CONFIG}"
+  exit
+end
+
+PARAMS = YAML.load_file(CONFIG)
+PARAMS["target"] ||= "build"
+PARAMS["adapter"] = Shadowbox.default_adapter unless PARAMS["adapter"] && Shadowbox.valid_adapter?(PARAMS["adapter"])
+PARAMS["language"] = Shadowbox.default_language unless PARAMS["language"] && Shadowbox.valid_language?(PARAMS["language"])
+if PARAMS["players"]
+  PARAMS["players"] = PARAMS["players"].select {|player| Shadowbox.valid_player?(player) }
+else
+  PARAMS["players"] = Shadowbox.default_players
+end
+PARAMS["css_support"] = true unless PARAMS.has_key?("css_support")
+PARAMS["compress"] = true unless PARAMS.has_key?("compress")
+
+def version
+  Shadowbox.current_version
+end
+
+def source(*args)
+  File.join(Shadowbox.source_dir, *args)
+end
+
+def build(*args)
+  File.join(PARAMS["target"], *args)
+end
 
 task :default => [:build]
 
-desc "Create a custom build directory based on settings in #{build_config}."
-task :build do
-  fail "Cannot find build configuration file #{build_config}" unless File.exist?(build_config)
-  params = YAML.load_file(build_config)
+desc "Create a custom build based on settings in #{CONFIG}"
+task :build => :make_target do
+  files = []
+  files << "intro"
+  files << "util"
+  files << File.join("adapters", PARAMS["adapter"])
+  files << "core"
+  files << "plugins"
+  files << "cache"
+  files << "find" if PARAMS["css_support"]
+  files << "flash" unless (PARAMS["players"] & ["swf", "flv"]).empty?
+  files << File.join("languages", PARAMS["language"])
+  PARAMS["players"].each do |player|
+    files << File.join("players", player) if Shadowbox.valid_player?(player)
+  end
+  files << "skin"
+  files << "outro"
 
-  builder = Shadowbox::Builder.new
-  builder.target = build_target
-  builder.overwrite = true
-  params.each do |key, value|
-    writer = key + '='
-    builder.send(writer, value) if builder.respond_to?(writer)
+  File.open(build("shadowbox.js"), 'w') do |f|
+    files.each do |file|
+      js = File.read(source(file) + ".js")
+      js.gsub!('@VERSION', version).gsub!('@DATE', "Date: " + Time.now.inspect) if file == "intro"
+      f << js + "\n"
+    end
   end
 
-  fail builder.errors.join("\n") unless builder.run
+  resources = Dir[source('resources/*.png')].map {|file| File.basename(file) }
+  resources << 'shadowbox.css'
+  resources << 'player.swf' if PARAMS['players'].include?('flv')
+  resources << 'expressInstall.swf' unless (PARAMS["players"] & ["swf", "flv"]).empty?
+  resources.each do |resource|
+    cp source('resources', resource), build(resource)
+  end
 
-  if params['compress']
-    js = File.join(builder.target, 'shadowbox.js')
+  cp File.dirname(__FILE__) + '/README', build('README')
+  cp File.dirname(__FILE__) + '/LICENSE', build('LICENSE')
+
+  if PARAMS["compress"]
+    js = build('shadowbox.js')
     Shadowbox.compress(js, js)
-    css = File.join(builder.target, 'shadowbox.css')
+    css = build('shadowbox.css')
     Shadowbox.compress(css, css)
   end
-
-  puts "Complete!"
 end
 
-CLEAN.include build_target
-
-desc "Build packages."
-task :package => %w{.tar.gz .zip}.map {|ext| package(ext) }
-
-directory 'pkg'
-CLOBBER.include 'pkg'
-
-file package('.tar.gz') => 'pkg' do |f|
-  sh "git archive --prefix=shadowbox-#{source_version}/ --format=tar HEAD | gzip > pkg/#{f.name}"
+desc "Clean up the build target directory"
+task :clean do
+  rm_rf PARAMS["target"]
 end
 
-file package('.zip') => 'pkg' do |f|
-  sh "git archive --prefix=shadowbox-#{source_version}/ --format=zip HEAD > pkg/#{f.name}"
+task :make_target do
+  mkdir_p PARAMS["target"]
 end
