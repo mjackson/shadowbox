@@ -31,7 +31,7 @@ S.select = function(selector) {
     var links;
 
     if (!selector) {
-        var rel;
+        var rel, links = [];
         each(document.getElementsByTagName('a'), function(i, el) {
             rel = el.getAttribute('rel');
             if (rel && relAttr.test(rel))
@@ -102,7 +102,7 @@ S.addCache = function(link, options) {
         // assign cache key expando, use integer primitive to avoid memory leak in IE
         link[expando] = cacheKey;
         // add onclick listener
-        addEvent(link, 'click', handleClick);
+        addEvent(link, "click", handleClick);
     }
 
     S.cache[cacheKey] = S.buildObject(link, options);
@@ -115,7 +115,7 @@ S.addCache = function(link, options) {
  * @public
  */
 S.removeCache = function(link) {
-    removeEvent(link, 'click', handleClick);
+    removeEvent(link, "click", handleClick);
     S.cache[link[expando]] = null;
     link[expando] = null;
     delete link[expando];
@@ -125,12 +125,12 @@ S.removeCache = function(link) {
  * Gets the object from cache representative of the given link element (if there is one).
  *
  * @param   {HTMLElement}   link
- * @return  {Object|null}
+ * @return  {Object}
  * @public
  */
 S.getCache = function(link) {
     var cacheKey = link[expando];
-    return cacheKey && cache[cacheKey];
+    return (cacheKey in S.cache && S.cache[cacheKey]);
 }
 
 /**
@@ -155,16 +155,7 @@ S.clearCache = function() {
  * @private
  */
 function handleClick(e) {
-    //var link;
-    //if(U.isLink(this)){
-    //    link = this; // jQuery, Prototype, YUI
-    //}else{
-    //    link = S.lib.getTarget(e); // Ext, standalone
-    //    while(!U.isLink(link) && link.parentNode)
-    //        link = link.parentNode;
-    //}
-
-    //preventDefault(e); // good for debugging
+//    preventDefault(e); // good for debugging
 
     S.open(this);
 
