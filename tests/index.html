@@ -4,9 +4,17 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<link rel="stylesheet" href="assets/qunit.css" type="text/css"/>
+<title>Shadowbox Test Suite</title>
+<link rel="stylesheet" type="text/css" href="assets/qunit.css">
 <script type="text/javascript" src="assets/jquery-1.3.2.js"></script>
 <script type="text/javascript" src="assets/qunit.js"></script>
+
+<!-- include Shadowbox -->
+<link rel="stylesheet" type="text/css" href="build/shadowbox.css">
+<script type="text/javascript" src="build/shadowbox.js"></script>
+<script type="text/javascript">
+Shadowbox.init();
+</script>
 
 <!-- include tests -->
 <script type="text/javascript" src="core.js"></script>
@@ -14,10 +22,17 @@
 
 </head>
 <body>
+
 <h1 id="qunit-header">Shadowbox Test Suite</h1>
 <h2 id="qunit-banner"></h2>
 <h2 id="qunit-userAgent"></h2>
 <ol id="qunit-tests"></ol>
+
+<div id="main" style="display:none;">
+    <a id="anchor1" rel="shadowbox" href="files/snow_leopard.jpg" title="Snow Leopard">Click Here</a>
+    <a id="anchor2" href="files/snow_leopard.jpg">Click Here</a>
+</div>
+
 </body>
 </html>
 

@@ -495,13 +495,15 @@ S.open = function(obj) {
             S.current = null;
 
             if (S.cache) {
-                each(S.cache, function(i, o) {
+                var o;
+                for (var key in S.cache) {
+                    o = S.cache[key];
                     if (o.gallery && o.gallery == obj.gallery) {
                         if (S.current == null && o.content == obj.content)
                             S.current = S.gallery.length;
                         S.gallery.push(o);
                     }
-                });
+                }
             }
 
             if (S.current == null) {
@@ -651,23 +653,22 @@ S.previous = function() {
  * this object is displayed. However, any options that are specified in
  * the link's HTML markup will trump options given here.
  *
- * @param   {HTMLElement}   link    The link element to process
- * @param   {Object}        options A set of options to use for the object
- * @return  {Object}                An object representing the link
+ * @param   {HTMLElement}   link        The link element to process
+ * @param   {Object}        options     A set of options to use for the object
+ * @return  {Object}                    An object representing the link
  * @public
  */
 S.buildObject = function(link, options) {
     var obj = {
         link:       link,
-        title:      link.getAttribute('title'),
+        title:      link.getAttribute("title"),
         content:    link.href // don't use getAttribute here
     };
 
     // remove link-level options from top-level options
     if (options) {
-        options = apply({}, options);
-        each(['player', 'title', 'height', 'width', 'gallery'], function(i, o) {
-            if (options[o] != undefined) {
+        each(["player", "title", "height", "width", "gallery"], function(i, o) {
+            if (typeof options[o] != "undefined") {
                 obj[o] = options[o];
                 delete options[o];
             }
@@ -679,7 +680,7 @@ S.buildObject = function(link, options) {
         obj.player = S.getPlayer(obj.content);
 
     // HTML options always trump JavaScript options, so do these last
-    var rel = link.getAttribute('rel');
+    var rel = link.getAttribute("rel");
     if (rel) {
         // extract gallery name from shadowbox[name] format
         var match = rel.match(galleryName);
@@ -690,8 +691,8 @@ S.buildObject = function(link, options) {
         each(rel.split(';'), function(i, p) {
             match = p.match(inlineParam);
             if (match) {
-                if (match[1] == 'options') {
-                    eval('apply(obj.options,' + match[2] + ')');
+                if (match[1] == "options") {
+                    eval("apply(obj.options," + match[2] + ")");
                 } else {
                     obj[match[1]] = match[2];
                 }
@@ -905,7 +906,11 @@ function listenKeys(on) {
     if (!S.options.enableKeys)
         return;
 
-    ((on ? "add" : "remove") + "Event")(document, "keydown", handleKey);
+    if (on) {
+        addEvent(document, "keydown", handleKey);
+    } else {
+        removeEvent(document, "keydown", handleKey);
+    }
 }
 
 /**

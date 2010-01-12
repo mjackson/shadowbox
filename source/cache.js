@@ -11,12 +11,20 @@ var relAttr = /^(light|shadow)box/i,
 expando = "shadowboxCacheKey";
 
 /**
+ * A unique id counter.
+ *
+ * @type    {Number}
+ * @private
+ */
+cacheGuid = 1,
+
+/**
  * Contains all link objects that have been cached.
  *
- * @type    {Array}
+ * @type    {Object}
  * @public
  */
-S.cache = [];
+S.cache = {};
 
 /**
  * Resolves a link selector. The selector may be omitted to select all anchor elements
@@ -32,8 +40,8 @@ S.select = function(selector) {
 
     if (!selector) {
         var rel, links = [];
-        each(document.getElementsByTagName('a'), function(i, el) {
-            rel = el.getAttribute('rel');
+        each(document.getElementsByTagName("a"), function(i, el) {
+            rel = el.getAttribute("rel");
             if (rel && relAttr.test(rel))
                 links.push(el);
         });
@@ -95,17 +103,17 @@ S.teardown = function(selector) {
  * @public
  */
 S.addCache = function(link, options) {
-    var cacheKey = link[expando];
+    var key = link[expando];
 
-    if (typeof cacheKey != "number") {
-        cacheKey = S.cache.length;
+    if (!key) {
+        key = cacheGuid++;
         // assign cache key expando, use integer primitive to avoid memory leak in IE
-        link[expando] = cacheKey;
+        link[expando] = key;
         // add onclick listener
         addEvent(link, "click", handleClick);
     }
 
-    S.cache[cacheKey] = S.buildObject(link, options);
+    S.cache[key] = S.buildObject(link, options);
 }
 
 /**
@@ -116,7 +124,7 @@ S.addCache = function(link, options) {
  */
 S.removeCache = function(link) {
     removeEvent(link, "click", handleClick);
-    S.cache[link[expando]] = null;
+    delete S.cache[link[expando]];
     link[expando] = null;
     delete link[expando];
 }
@@ -129,8 +137,8 @@ S.removeCache = function(link) {
  * @public
  */
 S.getCache = function(link) {
-    var cacheKey = link[expando];
-    return (cacheKey in S.cache && S.cache[cacheKey]);
+    var key = link[expando];
+    return (key in S.cache && S.cache[key]);
 }
 
 /**
@@ -140,11 +148,10 @@ S.getCache = function(link) {
  * @public
  */
 S.clearCache = function() {
-    each(S.cache, function(i, obj) {
-        S.removeCache(obj.link);
-    });
+    for (var key in S.cache)
+        S.removeCache(S.cache[key].link);
 
-    S.cache = [];
+    S.cache = {};
 }
 
 /**
