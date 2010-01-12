@@ -1,4 +1,5 @@
 *.swp
 .DS_Store
-pkg
 build
+examples/build
+tools/build

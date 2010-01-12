@@ -1,9 +1,9 @@
 require 'yaml'
 require 'tools/shadowbox'
 
-$CONFIG = ENV['CONFIG'] || "build.yml"
+$CONFIG = ENV['CONFIG'] || File.dirname(__FILE__) + "/build.yml"
 unless File.exist?($CONFIG)
-  puts "Cannot find configuration file #{$CONFIG}"
+  puts "Cannot find build configuration file #{$CONFIG}"
   exit
 end
 
