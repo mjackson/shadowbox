@@ -1,0 +1,19 @@
+---
+
+# May be the name of any adapter in source/adapters
+adapter: base
+
+# May be any language code in source/languages
+language: en
+
+# An array of names of players found in source/players
+players: [flv, html, iframe, img, qt, swf, wmp]
+
+# YES to include support for CSS selectors (via Sizzle.js), NO to decline
+css_support: YES
+
+# YES to compress the code, NO to use the source code
+compress: NO
+
+# The directory to output the build to
+target: examples/build
