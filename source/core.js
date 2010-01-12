@@ -467,10 +467,10 @@ S.load = function() {
 
     loaded = true;
 
-    S.skin.init();
-
     if (!S.options.skipSetup)
         S.setup();
+
+    S.skin.init();
 }
 
 S.open = function(obj) {

@@ -8,7 +8,7 @@ var relAttr = /^(light|shadow)box/i,
  * @type    {String}
  * @private
  */
-expando = "shadowboxCacheKey";
+expando = "shadowboxCacheKey",
 
 /**
  * A unique id counter.
@@ -16,7 +16,7 @@ expando = "shadowboxCacheKey";
  * @type    {Number}
  * @private
  */
-cacheGuid = 1,
+cacheKey = 1;
 
 /**
  * Contains all link objects that have been cached.
@@ -105,8 +105,8 @@ S.teardown = function(selector) {
 S.addCache = function(link, options) {
     var key = link[expando];
 
-    if (!key) {
-        key = cacheGuid++;
+    if (key == undefined) {
+        key = cacheKey++;
         // assign cache key expando, use integer primitive to avoid memory leak in IE
         link[expando] = key;
         // add onclick listener
