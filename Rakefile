@@ -33,6 +33,10 @@ end
 
 task :default => [:build]
 
+task :make_target do
+  mkdir_p PARAMS["target"]
+end
+
 desc "Create a custom build based on settings in #{CONFIG}"
 task :build => :make_target do
   files = []
@@ -78,11 +82,15 @@ task :build => :make_target do
   end
 end
 
-desc "Clean up the build target directory"
+desc "Clean up all temporary files"
 task :clean do
-  rm_rf PARAMS["target"]
+  files = [ PARAMS['target'], 'tests/build' ]
+  files.each do |file|
+    rm_rf file if File.exist?(file)
+  end
 end
 
-task :make_target do
-  mkdir_p PARAMS["target"]
+task :test do
+  PARAMS = YAML.load_file('tests/build.yml')
+  Rake::Task[:build].invoke
 end
