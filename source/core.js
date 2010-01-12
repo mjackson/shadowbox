@@ -469,7 +469,7 @@ S.load = function() {
 
     S.skin.init();
 
-    if (!S.options.skipSetup && S.setup)
+    if (!S.options.skipSetup)
         S.setup();
 }
 
@@ -477,12 +477,9 @@ S.open = function(obj) {
     if (active)
         return;
 
-    if (obj.tagName) {
-        if (!S.cache || !(obj = S.getCache(obj))) {
-            // non-cached link, build an object on the fly
-            obj = S.buildObject(obj);
-        }
-    }
+    // non-cached link, build an object on the fly
+    if (obj.tagName && !(obj = S.getCache(obj)))
+        obj = S.buildObject(obj);
 
     if (obj.push) {
         // obj is a gallery of objects
@@ -494,15 +491,13 @@ S.open = function(obj) {
             S.gallery = [];
             S.current = null;
 
-            if (S.cache) {
-                var o;
-                for (var key in S.cache) {
-                    o = S.cache[key];
-                    if (o.gallery && o.gallery == obj.gallery) {
-                        if (S.current == null && o.content == obj.content)
-                            S.current = S.gallery.length;
-                        S.gallery.push(o);
-                    }
+            var o;
+            for (var key in S.cache) {
+                o = S.cache[key];
+                if (o.gallery && o.gallery == obj.gallery) {
+                    if (S.current == null && o.content == obj.content)
+                        S.current = S.gallery.length;
+                    S.gallery.push(o);
                 }
             }
 
