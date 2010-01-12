@@ -1,5 +1,5 @@
 require 'yaml'
-require 'tools/shadowbox'
+require File.dirname(__FILE__) + '/tools/shadowbox'
 
 $CONFIG = ENV['CONFIG'] || File.dirname(__FILE__) + "/build.yml"
 unless File.exist?($CONFIG)
