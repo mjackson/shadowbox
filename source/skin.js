@@ -220,18 +220,18 @@ K.init = function(){
     }
 
     // set up window resize event handler
-    var timeoutId;
+    var timer;
     addEvent(window, "resize", function() {
         // use 50 ms event buffering to prevent jerky window resizing
-        if (timeoutId) {
-            clearTimeout(timeoutId);
-            timeoutId = null;
+        if (timer) {
+            clearTimeout(timer);
+            timer = null;
         }
 
         // check if activated because IE7 fires window resize event
         // when container display is set to block
         if (open) {
-            timeoutId = setTimeout(function() {
+            timer = setTimeout(function() {
                 K.onWindowResize();
                 if (S.player.onWindowResize)
                     S.player.onWindowResize();

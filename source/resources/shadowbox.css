@@ -1,11 +1,8 @@
 /**
- * The default CSS for Shadowbox.
+ * Styles for the Shadowbox JavaScript library.
  */
 
 /*_____________________________________________  container, overlay, & wrapper  */
-#sb-container, #sb-wrapper {
-  text-align: left; /* reset left alignment */
-}
 #sb-container, #sb-overlay {
   position: absolute;
   top: 0;
@@ -19,6 +16,7 @@
   display: none;
   visibility: hidden;
   z-index: 999;
+  text-align: left;
 }
 body > #sb-container {
   /* use position:fixed in modern browsers */
@@ -32,8 +30,6 @@ body > #sb-container {
   /* use for sb-container position:fixed */
   height: 100%;
 }
-
-/*_________________________________________________________________  wrapper  */
 #sb-wrapper {
   position: relative;
 }
