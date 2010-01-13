@@ -20,7 +20,7 @@ visibilityCache = [],
  * @var     Array
  * @private
  */
-png = [
+pngIds = [
     'sb-nav-close',
     'sb-nav-next',
     'sb-nav-play',
@@ -196,7 +196,7 @@ K.options = {
  *
  * @public
  */
-K.init = function(){
+K.init = function() {
     appendHTML(document.body, sprintf(K.markup, S.lang));
 
     // several fixes for IE6
@@ -206,7 +206,7 @@ K.init = function(){
 
         // support transparent PNG's via AlphaImageLoader
         var el, m, re = /url\("(.*\.png)"\)/;
-        each(pngIds, function(i, id){
+        each(pngIds, function(i, id) {
             el = get(id);
             if (el) {
                 m = getStyle(el, "backgroundImage").match(re);
@@ -743,13 +743,13 @@ function adjustWidth(width, left, anim, callback) {
  * @private
  */
 function setDimensions(height, width, resizable){
-    var sbi = get("sb-body-inner")
-        sw = get("sb-wrapper"),
-        so = get("sb-overlay"),
-        tb = sw.offsetHeight - sbi.offsetHeight,
-        lr = sw.offsetWidth - sbi.offsetWidth,
-        maxHeight = so.offsetHeight, // measure overlay to get viewport size for IE6
-        maxWidth = so.offsetWidth;
+    var bodyInner = get("sb-body-inner")
+        wrapper = get("sb-wrapper"),
+        overlay = get("sb-overlay"),
+        tb = wrapper.offsetHeight - bodyInner.offsetHeight,
+        lr = wrapper.offsetWidth - bodyInner.offsetWidth,
+        maxHeight = overlay.offsetHeight, // measure overlay to get viewport size for IE6
+        maxWidth = overlay.offsetWidth;
 
     S.setDimensions(height, width, maxHeight, maxWidth, tb, lr, resizable);
 
