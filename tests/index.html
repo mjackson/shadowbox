@@ -14,7 +14,7 @@
 <link rel="stylesheet" type="text/css" href="build/shadowbox.css">
 <script type="text/javascript" src="build/shadowbox.js"></script>
 <script type="text/javascript">
-Shadowbox.init();
+Shadowbox.init({ skipSetup: true });
 </script>
 
 <!-- include tests -->
@@ -31,10 +31,9 @@ Shadowbox.init();
 
 <div id="main" style="display:none;">
     <a id="anchor0">Expand Me</a>
-    <a id="anchor1" rel="shadowbox" href="files/snow_leopard.jpg" title="Snow Leopard">Click Here</a>
+    <a id="anchor1" rel="shadowbox;options={animate:false,animSequence:'hw'}" href="files/snow_leopard.jpg" title="Snow Leopard">Click Here</a>
     <a id="anchor2" href="files/snow_leopard.jpg">Click Here</a>
 </div>
 
 </body>
 </html>
-
