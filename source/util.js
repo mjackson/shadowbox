@@ -108,7 +108,9 @@ function sprintf(str, replace) {
  */
 function animate(el, property, to, duration, callback) {
     var opacity = (property == "opacity");
-    var set = (opacity ? setOpacity : function(el, to) { el.style[property] = to });
+
+    // default unit is px for properties other than opacity
+    var set = opacity ? setOpacity : function(el, to) { el.style[property] = to + 'px' };
 
     if (duration == 0 || (!opacity && !S.options.animate) || (opacity && !S.options.animateFade)) {
         set(el, to);
