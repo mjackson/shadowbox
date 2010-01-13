@@ -26,7 +26,7 @@ if (navigator.plugins && navigator.plugins.length) {
         qt:     names.indexOf('QuickTime') > -1,
         wmp:    !f4m && names.indexOf('Windows Media') > -1, // if it's Flip4Mac, it's not really WMP
         f4m:    f4m
-    }
+    };
 } else {
     var detectPlugin = function(name) {
         var axo;
@@ -41,5 +41,5 @@ if (navigator.plugins && navigator.plugins.length) {
         qt:     detectPlugin('QuickTime.QuickTime'),
         wmp:    detectPlugin('wmplayer.ocx'),
         f4m:    false
-    }
+    };
 }

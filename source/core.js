@@ -38,7 +38,6 @@ S.isWebKit = ua.indexOf('applewebkit/') > -1;
 var domainPrefix = /:\/\/(.*?)[:\/]/,
     inlineId = /#(.+)$/,
     galleryName = /^(light|shadow)box\[(.*?)\]/i,
-    unsupportedType = /^unsupported-(\w+)/,
     inlineParam = /\s*([a-z_]*?)\s*=\s*(.+)\s*/,
     fileExtension = /[0-9a-z]+$/i,
     scriptPath = /(.+\/)shadowbox\.js/i;
@@ -798,14 +797,13 @@ S.buildObject = function(link, options) {
  * @public
  */
 S.getPlayer = function(content) {
-    var p = S.plugins,
-        m = content.match(domainPrefix);
+    var m = content.match(domainPrefix);
 
-    if (content.indexOf('#') > -1 && m && document.domain == m[1])
-        return 'inline';
+    if (content.indexOf("#") > -1 && m && document.domain == m[1])
+        return "inline";
 
     // strip query string for player detection purposes
-    var q = content.indexOf('?');
+    var q = content.indexOf("?");
     if (q > -1)
         content = content.substring(0, q);
 
@@ -816,20 +814,20 @@ S.getPlayer = function(content) {
 
     if (ext) {
         if (S.img && S.img.ext.indexOf(ext) > -1)
-            return 'img';
+            return "img";
         if (S.swf && S.swf.ext.indexOf(ext) > -1)
-            return p.fla ? 'swf' : 'unsupported-swf';
+            return "swf";
         if (S.flv && S.flv.ext.indexOf(ext) > -1)
-            return p.fla ? 'flv' : 'unsupported-flv';
-        if (S.qt && S.qt.ext.indexOf(ext) > -1)
-            return p.qt ? 'qt' : 'unsupported-qt';
-        if (S.wmp && S.wmp.ext.indexOf(ext) > -1) {
-            if (p.wmp)
-                return 'wmp';
-            if (p.f4m)
-                return 'f4m';
-            return 'unsupported-' + (S.isMac ? (p.qt ? 'f4m' : 'qtf4m') : 'wmp');
+            return "flv";
+        if (S.qt && S.qt.ext.indexOf(ext) > -1) {
+            if (S.wmp && S.wmp.ext.indexOf(ext) > -1) {
+                return "qtwmp"; // can be played by either QuickTime or Windows Media Player
+            } else {
+                return "qt";
+            }
         }
+        if (S.wmp && S.wmp.ext.indexOf(ext) > -1)
+            return "wmp";
     }
 
     return "iframe";
@@ -900,37 +898,67 @@ S.setDimensions = function(height, width, maxHeight, maxWidth, tb, lr, resizable
  * @private
  */
 function filterGallery() {
-    var errors = S.options.errors, obj, remove, m, format, replace, inlineEl, flashVersion;
+    var errors = S.options.errors, plugins = S.plugins, obj, remove, needed,
+        m, format, replace, inlineEl, flashVersion;
 
     for (var i = 0; i < S.gallery.length; ++i) {
         obj = S.gallery[i]
 
         remove = false; // remove the object?
+        needed = null; // what plugins are needed?
 
-        if (m = unsupportedType.exec(obj.player)) {
-            // handle unsupported elements
+        switch (obj.player) {
+        case "flv":
+        case "swf":
+            if (!plugins.fla)
+                needed = "fla";
+            break;
+        case "qt":
+            if (!plugins.qt)
+                needed = "qt";
+            break;
+        case "wmp":
+            if (S.isMac) {
+                if (plugins.qt && plugins.f4m) {
+                    obj.player = "qt";
+                } else {
+                    needed = "qtf4m";
+                }
+            } else if (!plugins.wmp) {
+                needed = "wmp";
+            }
+            break;
+        case "qtwmp":
+            if (plugins.qt) {
+                obj.player = "qt";
+            } else if (plugins.wmp) {
+                obj.player = "wmp";
+            } else {
+                needed = "qtwmp";
+            }
+            break;
+        }
+
+        // handle unsupported elements
+        if (needed) {
             if (S.options.handleUnsupported == "link") {
-                obj.player = "html";
-
                 // generate a link to the appropriate plugin download page(s)
-                switch (m[1]) {
-                case "qtwmp":
-                    format = "either";
-                    replace = [errors.qt.url, errors.qt.name, errors.wmp.url, errors.wmp.name];
-                    break;
+                switch (needed) {
                 case "qtf4m":
                     format = "shared";
                     replace = [errors.qt.url, errors.qt.name, errors.f4m.url, errors.f4m.name];
                     break;
+                case "qtwmp":
+                    format = "either";
+                    replace = [errors.qt.url, errors.qt.name, errors.wmp.url, errors.wmp.name];
+                    break;
                 default:
                     format = "single";
-                    if (m[1] == "swf" || m[1] == "flv")
-                        m[1] = "fla";
-                    replace = [errors[m[1]].url, errors[m[1]].name];
+                    replace = [errors[needed].url, errors[needed].name];
                 }
 
-                format = S.lang.errors[format];
-                obj.content = '<div class="sb-message">' + sprintf(format, replace) + '</div>';
+                obj.player = "html";
+                obj.content = '<div class="sb-message">' + sprintf(S.lang.errors[format], replace) + '</div>';
             } else {
                 remove = true;
             }
@@ -962,15 +990,12 @@ function filterGallery() {
         }
 
         if (remove) {
-            // remove from gallery
             S.gallery.splice(i, 1);
 
             if (i < S.current) {
-                // maintain integrity of S.current
-                --S.current;
+                --S.current; // maintain integrity of S.current
             } else if (i == S.current) {
-                // look for supported neighbor
-                S.current = i > 0 ? i - 1 : i;
+                S.current = i > 0 ? i - 1 : i; // look for supported neighbor
             }
 
             // decrement index for next loop
