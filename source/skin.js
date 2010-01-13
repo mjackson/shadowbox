@@ -230,7 +230,7 @@ K.init = function(){
 
         // check if activated because IE7 fires window resize event
         // when container display is set to block
-        if (active) {
+        if (open) {
             timeoutId = setTimeout(function() {
                 K.onWindowResize();
                 if (S.player.onWindowResize)
@@ -286,7 +286,7 @@ K.onLoad = function(change, callback) {
 
     // if changing, animate the bars transition
     hideBars(change, function() {
-        if (!active)
+        if (!open)
             return;
 
         // if opening, clear #sb-wrapper display
@@ -306,7 +306,7 @@ K.onLoad = function(change, callback) {
  * @public
  */
 K.onReady = function(callback) {
-    if (!active)
+    if (!open)
         return;
 
     var player = S.player,
@@ -364,7 +364,7 @@ K.onPause = function() {
  * @public
  */
 K.onWindowResize = function() {
-    if (!active)
+    if (!open)
         return;
 
     var player = S.player,
@@ -395,7 +395,7 @@ K.onWindowResize = function() {
  * @public
  */
 K.resizeContent = function(height, width, top, left, anim, callback) {
-    if (!active)
+    if (!open)
         return;
 
     var player = S.player,

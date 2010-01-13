@@ -44,12 +44,12 @@ var domainPrefix = /:\/\/(.*?)[:\/]/,
     scriptPath = /(.+\/)shadowbox\.js/i;
 
 /**
- * True if Shadowbox is currently active, false otherwise.
+ * True if Shadowbox is currently open, false otherwise.
  *
  * @type    {Boolean}
  * @private
  */
-var active = false,
+var open = false,
 
 /**
  * True if Shadowbox has been initialized, false otherwise.
@@ -107,6 +107,8 @@ slideTimer,
  */
 DOMContentLoaded;
 
+// The following code is adapted for Shadowbox from the jQuery JavaScript library.
+
 if (document.addEventListener) {
     DOMContentLoaded = function() {
         document.removeEventListener("DOMContentLoaded", DOMContentLoaded, false);
@@ -122,7 +124,7 @@ if (document.addEventListener) {
 }
 
 /**
- * A DOM ready check for IE. Adapted from the jQuery framework.
+ * A DOM ready check for IE.
  *
  * @private
  */
@@ -141,13 +143,12 @@ function doScrollCheck() {
 }
 
 /**
- * Waits for the DOM to be ready before firing the given callback
- * function. Adapted from the jQuery framework.
+ * Waits for the DOM to be ready before firing the given callback function.
  *
  * @param   {Function}  callback
  * @private
  */
-function bindReady() {
+function bindLoad() {
     if (document.readyState === "complete")
         return S.load();
 
@@ -406,31 +407,73 @@ S.options = {
 
 };
 
+/**
+ * Gets the object that is currently being displayed.
+ *
+ * @return  {Object}
+ * @public
+ */
 S.getCurrent = function() {
     return S.current > -1 ? S.gallery[S.current] : null;
 }
 
+/**
+ * Returns true if there is another object to display after the current.
+ *
+ * @return  {Boolean}
+ * @public
+ */
 S.hasNext = function() {
     return S.gallery.length > 1 && (S.current != S.gallery.length - 1 || S.options.continuous);
 }
 
-S.isActive = function() {
-    return active;
+/**
+ * Returns true if Shadowbox is currently open.
+ *
+ * @return  {Boolean}
+ * @public
+ */
+S.isOpen = function() {
+    return open;
 }
 
+/**
+ * Returns true if Shadowbox is currently paused.
+ *
+ * @return  {Boolean}
+ * @public
+ */
 S.isPaused = function() {
     return slideTimer == "pause";
 }
 
+/**
+ * Applies the given set of options to Shadowbox' options. May be undone with revertOptions().
+ *
+ * @param   {Object}    options
+ * @public
+ */
 S.applyOptions = function(options) {
     lastOptions = apply({}, S.options);
     apply(S.options, options);
 }
 
+/**
+ * Reverts to whatever the options were before applyOptions() was called.
+ *
+ * @public
+ */
 S.revertOptions = function() {
     apply(S.options, lastOptions);
 }
 
+/**
+ * Initializes the Shadowbox environment and sets up the load() handler. If options
+ * are given here, they will override the defaults.
+ *
+ * @param   {Object}    options
+ * @public
+ */
 S.init = function(options) {
     if (initialized)
         return;
@@ -455,9 +498,15 @@ S.init = function(options) {
         }
     }
 
-    bindReady();
+    bindLoad();
 }
 
+/**
+ * Loads the Shadowbox code into the DOM. Is called automatically when the document
+ * is ready.
+ *
+ * @public
+ */
 S.load = function() {
     if (loaded)
         return;
@@ -473,8 +522,15 @@ S.load = function() {
     S.skin.init();
 }
 
+/**
+ * Opens the given object in Shadowbox. This object should be either link element or
+ * an object similar to one produced by buildObject().
+ *
+ * @param   {mixed}     obj
+ * @public
+ */
 S.open = function(obj) {
-    if (active)
+    if (open)
         return;
 
     // non-cached link, build an object on the fly
@@ -531,17 +587,22 @@ S.open = function(obj) {
         if (S.options.onOpen && S.options.onOpen(obj) === false)
             return;
 
-        active = true;
+        open = true;
 
         S.skin.onOpen(obj, loadCurrent);
     }
 }
 
+/**
+ * Closes Shadowbox.
+ *
+ * @public
+ */
 S.close = function() {
-    if (!active)
+    if (!open)
         return;
 
-    active = false;
+    open = false;
 
     if (S.player) {
         S.player.remove();
@@ -563,6 +624,12 @@ S.close = function() {
     S.revertOptions();
 }
 
+/**
+ * Starts a slideshow when a gallery is being displayed. Is called automatically
+ * when the slideshowDelay option is set to anything other than 0.
+ *
+ * @public
+ */
 S.play = function() {
     if (!S.hasNext())
         return;
@@ -582,6 +649,11 @@ S.play = function() {
     }
 }
 
+/**
+ * Pauses a slideshow on the current object.
+ *
+ * @public
+ */
 S.pause = function() {
     if (typeof slideTimer != 'number')
         return;
@@ -598,6 +670,12 @@ S.pause = function() {
     }
 }
 
+/**
+ * Changes Shadowbox to display the item in the gallery specified by index.
+ *
+ * @param   {Number}    index
+ * @public
+ */
 S.change = function(index) {
     if (!(index in S.gallery)) {
         if (S.options.continuous) {
@@ -623,10 +701,20 @@ S.change = function(index) {
     loadCurrent();
 }
 
+/**
+ * Advances to the next item in the gallery.
+ *
+ * @public
+ */
 S.next = function() {
     S.change(S.current + 1);
 }
 
+/**
+ * Rewinds to the previous gallery item.
+ *
+ * @public
+ */
 S.previous = function() {
     S.change(S.current - 1);
 }
@@ -971,13 +1059,13 @@ function loadCurrent() {
     listenKeys(false);
 
     S.skin.onLoad(change, function() {
-        if (!active)
+        if (!open)
             return;
 
         if (typeof S.player.ready != "undefined") {
             // wait for content to be ready before loading
             var intervalId = setInterval(function() {
-                if (active) {
+                if (open) {
                     if (S.player.ready) {
                         clearInterval(intervalId);
                         intervalId = null;
@@ -1014,7 +1102,7 @@ function loadCurrent() {
  * @private
  */
 function contentReady() {
-    if (!active)
+    if (!open)
         return;
 
     S.player.append(S.skin.body(), S.dimensions);
@@ -1028,7 +1116,7 @@ function contentReady() {
  * @private
  */
 function finishContent() {
-    if (!active)
+    if (!open)
         return;
 
     if (S.player.onLoad)
