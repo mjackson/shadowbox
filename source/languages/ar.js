@@ -1,5 +1,5 @@
 /**
- * The Arabic language file for Shadowbox.
+ * The Arabic language translation for Shadowbox.
  */
 
 S.lang = {

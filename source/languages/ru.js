@@ -1,5 +1,5 @@
 /**
- * The Russian language file for Shadowbox.
+ * The Russian language translation for Shadowbox.
  */
 
 S.lang = {

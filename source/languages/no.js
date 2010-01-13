@@ -1,5 +1,5 @@
 /**
- * The Norwegian language file for Shadowbox.
+ * The Norwegian language translation for Shadowbox.
  */
 
 S.lang = {

@@ -1,5 +1,5 @@
 /**
- * The Burmese language file for Shadowbox.
+ * The Burmese language translation for Shadowbox.
  */
 
 S.lang = {

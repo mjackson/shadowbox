@@ -1,4 +1,8 @@
 /**
+ * The image player for Shadowbox.
+ */
+
+/**
  * Keeps track of 4 floating values (x, y, startx, & starty) that are used in the drag calculations.
  *
  * @type    {Object}

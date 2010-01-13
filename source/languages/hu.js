@@ -1,5 +1,5 @@
 /**
- * The Hungarian language file for Shadowbox.
+ * The Hungarian language translation for Shadowbox.
  */
 
 S.lang = {

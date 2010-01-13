@@ -1,5 +1,5 @@
 /**
- * The Brazilian Portuguese language file for Shadowbox.
+ * The Brazilian Portuguese language translation for Shadowbox.
  */
 
 S.lang = {

@@ -1,4 +1,8 @@
 /**
+ * The HTML player for Shadowbox.
+ */
+
+/**
  * Constructor. The HTML player class for Shadowbox.
  *
  * @constructor

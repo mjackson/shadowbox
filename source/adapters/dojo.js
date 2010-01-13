@@ -1,4 +1,8 @@
 /**
+ * The dojo adapter for Shadowbox.
+ */
+
+/**
  * A cache of event handles.
  *
  * @type    {Array}

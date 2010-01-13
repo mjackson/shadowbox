@@ -1,4 +1,8 @@
 /**
+ * The SWF player for Shadowbox.
+ */
+
+/**
  * Constructor. The SWF movie player class for Shadowbox.
  *
  * @constructor

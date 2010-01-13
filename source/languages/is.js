@@ -1,5 +1,5 @@
 /**
- * The Icelandic language file for Shadowbox.
+ * The Icelandic language translation for Shadowbox.
  */
 
 S.lang = {

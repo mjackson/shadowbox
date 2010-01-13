@@ -1,4 +1,8 @@
 /**
+ * The FLV player for Shadowbox.
+ */
+
+/**
  * The height (in pixels) of the JW FLV player controller.
  *
  * @type    {Number}

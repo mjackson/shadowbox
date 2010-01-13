@@ -1,4 +1,8 @@
 /**
+ * The WMP player for Shadowbox.
+ */
+
+/**
  * The height (in pixels) of the Windows Media Player controller.
  *
  * @type    {Number}

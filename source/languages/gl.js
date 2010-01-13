@@ -1,5 +1,5 @@
 /**
- * The Galician language file for Shadowbox.
+ * The Galician language translation for Shadowbox.
  */
 
 S.lang = {

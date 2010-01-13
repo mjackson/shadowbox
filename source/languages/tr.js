@@ -1,5 +1,5 @@
 /**
- * The Turkish language file for Shadowbox.
+ * The Turkish language translation for Shadowbox.
  */
 
 S.lang = {

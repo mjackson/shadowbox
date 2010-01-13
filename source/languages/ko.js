@@ -1,5 +1,5 @@
 /**
- * The Korean language file for Shadowbox.
+ * The Korean language translation for Shadowbox.
  */
 
 S.lang = {

@@ -1,5 +1,5 @@
 /**
- * The Japanese language file for Shadowbox.
+ * The Japanese language translation for Shadowbox.
  */
 
 S.lang = {

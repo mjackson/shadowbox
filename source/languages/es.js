@@ -1,5 +1,5 @@
 /**
- * The Spanish language file for Shadowbox.
+ * The Spanish language translation for Shadowbox.
  */
 
 S.lang = {

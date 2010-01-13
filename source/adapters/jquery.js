@@ -1,4 +1,8 @@
 /**
+ * The jQuery adapter for Shadowbox.
+ */
+
+/**
  * Gets the value of the style on the given element.
  *
  * @param   {HTMLElement}   el          The element

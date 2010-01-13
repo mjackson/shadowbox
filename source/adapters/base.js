@@ -1,3 +1,7 @@
+/**
+ * The base adapter for Shadowbox.
+ */
+
 var view = document.defaultView;
 
 /**

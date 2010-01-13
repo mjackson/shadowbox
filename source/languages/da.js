@@ -1,5 +1,5 @@
 /**
- * The Danish language file for Shadowbox.
+ * The Danish language translation for Shadowbox.
  */
 
 S.lang = {

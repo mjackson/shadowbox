@@ -1,5 +1,5 @@
 /**
- * The Romanian language file for Shadowbox.
+ * The Romanian language translation for Shadowbox.
  */
 
 S.lang = {

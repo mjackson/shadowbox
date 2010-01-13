@@ -1,5 +1,5 @@
 /**
- * The Hebrew language file for Shadowbox.
+ * The Hebrew language translation for Shadowbox.
  */
 
 S.lang = {

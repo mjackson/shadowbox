@@ -1,3 +1,7 @@
+/**
+ * The YUI adapter for Shadowbox.
+ */
+
 var E = YAHOO.util.Event,
     D = YAHOO.util.Dom;
 

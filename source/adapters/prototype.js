@@ -1,3 +1,7 @@
+/**
+ * The Prototype adapter for Shadowbox.
+ */
+
 var E = Event,
     L = Element;
 

@@ -1,4 +1,8 @@
 /**
+ * The iframe player for Shadowbox.
+ */
+
+/**
  * Constructor. The iframe player class for Shadowbox.
  *
  * @constructor

@@ -1,5 +1,5 @@
 /**
- * The Estonian language file for Shadowbox.
+ * The Estonian language translation for Shadowbox.
  */
 
 S.lang = {

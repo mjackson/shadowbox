@@ -1,4 +1,8 @@
 /**
+ * The QuickTime player for Shadowbox.
+ */
+
+/**
  * The height (in pixels) of the QuickTime controller.
  *
  * @type    {Number}

@@ -1,5 +1,5 @@
 /**
- * The Indonesian language file for Shadowbox.
+ * The Indonesian language translation for Shadowbox.
  */
 
 S.lang = {

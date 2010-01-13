@@ -1,5 +1,5 @@
 /**
- * The Chinese (Traditional) language file for Shadowbox.
+ * The Chinese (Traditional) language translation for Shadowbox.
  */
 
 S.lang = {

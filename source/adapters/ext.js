@@ -1,3 +1,7 @@
+/**
+ * The Ext adapter for Shadowbox.
+ */
+
 var E = Ext.lib.Event;
 
 /**
