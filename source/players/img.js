@@ -176,7 +176,7 @@ S.img = function(obj) {
     pre.src = obj.content;
 }
 
-S.img.ext = ["png", "jpg", "jpeg", "gif", "bmp"];
+S.img.ext = ["bmp", "gif", "jpg", "jpeg", "png"];
 
 S.img.prototype = {
 

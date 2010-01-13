@@ -26,7 +26,7 @@ S.wmp = function(obj) {
     this.width = obj.width ? parseInt(obj.width, 10) : 300;
 }
 
-S.wmp.ext = ["asf", "wm", "wmv", "avi", "mpg", "mpeg"];
+S.wmp.ext = ["asf", "avi", "mpg", "mpeg", "wm", "wmv"];
 
 S.wmp.prototype = {
 

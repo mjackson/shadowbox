@@ -35,8 +35,7 @@ S.isIE7 = ua.indexOf('msie 7') > -1;
 S.isGecko = ua.indexOf('gecko') > -1 && ua.indexOf('safari') == -1;
 S.isWebKit = ua.indexOf('applewebkit/') > -1;
 
-var domainPrefix = /:\/\/(.*?)[:\/]/,
-    inlineId = /#(.+)$/,
+var inlineId = /#(.+)$/,
     galleryName = /^(light|shadow)box\[(.*?)\]/i,
     inlineParam = /\s*([a-z_]*?)\s*=\s*(.+)\s*/,
     fileExtension = /[0-9a-z]+$/i,
@@ -797,9 +796,7 @@ S.buildObject = function(link, options) {
  * @public
  */
 S.getPlayer = function(content) {
-    var m = content.match(domainPrefix);
-
-    if (content.indexOf("#") > -1 && m && document.domain == m[1])
+    if (content.indexOf("#") > -1 && content.indexOf(document.location.href) == 0)
         return "inline";
 
     // strip query string for player detection purposes
