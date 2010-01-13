@@ -8,6 +8,7 @@ unless File.exist?($CONFIG)
 end
 
 $PARAMS = YAML.load_file($CONFIG)
+
 $PARAMS["target"] ||= "build"
 $PARAMS["adapter"] = Shadowbox.default_adapter unless $PARAMS["adapter"] && Shadowbox.valid_adapter?($PARAMS["adapter"])
 $PARAMS["language"] = Shadowbox.default_language unless $PARAMS["language"] && Shadowbox.valid_language?($PARAMS["language"])
