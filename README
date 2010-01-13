@@ -24,10 +24,24 @@ and run the following command from the project root directory:
 
     $ rake
 
-Note: If you want to build a compressed version of the code, you will also need Java
-installed. Of course, you can always use the web interface on the Shadowbox website
-(http://shadowbox-js.com/download.html) to build your own version of the code if you
-are unable to do it on your own.
+Note: If you want to build a compressed version of the code (which is the default), you
+will also need Java installed. You can always use the web interface on the Shadowbox website
+(http://shadowbox-js.com/download.html) to build your own version of the code if you are
+unable to do it on your own.
+
+How to Run Tests and Examples
+-----------------------------
+
+The Shadowbox test suite is written with QUnit (http://github.com/jquery/qunit). To run the
+tests, you first need to build the code using the `build:tests` Rake task.
+
+    $ rake build:tests
+
+Once you have built the code, open `tests/index.html` in your browser of choice. Likewise,
+to run any of the examples you first need to run the `build:examples` Rake task before
+opening the example HTML file in your browser.
+
+    $ rake build:examples
 
 How to Contribute
 -----------------
