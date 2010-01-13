@@ -126,7 +126,6 @@ S.removeCache = function(link) {
     removeEvent(link, "click", handleClick);
     delete S.cache[link[expando]];
     link[expando] = null;
-    delete link[expando];
 }
 
 /**

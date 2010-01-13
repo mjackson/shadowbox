@@ -36,17 +36,17 @@ test("Cache Object", function() {
     ok(cacheObj.options.animSequence === 'hw', "Inline string option is parsed correctly");
     var anchor2 = document.getElementById("anchor2");
     var cacheObj = Shadowbox.getCache(anchor2);
-    ok(cacheObj.title == null, "Cache object has empty title");
+    equal(cacheObj.title, "", "Cache object has empty title");
 });
 
 test("Automatic Teardown", function() {
     var anchor1 = document.getElementById("anchor1");
     Shadowbox.teardown();
-    ok(Shadowbox.getCache(anchor1) == false, "Object successfully removed from cache");
+    equal(Shadowbox.getCache(anchor1), false, "Object successfully removed from cache");
 });
 
 test("Manual Teardown", function() {
     var anchor2 = document.getElementById("anchor2");
     Shadowbox.teardown(anchor2);
-    ok(Shadowbox.getCache(anchor2) == false, "Object successfully removed from cache");
+    equal(Shadowbox.getCache(anchor2), false, "Object successfully removed from cache");
 });

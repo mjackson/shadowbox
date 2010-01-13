@@ -742,7 +742,7 @@ S.previous = function() {
 S.buildObject = function(link, options) {
     var obj = {
         link:       link,
-        title:      link.getAttribute("title"),
+        title:      link.getAttribute("title") || "",
         content:    link.href // don't use getAttribute here
     };
 
