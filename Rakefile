@@ -1,24 +1,10 @@
 require 'yaml'
 require File.dirname(__FILE__) + '/tools/shadowbox'
 
-$CONFIG = ENV['CONFIG'] || File.dirname(__FILE__) + "/build.yml"
-unless File.exist?($CONFIG)
-  puts "Cannot find build configuration file #{$CONFIG}"
-  exit
+def use_params(params_file)
+  fail "Unable to find configuration file #{params_file}" unless File.exist?(params_file)
+  $PARAMS = YAML.load_file(params_file)
 end
-
-$PARAMS = YAML.load_file($CONFIG)
-
-$PARAMS["target"] ||= "build"
-$PARAMS["adapter"] = Shadowbox.default_adapter unless $PARAMS["adapter"] && Shadowbox.valid_adapter?($PARAMS["adapter"])
-$PARAMS["language"] = Shadowbox.default_language unless $PARAMS["language"] && Shadowbox.valid_language?($PARAMS["language"])
-if $PARAMS["players"]
-  $PARAMS["players"] = $PARAMS["players"].select {|player| Shadowbox.valid_player?(player) }
-else
-  $PARAMS["players"] = Shadowbox.default_players
-end
-$PARAMS["css_support"] = true unless $PARAMS.has_key?("css_support")
-$PARAMS["compress"] = true unless $PARAMS.has_key?("compress")
 
 def version
   Shadowbox.current_version
@@ -32,14 +18,36 @@ def build(*args)
   File.join($PARAMS["target"], *args)
 end
 
-task :default => [:build]
-
-task :make_target do
-  mkdir_p $PARAMS["target"]
+# run the build task with params from the given file, then revert params
+def sub_build(params_file)
+  params = $PARAMS
+  use_params(params_file)
+  Rake::Task[:build].invoke
+  $PARAMS = params
 end
 
+$CONFIG = ENV['CONFIG'] || "build.yml"
+
+use_params($CONFIG)
+
+# set up default parameters
+$PARAMS["target"] ||= "build"
+$PARAMS["adapter"] = Shadowbox.default_adapter unless $PARAMS["adapter"] && Shadowbox.valid_adapter?($PARAMS["adapter"])
+$PARAMS["language"] = Shadowbox.default_language unless $PARAMS["language"] && Shadowbox.valid_language?($PARAMS["language"])
+if $PARAMS["players"]
+  $PARAMS["players"] = $PARAMS["players"].select {|player| Shadowbox.valid_player?(player) }
+else
+  $PARAMS["players"] = Shadowbox.default_players
+end
+$PARAMS["css_support"] = true unless $PARAMS.has_key?("css_support")
+$PARAMS["compress"] = true unless $PARAMS.has_key?("compress")
+
+task :default => [:build]
+
 desc "Create a custom build based on settings in #{$CONFIG}"
-task :build => :make_target do
+task :build do |t|
+  mkdir_p $PARAMS["target"]
+
   files = []
   files << "intro"
   files << "util"
@@ -81,19 +89,20 @@ task :build => :make_target do
     css = build('shadowbox.css')
     Shadowbox.compress(css, css)
   end
+
+  # this task may be run several times in one invocation
+  Rake::Task[t.name].reenable
 end
 
 namespace :build do
   desc "Create a build for running the examples"
   task :examples do
-    $PARAMS = YAML.load_file(File.dirname(__FILE__) + '/examples/build.yml')
-    Rake::Task[:build].invoke
+    sub_build(File.dirname(__FILE__) + '/examples/build.yml')
   end
 
   desc "Create a build for running the tests"
   task :tests do
-    $PARAMS = YAML.load_file(File.dirname(__FILE__) + '/tests/build.yml')
-    Rake::Task[:build].invoke
+    sub_build(File.dirname(__FILE__) + '/tests/build.yml')
   end
 end
 
