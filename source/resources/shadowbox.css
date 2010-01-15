@@ -1,37 +1,26 @@
 /**
- * CSS styles for the Shadowbox JavaScript library.
+ * CSS styles for Shadowbox.
  */
 
 /*_____________________________________________  container, overlay, & wrapper  */
-#sb-container, #sb-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
+#sb-container {
+  position: fixed;
   margin: 0;
   padding: 0;
-}
-#sb-container {
-  height: 100%;
-  display: none;
-  visibility: hidden;
+  top: 0;
+  left: 0;
   z-index: 999;
   text-align: left;
-}
-body > #sb-container {
-  /* use position:fixed in modern browsers */
-  position: fixed;
+  visibility: hidden;
 }
 #sb-overlay {
-  /* needed in IE6 where sb-container uses position:absolute */
-  height: expression(document.documentElement.clientHeight + 'px');
-}
-#sb-container > #sb-overlay {
-  /* use for sb-container position:fixed */
+  position: relative;
   height: 100%;
+  width: 100%;
 }
 #sb-wrapper {
-  position: relative;
+  position: absolute;
+  visibility: hidden;
 }
 #sb-wrapper img {
   border: none;

@@ -26,17 +26,6 @@ function now() {
 }
 
 /**
- * Gets the element with the given id.
- *
- * @param   {String}        id
- * @return  {HTMLElement}
- * @private
- */
-function get(id) {
-    return document.getElementById(id);
-}
-
-/**
  * Applies all properties of extension to original.
  *
  * @param   {Object}    original
@@ -64,17 +53,6 @@ function each(obj, callback) {
 }
 
 /**
- * Removes all children from the given element.
- *
- * @param   {HTMLElement}   el
- * @private
- */
-function empty(el) {
-    while (el.firstChild)
-        el.removeChild(el.firstChild);
-}
-
-/**
  * Formats a string with the elements in the replacement array. The string should contain
  * tokens in the format {n} where n corresponds to the index of property name of the replacement
  * in the replace object.
@@ -96,91 +74,19 @@ function sprintf(str, replace) {
 }
 
 /**
- * Animates the given property of el to the given value over a specified duration. If a
- * callback is provided, it will be called when the animation is finished.
+ * Gets the element with the given id.
  *
- * @param   {HTMLElement}   el
- * @param   {String}        property
- * @param   {mixed}         to
- * @param   {Number}        duration
- * @param   {Function}      callback
+ * @param   {String}        id
+ * @return  {HTMLElement}
  * @private
  */
-function animate(el, property, to, duration, callback) {
-    var opacity = (property == "opacity");
-
-    // default unit is px for properties other than opacity
-    var set = opacity ? setOpacity : function(el, to) { el.style[property] = to + 'px' };
-
-    if (duration == 0 || (!opacity && !S.options.animate) || (opacity && !S.options.animateFade)) {
-        set(el, to);
-        if (callback)
-            callback();
-        return;
-    }
-
-    var from = parseFloat(getStyle(el, property));
-
-    if (isNaN(from))
-        from = 0;
-
-    var delta = to - from;
-    if (delta == 0) {
-        if (callback)
-            callback();
-        return; // nothing to animate
-    }
-
-    duration *= 1000; // convert to milliseconds
-
-    var begin = now(),
-        ease = S.ease,
-        end = begin + duration,
-        time;
-
-    var interval = setInterval(function() {
-        time = now();
-        if (time >= end) {
-            clearInterval(interval);
-            interval = null;
-            set(el, to);
-            if (callback)
-                callback();
-        } else
-            set(el, from + ease((time - begin) / duration) * delta);
-    }, 10); // 10 ms interval is minimum on WebKit
+function get(id) {
+    return document.getElementById(id);
 }
 
 /**
- * Sets an element's opacity.
+ * A no-op function.
  *
- * @param   {HTMLElement}   el
- * @param   {Number}        opacity
  * @private
  */
-function setOpacity(el, opacity) {
-    var style = el.style;
-
-    if (window.ActiveXObject) {
-        style.zoom = 1; // trigger hasLayout
-        if (opacity == 1) {
-            if (typeof style.filter == "string" && (/alpha/i).test(style.filter))
-                style.filter = style.filter.replace(/\s*[\w\.]*alpha\([^\)]*\);?/gi, "");
-        } else {
-            style.filter = (style.filter || "").replace(/\s*[\w\.]*alpha\([^\)]*\)/gi, "") +
-                " alpha(opacity=" + (opacity * 100) + ")";
-        }
-    } else {
-        style.opacity = (opacity == 1 ? '' : opacity);
-    }
-}
-
-/**
- * Clears the opacity setting on the given element. Needed for some cases in IE.
- *
- * @param   {HTMLElement}   el
- * @private
- */
-function clearOpacity(el) {
-    setOpacity(el, 1);
-}
+function noop() {}

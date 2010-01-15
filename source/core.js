@@ -66,7 +66,8 @@ initialized = false,
 loaded = false,
 
 /**
- * The previous set of options that were used before applyOptions was called.
+ * The previous set of options that were used before Shadowbox.applyOptions was
+ * called.
  *
  * @type    {Object}
  * @private
@@ -271,8 +272,7 @@ S.options = {
     enableKeys: true,
 
     /**
-     * An object containing names of plugins and links to their respective
-     * download pages.
+     * An object containing names of plugins and links to their respective download pages.
      *
      * @type    {Object}
      */
@@ -345,33 +345,33 @@ S.options = {
      * A hook function to be fired when changing from one gallery item to the
      * next. Is passed the item that is about to be displayed as its only argument.
      *
-     * @type    {?Function}
+     * @type    {Function}
      */
-    onChange: null,
+    onChange: noop,
 
     /**
      * A hook function to be fired when closing. Is passed the most recent item
      * as its only argument.
      *
-     * @type    {?Function}
+     * @type    {Function}
      */
-    onClose: null,
+    onClose: noop,
 
     /**
      * A hook funciton to be fires when content is finished loading. Is passed the
      * current gallery item as its only argument.
      *
-     * @type    {?Function}
+     * @type    {Function}
      */
-    onFinish: null,
+    onFinish: noop,
 
     /**
      * A hook function to be fired when opening. Is passed the current gallery item
      * as its only argument.
      *
-     * @type    {?Function}
+     * @type    {Function}
      */
-    onOpen: null,
+    onOpen: noop,
 
     /**
      * True to enable movie controls on movie players.
@@ -466,8 +466,8 @@ S.revertOptions = function() {
 }
 
 /**
- * Initializes the Shadowbox environment and sets up the load() handler. If options
- * are given here, they will override the defaults.
+ * Initializes the Shadowbox environment. If options are given here, they
+ * will override the defaults.
  *
  * @param   {Object}    options
  * @public
@@ -522,7 +522,7 @@ S.load = function() {
 
 /**
  * Opens the given object in Shadowbox. This object should be either link element or
- * an object similar to one produced by buildObject().
+ * an object similar to one produced by Shadowbox.buildObject.
  *
  * @param   {mixed}     obj
  * @public
@@ -582,12 +582,12 @@ S.open = function(obj) {
 
     // anything left to display?
     if (S.gallery.length) {
-        if (S.options.onOpen && S.options.onOpen(obj) === false)
+        if (S.options.onOpen(obj) === false)
             return;
 
         open = true;
 
-        S.skin.onOpen(obj, loadCurrent);
+        S.skin.onOpen(obj, load);
     }
 }
 
@@ -607,15 +607,13 @@ S.close = function() {
         S.player = null;
     }
 
-    // clear slideshow variables
     if (typeof slideTimer == "number") {
         clearTimeout(slideTimer);
         slideTimer = null;
     }
     slideDelay = 0;
 
-    if (S.options.onClose)
-        S.options.onClose(S.getCurrent());
+    S.options.onClose(S.getCurrent());
 
     S.skin.onClose();
 
@@ -653,7 +651,7 @@ S.play = function() {
  * @public
  */
 S.pause = function() {
-    if (typeof slideTimer != 'number')
+    if (typeof slideTimer != "number")
         return;
 
     slideDelay = Math.max(0, slideDelay - (now() - slideStart));
@@ -693,10 +691,9 @@ S.change = function(index) {
         slideDelay = slideStart = 0;
     }
 
-    if (S.options.onChange)
-        S.options.onChange(S.getCurrent());
+    S.options.onChange(S.getCurrent());
 
-    loadCurrent();
+    load(true);
 }
 
 /**
@@ -845,16 +842,15 @@ S.getPlayer = function(content) {
  * @param   {Boolean}   resizable   True if the content is able to be resized. Defaults to false
  * @public
  */
-S.setDimensions = function(height, width, maxHeight, maxWidth, tb, lr, resizable) {
-    var h = height = parseInt(height),
-        w = width = parseInt(width),
-        pad = parseInt(S.options.viewportPadding) || 0;
+S.setDimensions = function(height, width, maxHeight, maxWidth, tb, lr, padding, resizable) {
+    var h = height,
+        w = width;
 
     // calculate the max height/width
-    var extraHeight = 2 * pad + tb;
+    var extraHeight = 2 * padding + tb;
     if (h + extraHeight >= maxHeight)
         h = maxHeight - extraHeight;
-    var extraWidth = 2 * pad + lr;
+    var extraWidth = 2 * padding + lr;
     if (w + extraWidth >= maxWidth)
         w = maxWidth - extraWidth;
 
@@ -881,8 +877,8 @@ S.setDimensions = function(height, width, maxHeight, maxWidth, tb, lr, resizable
         width:          w + lr,
         innerHeight:    h,
         innerWidth:     w,
-        top:            (maxHeight - (h + extraHeight)) / 2 + pad,
-        left:           (maxWidth - (w + extraWidth)) / 2 + pad,
+        top:            (maxHeight - (h + extraHeight)) / 2 + padding,
+        left:           (maxWidth - (w + extraWidth)) / 2 + padding,
         oversized:      oversized,
         resizeHeight:   resizeHeight,
         resizeWidth:    resizeWidth
@@ -1051,57 +1047,29 @@ function handleKey(e) {
 }
 
 /**
- * Loads the Shadowbox with the current piece.
+ * Loads the current object.
  *
+ * @param   {Boolean}   True if changing from a previous object
  * @private
  */
-function loadCurrent() {
+function load(changing) {
+    listenKeys(false);
+
     var obj = S.getCurrent();
 
     // determine player, inline is really just html
     var player = (obj.player == "inline" ? "html" : obj.player);
 
     if (typeof S[player] != "function")
-        throw 'Unknown player ' + player;
+        throw "unknown player " + player;
 
-    var change = !!S.player;
-    if (change) {
+    if (changing) {
         S.player.remove();
         S.revertOptions();
-        if (obj.options)
-            S.applyOptions(obj.options);
+        S.applyOptions(obj.options);
     }
 
-    // make sure the body element doesn't have any children, just in case
-    empty(S.skin.body());
-
     S.player = new S[player](obj);
-
-    // disable the keyboard while content is loading
-    listenKeys(false);
-
-    S.skin.onLoad(change, function() {
-        if (!open)
-            return;
-
-        if (typeof S.player.ready != "undefined") {
-            // wait for content to be ready before loading
-            var intervalId = setInterval(function() {
-                if (open) {
-                    if (S.player.ready) {
-                        clearInterval(intervalId);
-                        intervalId = null;
-                        S.skin.onReady(contentReady);
-                    }
-                } else {
-                    clearInterval(intervalId);
-                    intervalId = null;
-                }
-            }, 10);
-        } else {
-            S.skin.onReady(contentReady);
-        }
-    });
 
     // preload neighboring gallery images
     if (S.gallery.length > 1) {
@@ -1116,39 +1084,68 @@ function loadCurrent() {
             b.src = prev.content;
         }
     }
+
+    S.skin.onLoad(changing, waitReady);
 }
 
 /**
- * Callback that should be called when the content is ready to be loaded.
+ * Waits until the current object is ready to be displayed.
  *
  * @private
  */
-function contentReady() {
+function waitReady() {
     if (!open)
         return;
 
-    S.player.append(S.skin.body(), S.dimensions);
-
-    S.skin.onFinish(finishContent);
+    if (typeof S.player.ready != "undefined") {
+        // wait for content to be ready before loading
+        var timer = setInterval(function() {
+            if (open) {
+                if (S.player.ready) {
+                    clearInterval(timer);
+                    timer = null;
+                    S.skin.onReady(show);
+                }
+            } else {
+                clearInterval(timer);
+                timer = null;
+            }
+        }, 10);
+    } else {
+        S.skin.onReady(show);
+    }
 }
 
 /**
- * Callback that should be called when the content is finished loading.
+ * Displays the current object.
  *
  * @private
  */
-function finishContent() {
+function show() {
+    if (!open)
+        return;
+
+    S.player.append(S.skin.body, S.dimensions);
+
+    S.skin.onShow(finish);
+}
+
+/**
+ * Finishes up any remaining tasks after the object is displayed.
+ *
+ * @private
+ */
+function finish() {
     if (!open)
         return;
 
     if (S.player.onLoad)
         S.player.onLoad();
 
-    if (S.options.onFinish)
-        S.options.onFinish(S.getCurrent());
+    S.options.onFinish(S.getCurrent());
 
     if (!S.isPaused())
         S.play(); // kick off next slide
 
-    listenKeys(true); // re-enable keyboard when finished
+    listenKeys(true);
 }

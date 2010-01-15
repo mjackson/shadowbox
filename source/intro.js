@@ -1,5 +1,5 @@
 /*!
- * Shadowbox JavaScript library, version @VERSION
+ * Shadowbox.js, version @VERSION
  * http://shadowbox-js.com/
  *
  * Copyright 2007-2010, Michael J. I. Jackson
