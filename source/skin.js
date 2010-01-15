@@ -168,9 +168,10 @@ function toggleTroubleElements(on) {
  * @private
  */
 function setSize() {
-    var container = get("sb-container");
-    container.style.height = getWindowSize("Height") + "px";
-    container.style.width = getWindowSize("Width") + "px";
+    apply(K.container.style, {
+        height: getWindowSize("Height") + "px",
+        width: getWindowSize("Width") + "px"
+    });
 }
 
 /**
@@ -180,9 +181,10 @@ function setSize() {
  * @private
  */
 function setPosition() {
-    var container = get("sb-container");
-    container.style.top = document.documentElement.scrollTop + "px";
-    container.style.left = document.documentElement.scrollLeft + "px";
+    apply(K.container.style, {
+        top: document.documentElement.scrollTop + "px",
+        left: document.documentElement.scrollLeft + "px"
+    });
 }
 
 /**
@@ -619,6 +621,7 @@ K.init = function() {
     appendHTML(document.body, sprintf(K.markup, S.lang));
 
     K.body = get("sb-body-inner");
+    K.container = get("sb-container");
 
     // use absolute positioning in browsers that don't support fixed
     if (!supportsFixed)
@@ -626,9 +629,6 @@ K.init = function() {
 
     // several fixes for IE6
     if (S.isIE6) {
-        // trigger hasLayout on sb-body
-        get("sb-body").style.zoom = 1;
-
         // support transparent PNG's via AlphaImageLoader
         var el, m, re = /url\("(.*\.png)"\)/;
         each(pngIds, function(i, id) {
@@ -837,8 +837,9 @@ K.onWindowResize = function() {
     var player = S.player,
         dims = setDimensions(player.height, player.width, player.resizable);
 
-    adjustHeight(dims.innerHeight, dims.top);
+    // adjust width first to eliminate horizontal scroll bar
     adjustWidth(dims.width, dims.left);
+    adjustHeight(dims.innerHeight, dims.top);
 
     var el = get(S.playerId);
     if (el) {
