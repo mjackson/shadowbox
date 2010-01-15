@@ -1,13 +1,13 @@
 module Shadowbox
-  @source_dir = File.expand_path(File.dirname(__FILE__) + '/../source')
+  @source_dir = File.join(File.dirname(__FILE__), '..', 'source')
 
   # get the current version of the code from the source
-  @current_version = File.open(@source_dir + '/core.js') do |f|
+  @current_version = File.open(File.join(@source_dir, 'core.js')) do |f|
     f.read.match(/version: ['"]([\w.]+)['"]/)[1]
   end
 
   %w{adapters languages players}.each do |dir|
-    available = Dir.glob(@source_dir + "/#{dir}/*.js").map do |file|
+    available = Dir.glob(File.join(@source_dir, dir, '*.js')).map do |file|
       File.basename(file, ".js")
     end
     instance_variable_set("@available_#{dir}".to_sym, available)
