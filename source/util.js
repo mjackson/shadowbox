@@ -74,6 +74,13 @@ function sprintf(str, replace) {
 }
 
 /**
+ * A no-op function.
+ *
+ * @private
+ */
+function noop() {}
+
+/**
  * Gets the element with the given id.
  *
  * @param   {String}        id
@@ -85,8 +92,11 @@ function get(id) {
 }
 
 /**
- * A no-op function.
+ * Removes an element from the DOM.
  *
+ * @param   {HTMLElement}   el          The element to remove
  * @private
  */
-function noop() {}
+function remove(el) {
+    el.parentNode.removeChild(el);
+}
