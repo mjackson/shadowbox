@@ -53,6 +53,7 @@ task :build do |t|
   files << "util"
   files << File.join("adapters", $PARAMS["adapter"])
   files << "core"
+  files << "load"
   files << "plugins"
   files << "cache"
   files << "find" if $PARAMS["css_support"]

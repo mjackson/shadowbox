@@ -58,14 +58,6 @@ var open = false,
 initialized = false,
 
 /**
- * True if Shadowbox has been loaded into the DOM, false otherwise.
- *
- * @type    {Boolean}
- * @private
- */
-loaded = false,
-
-/**
  * The previous set of options that were used before Shadowbox.applyOptions was
  * called.
  *
@@ -96,77 +88,7 @@ slideStart,
  * @type    {Number}
  * @private
  */
-slideTimer,
-
-/**
- * The callback function for the DOMContentLoaded browser event.
- *
- * @type    {Function}
- * @private
- */
-DOMContentLoaded;
-
-// The following code is adapted for Shadowbox from the jQuery JavaScript library.
-
-if (document.addEventListener) {
-    DOMContentLoaded = function() {
-        document.removeEventListener("DOMContentLoaded", DOMContentLoaded, false);
-        S.load();
-    }
-} else if (document.attachEvent) {
-    DOMContentLoaded = function() {
-        if (document.readyState === "complete") {
-            document.detachEvent("onreadystatechange", DOMContentLoaded);
-            S.load();
-        }
-    }
-}
-
-/**
- * A DOM ready check for IE.
- *
- * @private
- */
-function doScrollCheck() {
-    if (loaded)
-        return;
-
-    try {
-        document.documentElement.doScroll("left");
-    } catch (e) {
-        setTimeout(doScrollCheck, 1);
-        return;
-    }
-
-    S.load();
-}
-
-/**
- * Waits for the DOM to be ready before firing the given callback function.
- *
- * @param   {Function}  callback
- * @private
- */
-function bindLoad() {
-    if (document.readyState === "complete")
-        return S.load();
-
-    if (document.addEventListener) {
-        document.addEventListener("DOMContentLoaded", DOMContentLoaded, false);
-        window.addEventListener("load", S.load, false);
-    } else if (document.attachEvent) {
-        document.attachEvent("onreadystatechange", DOMContentLoaded);
-        window.attachEvent("onload", S.load);
-
-        var topLevel = false;
-        try {
-            topLevel = window.frameElement === null;
-        } catch (e) {}
-
-        if (document.documentElement.doScroll && topLevel)
-            doScrollCheck();
-    }
-}
+slideTimer;
 
 /**
  * The id to use for the Shadowbox player element.
@@ -500,27 +422,6 @@ S.init = function(options) {
 }
 
 /**
- * Loads the Shadowbox code into the DOM. Is called automatically when the document
- * is ready.
- *
- * @public
- */
-S.load = function() {
-    if (loaded)
-        return;
-
-    if (!document.body)
-        return setTimeout(S.load, 13);
-
-    loaded = true;
-
-    if (!S.options.skipSetup)
-        S.setup();
-
-    S.skin.init();
-}
-
-/**
  * Opens the given object in Shadowbox. This object should be either link element or
  * an object similar to one produced by Shadowbox.buildObject.
  *
@@ -828,61 +729,67 @@ S.getPlayer = function(content) {
 }
 
 /**
- * Calculates the dimensions for Shadowbox according to the given
- * parameters. Will determine if content is oversized (too large for the
- * viewport) and will automatically constrain resizable content
- * according to user preference.
+ * Calculates the dimensions for Shadowbox according to the given parameters. Will determine
+ * if the object is oversized (too large for the maxHeight/maxWidth) and will automatically
+ * constrain resizable objects according to user preference.
  *
- * @param   {Number}    height      The content height
- * @param   {Number}    width       The content width
- * @param   {Number}    maxHeight   The maximum height available (should be the height of the viewport)
- * @param   {Number}    maxWidth    The maximum width available (should be the width of the viewport)
- * @param   {Number}    tb          The extra top/bottom pixels that are required for borders/toolbars
- * @param   {Number}    lr          The extra left/right pixels that are required for borders/toolbars
- * @param   {Boolean}   resizable   True if the content is able to be resized. Defaults to false
+ * @param   {Number}    height      The height of the object
+ * @param   {Number}    width       The width of the object
+ * @param   {Number}    maxHeight   The maximum available height
+ * @param   {Number}    maxWidth    The maximum available width
+ * @param   {Number}    topBottom   The extra top/bottom required for borders/toolbars
+ * @param   {Number}    leftRight   The extra left/right required for borders/toolbars
+ * @param   {Boolean}   resizable   True if the content is able to be resized
+ * @return  {Object}                The new dimensions object
  * @public
  */
-S.setDimensions = function(height, width, maxHeight, maxWidth, tb, lr, padding, resizable) {
-    var h = height,
-        w = width;
+S.setDimensions = function(height, width, maxHeight, maxWidth, topBottom, leftRight, padding, resizable) {
+    var originalHeight = height,
+        originalWidth = width;
 
-    // calculate the max height/width
-    var extraHeight = 2 * padding + tb;
-    if (h + extraHeight >= maxHeight)
-        h = maxHeight - extraHeight;
-    var extraWidth = 2 * padding + lr;
-    if (w + extraWidth >= maxWidth)
-        w = maxWidth - extraWidth;
+    // constrain height/width to max
+    var extraHeight = 2 * padding + topBottom;
+    if (height + extraHeight > maxHeight)
+        height = maxHeight - extraHeight;
+    var extraWidth = 2 * padding + leftRight;
+    if (width + extraWidth > maxWidth)
+        width = maxWidth - extraWidth;
 
-    // handle oversized content
-    var resizeHeight = height,
-        resizeWidth = width,
-        changeHeight = (height - h) / height,
-        changeWidth = (width - w) / width,
+    // determine if object is oversized
+    var changeHeight = (originalHeight - height) / originalHeight,
+        changeWidth = (originalWidth - width) / originalWidth,
         oversized = (changeHeight > 0 || changeWidth > 0);
 
-    // adjust resized height/width, preserve original aspect ratio
+    // determine resized height/width
+    var resizeHeight, resizeWidth;
     if (resizable && oversized && S.options.handleOversize == "resize") {
+        // preserve aspect ratio according to greatest change
         if (changeHeight > changeWidth) {
-            w = Math.round((width / height) * h);
+            width = Math.round((originalWidth / originalHeight) * height);
         } else if (changeWidth > changeHeight) {
-            h = Math.round((height / width) * w);
+            height = Math.round((originalHeight / originalWidth) * width);
         }
-        resizeWidth = w;
-        resizeHeight = h;
+        resizeHeight = height;
+        resizeWidth = width;
+    } else {
+        resizeHeight = originalHeight;
+        resizeWidth = originalWidth;
     }
 
+    // every number should be an integer
     S.dimensions = {
-        height:         h + tb,
-        width:          w + lr,
-        innerHeight:    h,
-        innerWidth:     w,
-        top:            (maxHeight - (h + extraHeight)) / 2 + padding,
-        left:           (maxWidth - (w + extraWidth)) / 2 + padding,
+        innerHeight:    height,
+        innerWidth:     width,
+        height:         height + topBottom,
+        width:          width + leftRight,
+        top:            Math.floor((maxHeight - (height + extraHeight)) / 2 + padding),
+        left:           Math.floor((maxWidth - (width + extraWidth)) / 2 + padding),
         oversized:      oversized,
         resizeHeight:   resizeHeight,
         resizeWidth:    resizeWidth
     };
+
+    return S.dimensions;
 }
 
 /**
