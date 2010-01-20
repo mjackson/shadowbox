@@ -1,6 +1,6 @@
 module("cache");
 
-test("Select/Find", function() {
+test("select", function() {
     var sel = Shadowbox.select();
     ok(sel.length == 1, 'Automatically select all links with rel="shadowbox"');
     var anchor1 = document.getElementById('anchor1');
@@ -12,14 +12,14 @@ test("Select/Find", function() {
     ok(sel[0] == anchor1, 'Keep references to original elements');
 });
 
-test("Automatic Setup and Teardown", function() {
+test("setup (automatic)", function() {
     Shadowbox.setup();
     var anchor1 = document.getElementById("anchor1");
     var cacheObj = Shadowbox.getCache(anchor1);
     ok(cacheObj, "Cache contains automatically setup object");
 });
 
-test("Manual Setup and Teardown", function() {
+test("setup (manual)", function() {
     var anchor2 = document.getElementById("anchor2");
     ok(Shadowbox.getCache(anchor2) == false, "Cache miss for new link object");
     Shadowbox.setup(anchor2);
@@ -27,7 +27,7 @@ test("Manual Setup and Teardown", function() {
     ok(cacheObj, "Cache contains manually setup object");
 });
 
-test("Cache Object", function() {
+test("buildObject", function() {
     var anchor1 = document.getElementById("anchor1");
     var cacheObj = Shadowbox.getCache(anchor1);
     ok(cacheObj.link == anchor1, "Cache object keeps reference to original link element");
@@ -39,13 +39,13 @@ test("Cache Object", function() {
     equal(cacheObj.title, "", "Cache object has empty title");
 });
 
-test("Automatic Teardown", function() {
+test("teardown (automatic)", function() {
     var anchor1 = document.getElementById("anchor1");
     Shadowbox.teardown();
     equal(Shadowbox.getCache(anchor1), false, "Object successfully removed from cache");
 });
 
-test("Manual Teardown", function() {
+test("teardown (manual)", function() {
     var anchor2 = document.getElementById("anchor2");
     Shadowbox.teardown(anchor2);
     equal(Shadowbox.getCache(anchor2), false, "Object successfully removed from cache");
