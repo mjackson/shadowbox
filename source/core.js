@@ -514,6 +514,8 @@ S.close = function() {
     }
     slideDelay = 0;
 
+    listenKeys(false);
+
     S.options.onClose(S.getCurrent());
 
     S.skin.onClose();
@@ -928,6 +930,10 @@ function listenKeys(on) {
  * @private
  */
 function handleKey(e) {
+    // don't handle events with modifier keys
+    if (e.metaKey || e.shiftKey || e.altKey || e.ctrlKey)
+        return;
+
     var code = keyCode(e), handler;
 
     switch (code) {
@@ -948,6 +954,7 @@ function handleKey(e) {
     }
 
     if (handler) {
+        alert('prevent');
         preventDefault(e);
         handler();
     }
