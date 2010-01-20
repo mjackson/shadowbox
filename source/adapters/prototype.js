@@ -2,8 +2,7 @@
  * The Prototype adapter for Shadowbox.
  */
 
-var E = Event,
-    L = Element;
+var E = Event;
 
 /**
  * Gets the value of the style on the given element.
@@ -14,17 +13,7 @@ var E = Event,
  * @private
  */
 function getStyle(el, style) {
-    return L.getStyle(el, style);
-}
-
-/**
- * Removes an element from the DOM.
- *
- * @param   {HTMLElement}   el          The element to remove
- * @private
- */
-function remove(el) {
-    L.remove(el);
+    return Element.getStyle(el, style);
 }
 
 /**
@@ -35,7 +24,7 @@ function remove(el) {
  * @private
  */
 function appendHTML(el, html) {
-    L.insert(el, html);
+    Element.insert(el, html);
 }
 
 /**

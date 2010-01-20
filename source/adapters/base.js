@@ -56,14 +56,45 @@ if (view && view.getComputedStyle) {
     }
 }
 
-/**
- * Removes an element from the DOM.
- *
- * @param   {HTMLElement}   el          The element to remove
- * @private
- */
-function remove(el) {
-    el.parentNode.removeChild(el);
+function getStyle(el, style) {
+}
+
+getStyle.show = { position: "absolute", visibility: "hidden", display: "block" };
+
+getStyle.swap = function(el, styles, callback) {
+    var old = {};
+
+    for (var style in styles) {
+        old[style] = el.style[style];
+        el.style[style] = styles[style];
+    }
+
+    callback.call(el);
+
+    for (var style in styles)
+        el.style[style] = old[style];
+}
+
+getStyle.getOuter = function(el, dimension) {
+    var value, callback = function() {
+        value = dimension === "Width" ? el.offsetWidth : el.offsetHeight;
+    }
+
+    if (el.offsetWidth !== 0) {
+        callback();
+    } else {
+        getStyle.swap(el, getStyle.show, callback);
+    }
+
+    return Math.max(0, Math.round(value));
+}
+
+function getWidth(el) {
+    return getStyle.getOuter(el, "Width");
+}
+
+function getHeight(el) {
+    return getStyle.getOuter(el, "Height");
 }
 
 /**
@@ -179,11 +210,39 @@ function addEvent(el, type, handler) {
 
         handlers[handler.__guid] = handler;
 
-        el["on" + type] = handleEvent;
+        el["on" + type] = addEvent.handleEvent;
     }
 }
 
 addEvent.guid = 1;
+
+addEvent.handleEvent = function(event) {
+    var result = true;
+    event = event || addEvent.fixEvent(((this.ownerDocument || this.document || this).parentWindow || window).event);
+    var handlers = this.events[event.type];
+
+    for (var i in handlers) {
+        this.__handleEvent = handlers[i];
+        if (this.__handleEvent(event) === false)
+            result = false;
+    }
+
+    return result;
+}
+
+addEvent.preventDefault = function() {
+    this.returnValue = false;
+}
+
+addEvent.stopPropagation = function() {
+    this.cancelBubble = true;
+}
+
+addEvent.fixEvent = function(e) {
+    e.preventDefault = addEvent.preventDefault;
+    e.stopPropagation = addEvent.stopPropagation;
+    return e;
+}
 
 /**
  * Removes an event handler from the given element.
@@ -200,32 +259,4 @@ function removeEvent(el, type, handler) {
         if (el.events && el.events[type])
             delete el.events[type][handler.__guid];
     }
-}
-
-function handleEvent(event) {
-    var result = true;
-    event = event || fixEvent(((this.ownerDocument || this.document || this).parentWindow || window).event);
-    var handlers = this.events[event.type];
-
-    for (var i in handlers) {
-        this.__handleEvent = handlers[i];
-        if (this.__handleEvent(event) === false)
-            result = false;
-    }
-
-    return result;
-}
-
-function fixEvent(event) {
-    event.preventDefault = fixEvent.preventDefault;
-    event.stopPropagation = fixEvent.stopPropagation;
-    return event;
-}
-
-fixEvent.preventDefault = function() {
-    this.returnValue = false;
-}
-
-fixEvent.stopPropagation = function() {
-    this.cancelBubble = true;
 }

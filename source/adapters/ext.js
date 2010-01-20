@@ -17,16 +17,6 @@ function getStyle(el, style) {
 }
 
 /**
- * Removes an element from the DOM.
- *
- * @param   {HTMLElement}   el          The element to remove
- * @private
- */
-function remove(el) {
-    Ext.get(el).remove();
-}
-
-/**
  * Appends an HTML fragment to the given element.
  *
  * @param   {HTMLElement}   el          The element to append to

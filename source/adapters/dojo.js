@@ -23,16 +23,6 @@ function getStyle(el, style) {
 }
 
 /**
- * Removes an element from the DOM.
- *
- * @param   {HTMLElement}   el          The element to remove
- * @private
- */
-function remove(el) {
-    dojo._destroyElement(el);
-}
-
-/**
  * Appends an HTML fragment to the given element.
  *
  * @param   {HTMLElement}   el          The element to append to
