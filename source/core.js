@@ -954,7 +954,6 @@ function handleKey(e) {
     }
 
     if (handler) {
-        alert('prevent');
         preventDefault(e);
         handler();
     }
