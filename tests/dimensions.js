@@ -2,7 +2,7 @@ function getWindowDimension(name) {
     if (document.compatMode === "CSS1Compat")
         return document.documentElement["client" + name];
 
-    return document.documentElement["client" + name];
+    return document.body["client" + name];
 }
 
 function getWindowHeight() {
