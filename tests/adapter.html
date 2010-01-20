@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+      "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Shadowbox Adapter Test Suite</title>
+
+<!-- include QUnit -->
+<link rel="stylesheet" type="text/css" href="files/qunit.css">
+<script type="text/javascript" src="files/qunit.js"></script>
+
+<!-- include adapter (and base library if needed) -->
+<script type="text/javascript">
+(function() {
+
+function include(path) {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = path + ".js";
+    var head = document.getElementsByTagName("head")[0];
+    head.appendChild(script);
+}
+
+var libraries = {
+    "dojo"      : "dojo-1.4.0",
+    "ext"       : "ext-3.1.0",
+    "jquery"    : "jquery-1.4",
+    "mootools"  : "mootools-1.2.4",
+    "prototype" : "prototype-1.6",
+    "yui2"      : "yui-2.8.0r4",
+    "yui3"      : "yui-3.0.0"
+}
+var location = window.location || { search: "" };
+var queryString = location.search.substring(1);
+var keyValues = queryString.split("&");
+
+var keyValue, params = {}, key, value;
+for (var i = 0; i < keyValues.length; ++i) {
+    keyValue = decodeURIComponent(keyValues[i]);
+    index = keyValue.indexOf("=");
+    if (index > -1) {
+        key = keyValue.substring(0, index);
+        value = keyValue.substring(index + 1);
+    } else {
+        key = keyValue;
+        value = null;
+    }
+    params[key] = value;
+}
+
+var adapter = params["adapter"] || "base";
+
+if (/base|dojo|ext|jquery|mootools|prototype|yui/.test(adapter)) {
+    if (libraries[adapter])
+        include("files/" + libraries[adapter]);
+    include("../source/adapters/" + adapter);
+} else {
+    throw "invalid adapter: " + adapter;
+}
+
+})();
+</script>
+
+<!-- include tests -->
+<script type="text/javascript" src="unit/adapter.js"></script>
+
+</head>
+<body>
+
+<h1 id="qunit-header">Shadowbox Test Suite</h1>
+<h2 id="qunit-banner"></h2>
+<h2 id="qunit-userAgent"></h2>
+<ol id="qunit-tests"></ol>
+
+<div id="main" style="display:none;">
+
+</div>
+
+</body>
+</html>
