@@ -50,9 +50,9 @@ task :build do |t|
 
   files = []
   files << "intro"
+  files << "core"
   files << "util"
   files << File.join("adapters", $PARAMS["adapter"])
-  files << "core"
   files << "load"
   files << "plugins"
   files << "cache"
