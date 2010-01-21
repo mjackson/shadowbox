@@ -15,74 +15,18 @@ var overlayOn = false,
 visibilityCache = [],
 
 /**
- * Id's of elements that need transparent PNG support in IE6.
+ * Id's of elements that need transparent PNG support.
  *
  * @type    {Array}
  * @private
  */
 pngIds = [
-    'sb-nav-close',
-    'sb-nav-next',
-    'sb-nav-play',
-    'sb-nav-pause',
-    'sb-nav-previous'
-],
-
-/**
- * True if the browser supports fixed positioning.
- *
- * @type    {Boolean}
- * @private
- */
-supportsFixed = true;
-
-/**
- * Gets the given window dimension size. The dimension may be either "Height" or "Width".
- *
- * @param   {String}    dimension
- * @return  {Number}
- * @private
- */
-function getWindowSize(dimension) {
-    if (document.compatMode === "CSS1Compat")
-        return document.documentElement["client" + dimension];
-
-    return document.documentElement["client" + dimension];
-}
-
-/**
- * Sets an element's opacity.
- *
- * @param   {HTMLElement}   el
- * @param   {Number}        opacity
- * @private
- */
-function setOpacity(el, opacity) {
-    var style = el.style;
-
-    if (window.ActiveXObject) {
-        style.zoom = 1; // trigger hasLayout
-        if (opacity == 1) {
-            if (typeof style.filter == "string" && (/alpha/i).test(style.filter))
-                style.filter = style.filter.replace(/\s*[\w\.]*alpha\([^\)]*\);?/gi, "");
-        } else {
-            style.filter = (style.filter || "").replace(/\s*[\w\.]*alpha\([^\)]*\)/gi, "") +
-                " alpha(opacity=" + (opacity * 100) + ")";
-        }
-    } else {
-        style.opacity = (opacity == 1 ? "" : opacity);
-    }
-}
-
-/**
- * Clears the opacity setting on the given element. Needed for some cases in IE.
- *
- * @param   {HTMLElement}   el
- * @private
- */
-function clearOpacity(el) {
-    setOpacity(el, 1);
-}
+    "sb-nav-close",
+    "sb-nav-next",
+    "sb-nav-play",
+    "sb-nav-pause",
+    "sb-nav-previous"
+];
 
 /**
  * Animates the given property of el to the given value over a specified duration. If a
@@ -97,9 +41,8 @@ function clearOpacity(el) {
  */
 function animate(el, property, to, duration, callback) {
     var opacity = (property == "opacity");
-
     // default unit is px for properties other than opacity
-    var set = opacity ? setOpacity : function(el, to) { el.style[property] = to + 'px' };
+    var set = opacity ? setOpacity : function(el, to) { el.style[property] = to + "px" };
 
     if (duration == 0 || (!opacity && !S.options.animate) || (opacity && !S.options.animateFade)) {
         set(el, to);
@@ -108,10 +51,7 @@ function animate(el, property, to, duration, callback) {
         return;
     }
 
-    var from = parseFloat(getStyle(el, property));
-
-    if (isNaN(from))
-        from = 0;
+    var from = parseFloat(getStyle(el, property)) || 0;
 
     var delta = to - from;
     if (delta == 0) {
@@ -141,28 +81,6 @@ function animate(el, property, to, duration, callback) {
 }
 
 /**
- * Toggles the visibility of elements that are troublesome for overlays.
- *
- * @param   {Boolean}   on  True to make visible, false to hide
- * @private
- */
-function toggleTroubleElements(on) {
-    if (on) {
-        each(visibilityCache, function(i, el){
-            el[0].style.visibility = el[1] || '';
-        });
-    } else {
-        visibilityCache = [];
-        each(S.options.troubleElements, function(tag) {
-            each(document.getElementsByTagName(tag), function(el) {
-                visibilityCache.push([el, el.style.visibility]);
-                el.style.visibility = "hidden";
-            });
-        });
-    }
-}
-
-/**
  * Sets the size of the container element.
  *
  * @private
@@ -185,6 +103,28 @@ function setPosition() {
         top: document.documentElement.scrollTop + "px",
         left: document.documentElement.scrollLeft + "px"
     });
+}
+
+/**
+ * Toggles the visibility of elements that are troublesome for overlays.
+ *
+ * @param   {Boolean}   on  True to make visible, false to hide
+ * @private
+ */
+function toggleTroubleElements(on) {
+    if (on) {
+        each(visibilityCache, function(i, el){
+            el[0].style.visibility = el[1] || '';
+        });
+    } else {
+        visibilityCache = [];
+        each(S.options.troubleElements, function(tag) {
+            each(document.getElementsByTagName(tag), function(el) {
+                visibilityCache.push([el, el.style.visibility]);
+                el.style.visibility = "hidden";
+            });
+        });
+    }
 }
 
 /**
@@ -369,7 +309,7 @@ function hideBars(anim, callback) {
     animate(wrapper, "paddingBottom", infoHeight, duration, function() {
         // hide bars here in case of overflow, build after hidden
         titleInner.style.visibility = infoInner.style.visibility = "hidden";
-        buildBars(callback);
+        callback();
     });
 }
 
@@ -424,35 +364,15 @@ function setDimensions(height, width, resizable) {
         width = parseInt(width),
         overlay = get("sb-overlay"),
         wrapper = get("sb-wrapper"),
-        bodyInner = get("sb-body-inner")
-        tb = wrapper.offsetHeight - bodyInner.offsetHeight,
-        lr = wrapper.offsetWidth - bodyInner.offsetWidth,
+        bodyInner = get("sb-body-inner"),
+        topBottom = wrapper.offsetHeight - bodyInner.offsetHeight,
+        leftRight = wrapper.offsetWidth - bodyInner.offsetWidth,
         // overlay should provide window dimensions here
         maxHeight = overlay.offsetHeight,
         maxWidth = overlay.offsetWidth,
         padding = parseInt(S.options.viewportPadding) || 0;
 
-    S.setDimensions(height, width, maxHeight, maxWidth, tb, lr, padding, resizable);
-
-    return S.dimensions;
-}
-
-/**
- * Checks the level of support the browser provides.
- *
- * @private
- */
-function checkSupport() {
-    var body = document.body,
-        div = document.createElement("div");
-
-    div.style.position = "fixed";
-    div.style.margin = 0;
-    div.style.top = "20px";
-
-    body.appendChild(div, body.firstChild);
-    supportsFixed = div.offsetTop == 20;
-    body.removeChild(div);
+    return S.setDimensions(height, width, maxHeight, maxWidth, topBottom, leftRight, padding, resizable);
 }
 
 /**
@@ -616,8 +536,6 @@ K.options = {
  * @public
  */
 K.init = function() {
-    checkSupport();
-
     appendHTML(document.body, sprintf(K.markup, S.lang));
 
     K.body = get("sb-body-inner");
@@ -627,8 +545,7 @@ K.init = function() {
     if (!supportsFixed)
         get("sb-container").style.position = "absolute";
 
-    // several fixes for IE6
-    if (S.isIE6) {
+    if (!supportsOpacity) {
         // support transparent PNG's via AlphaImageLoader
         var el, m, re = /url\("(.*\.png)"\)/;
         each(pngIds, function(i, id) {
@@ -719,7 +636,7 @@ K.onLoad = function(changing, callback) {
 
     // make sure the body doesn't have any children
     while (K.body.firstChild)
-        K.body.removeChild(K.body.firstChild);
+        remove(K.body.firstChild);
 
     hideBars(changing, function() {
         if (!open)
@@ -728,7 +645,7 @@ K.onLoad = function(changing, callback) {
         if (!changing)
             get("sb-wrapper").style.visibility = "visible";
 
-        callback();
+        buildBars(callback);
     });
 }
 
