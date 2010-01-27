@@ -88,9 +88,13 @@ function enableDrag(height, width) {
  * @private
  */
 function disableDrag() {
-    removeEvent(dragLayer, "mousedown", startDrag);
-    remove(dragLayer);
-    dragLayer = dragTarget = null;
+    if (dragLayer) {
+        removeEvent(dragLayer, "mousedown", startDrag);
+        remove(dragLayer);
+        dragLayer = null;
+    }
+
+    dragTarget = null;
 }
 
 /**
@@ -137,7 +141,7 @@ function positionDrag(e) {
 
     apply(dragTarget.style, {
         left: drag.x + "px",
-        top: drag.y + "px
+        top: drag.y + "px"
     });
 }
 
