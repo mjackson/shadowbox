@@ -22,9 +22,6 @@ S.flv = function(obj, id) {
     this.obj = obj;
     this.id = id;
 
-    // FLV's are resizable
-    this.resizable = true;
-
     // height/width default to 300 pixels
     this.height = obj.height ? parseInt(obj.height, 10) : 300;
     if (S.options.showMovieControls)
@@ -49,8 +46,8 @@ S.flv.prototype = {
         tmp.id = this.id;
         body.appendChild(tmp);
 
-        var height = dims.resizeHeight, // use resized dimensions
-            width = dims.resizeWidth,
+        var height = dims.innerHeight, // use resized dimensions
+            width = dims.innerWidth,
             swf = S.path + "player.swf",
             version = S.options.flashVersion,
             express = S.path + "expressInstall.swf",

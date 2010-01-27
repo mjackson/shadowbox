@@ -14,9 +14,6 @@ S.swf = function(obj, id) {
     this.obj = obj;
     this.id = id;
 
-    // SWF's are resizable
-    this.resizable = true;
-
     // height/width default to 300 pixels
     this.height = obj.height ? parseInt(obj.height, 10) : 300;
     this.width = obj.width ? parseInt(obj.width, 10) : 300;
@@ -39,8 +36,8 @@ S.swf.prototype = {
         tmp.id = this.id;
         body.appendChild(tmp);
 
-        var height = dims.resizeHeight, // use resized dimensions
-            width = dims.resizeWidth,
+        var height = dims.innerHeight,
+            width = dims.innerWidth,
             swf = this.obj.content,
             version = S.options.flashVersion,
             express = S.path + "expressInstall.swf",
