@@ -7,10 +7,12 @@
  *
  * @constructor
  * @param   {Object}    obj     The content object
+ * @param   {String}    id      The player id
  * @public
  */
-S.html = function(obj) {
+S.html = function(obj, id) {
     this.obj = obj;
+    this.id = id;
 
     // height defaults to 300, width defaults to 500
     this.height = obj.height ? parseInt(obj.height, 10) : 300;
@@ -28,7 +30,7 @@ S.html.prototype = {
      */
     append: function(body, dims) {
         var div = document.createElement("div");
-        div.id = S.playerId;
+        div.id = this.id;
         div.className = "html"; // give special class to enable scrolling
         div.innerHTML = this.obj.content;
 
@@ -41,9 +43,9 @@ S.html.prototype = {
      * @public
      */
     remove: function() {
-        var el = get(S.playerId);
+        var el = get(this.id);
         if (el)
-            S.remove(el);
+            remove(el);
     }
 
 }

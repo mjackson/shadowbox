@@ -53,13 +53,12 @@ function resetDrag() {
 /**
  * Toggles the drag function on and off.
  *
- * @param   {Boolean}   on      True to toggle on, false to toggle off
  * @param   {Number}    height  The height of the drag layer
  * @param   {Number}    width   The width of the drag layer
  * @private
  */
-function toggleDrag(on, height, width) {
-    if (on) {
+function toggleDrag(height, width) {
+    if (height) {
         resetDrag();
 
         // add transparent drag layer to prevent browser dragging of actual image
@@ -71,8 +70,8 @@ function toggleDrag(on, height, width) {
             "background-color:" + (S.isIE ? "#fff;filter:alpha(opacity=0)" : "transparent")
         ].join(";");
 
-        appendHTML(S.skin.body(), '<div id="' + dragId + '" style="' + style + '"></div>');
-        addEvent(get(dragId), "mousedown", listenDrag);
+        appendHTML(S.skin.body, '<div id="' + dragId + '" style="' + style + '"></div>');
+        addEvent(dragLayer, "mousedown", listenDrag);
     } else {
         var dragLayer = get(dragId);
         if (dragLayer) {
@@ -94,9 +93,9 @@ function listenDrag(e) {
     // prevent browser dragging
     preventDefault(e);
 
-    var coords = getPageXY(e);
-    drag.startx = coords[0];
-    drag.starty = coords[1];
+    var xy = getPageXY(e);
+    drag.startx = xy[0];
+    drag.starty = xy[1];
 
     draggable = get(S.playerId);
     addEvent(document, "mousemove", positionDrag);
@@ -129,15 +128,15 @@ function unlistenDrag() {
 function positionDrag(e) {
     var player = S.player,
         dims = S.dimensions,
-        coords = getPageXY(e);
+        xy = getPageXY(e);
 
-    var movex = coords[0] - drag.startx;
+    var movex = xy[0] - drag.startx;
     drag.startx += movex;
     // x boundaries
     drag.x = Math.max(Math.min(0, drag.x + movex), dims.innerWidth - player.width);
     draggable.style.left = drag.x + "px";
 
-    var movey = coords[1] - drag.starty;
+    var movey = xy[1] - drag.starty;
     drag.starty += movey;
     // y boundaries
     drag.y = Math.max(Math.min(0, drag.y + movey), dims.innerHeight - player.height);
@@ -149,13 +148,12 @@ function positionDrag(e) {
  *
  * @constructor
  * @param   {Object}    obj     The content object
+ * @param   {String}    id      The player id
  * @public
  */
-S.img = function(obj) {
+S.img = function(obj, id) {
     this.obj = obj;
-
-    // images are resizable
-    this.resizable = true;
+    this.id = id;
 
     // preload the image
     this.ready = false;
@@ -189,13 +187,13 @@ S.img.prototype = {
      */
     append: function(body, dims) {
         var img = document.createElement("img");
-        img.id = S.playerId;
+        img.id = this.id;
         img.src = this.obj.content;
         img.style.position = "absolute";
 
         // need to use setAttribute here for IE's sake
-        img.setAttribute("height", dims.resizeHeight)
-        img.setAttribute("width", dims.resizeWidth)
+        img.setAttribute("height", dims.innerHeight)
+        img.setAttribute("width", dims.innerWidth)
 
         body.appendChild(img);
     },
@@ -206,12 +204,12 @@ S.img.prototype = {
      * @public
      */
     remove: function() {
-        var el = get(S.playerId);
+        var el = get(this.id);
         if (el)
             remove(el);
 
         // disable drag layer
-        toggleDrag(false);
+        toggleDrag();
 
         // prevent old image requests from loading
         if (pre) {
@@ -232,7 +230,7 @@ S.img.prototype = {
         // listen for drag, in the case of oversized images, the "resized"
         // height/width will actually be the original image height/width
         if (dims.oversized && S.options.handleOversize == "drag")
-            toggleDrag(true, dims.resizeHeight, dims.resizeWidth);
+            toggleDrag(dims.resizeHeight, dims.resizeWidth);
     },
 
     /**
@@ -241,17 +239,25 @@ S.img.prototype = {
      * @public
      */
     onWindowResize: function() {
-        // fix draggable positioning if enlarging viewport
-        if (draggable) {
-            var player = S.player,
-                dims = S.dimensions,
-                top = parseInt(getStyle(draggable, "top")),
-                left = parseInt(getStyle(draggable, "left"));
+        var dims = S.dimensions,
+            el = get(this.id);
 
-            if (top + player.height < dims.innerHeight)
-                draggable.style.top = dims.innerHeight - player.height + "px";
-            if (left + player.width < dims.innerWidth)
-                draggable.style.left = dims.innerWidth - player.width + "px";
+        switch (S.options.handleOversize) {
+        case "resize":
+            el.height = dims.innerHeight;
+            el.width = dims.innerWidth;
+            break;
+        case "drag":
+            if (draggable) {
+                var top = parseInt(getStyle(draggable, "top")),
+                    left = parseInt(getStyle(draggable, "left"));
+                // fix positioning when enlarging viewport
+                if (top + this.height < dims.innerHeight)
+                    draggable.style.top = dims.innerHeight - this.height + "px";
+                if (left + this.width < dims.innerWidth)
+                    draggable.style.left = dims.innerWidth - this.width + "px";
+            }
+            break;
         }
     }
 

@@ -15,10 +15,12 @@ var jwControllerHeight = 20;
  *
  * @constructor
  * @param   {Object}    obj     The content object
+ * @param   {String}    id      The player id
  * @public
  */
-S.flv = function(obj) {
+S.flv = function(obj, id) {
     this.obj = obj;
+    this.id = id;
 
     // FLV's are resizable
     this.resizable = true;
@@ -44,7 +46,7 @@ S.flv.prototype = {
     append: function(body, dims) {
         // append temporary content element to replace
         var tmp = document.createElement('div');
-        tmp.id = S.playerId;
+        tmp.id = this.id;
         body.appendChild(tmp);
 
         var height = dims.resizeHeight, // use resized dimensions
@@ -64,7 +66,7 @@ S.flv.prototype = {
             }, S.options.flashVars),
             params = S.options.flashParams;
 
-        S.flash.embedSWF(swf, S.playerId, width, height, version, express, flashvars, params);
+        S.flash.embedSWF(swf, this.id, width, height, version, express, flashvars, params);
     },
 
     /**
@@ -76,7 +78,7 @@ S.flv.prototype = {
         // call express install callback here in case express install is
         // active and user has not selected anything
         S.flash.expressInstallCallback();
-        S.flash.removeSWF(S.playerId);
+        S.flash.removeSWF(this.id);
     }
 
 }

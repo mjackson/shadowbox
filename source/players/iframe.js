@@ -7,10 +7,12 @@
  *
  * @constructor
  * @param   {Object}    obj     The content object
+ * @param   {String}    id      The player id
  * @public
  */
-S.iframe = function(obj) {
+S.iframe = function(obj, id) {
     this.obj = obj;
+    this.id = id;
 
     // height/width default to full viewport height/width
     var overlay = get("sb-overlay");
@@ -28,7 +30,7 @@ S.iframe.prototype = {
      * @public
      */
     append: function(body, dims) {
-        var html = '<iframe id="' + S.playerId + '" name="' + S.playerId + '" height="100%" ' +
+        var html = '<iframe id="' + this.id + '" name="' + this.id + '" height="100%" ' +
             'width="100%" frameborder="0" marginwidth="0" marginheight="0" ' +
             'scrolling="auto"';
 
@@ -55,11 +57,11 @@ S.iframe.prototype = {
      * @public
      */
     remove: function() {
-        var el = get(S.playerId);
+        var el = get(this.id);
         if (el) {
             remove(el);
             if (S.isGecko)
-                delete window.frames[S.playerId]; // needed for Firefox
+                delete window.frames[this.id]; // needed for Firefox
         }
     },
 
@@ -69,7 +71,7 @@ S.iframe.prototype = {
      * @public
      */
     onLoad: function() {
-        var win = S.isIE ? get(S.playerId).contentWindow : window.frames[S.playerId];
+        var win = S.isIE ? get(this.id).contentWindow : window.frames[this.id];
         win.location.href = this.obj.content;
     }
 

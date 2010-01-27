@@ -37,8 +37,9 @@
 #sb-body-inner {
   position: relative;
   height: 100%;
+  display: block;
 }
-#sb-content.html {
+#sb-player.html {
   height: 100%;
   overflow: auto; /* make html content scrollable */
 }
@@ -66,18 +67,18 @@
 #sb-title-inner, #sb-info-inner {
   position: relative;
   font-family: 'Lucida Grande', Tahoma, sans-serif;
-  line-height: 16px;
 }
 #sb-title, #sb-title-inner {
   height: 26px;
+  line-height: 26px;
 }
 #sb-title-inner {
   font-size: 16px;
-  padding: 5px 0;
   color: #fff;
 }
 #sb-info, #sb-info-inner {
   height: 20px;
+  line-height: 20px;
 }
 #sb-info-inner {
   font-size: 12px;
@@ -98,32 +99,27 @@
   width: 16px;
   margin-left: 3px;
   cursor: pointer;
+  background-repeat: no-repeat;
 }
 #sb-nav-close {
   background-image: url(close.png);
-  background-repeat: no-repeat;
 }
 #sb-nav-next {
   background-image: url(next.png);
-  background-repeat: no-repeat;
 }
 #sb-nav-previous {
   background-image: url(previous.png);
-  background-repeat: no-repeat;
 }
 #sb-nav-play {
   background-image: url(play.png);
-  background-repeat: no-repeat;
 }
 #sb-nav-pause {
   background-image: url(pause.png);
-  background-repeat: no-repeat;
 }
 
 /*_________________________________________________________________  counter  */
 #sb-counter {
   float: left;
-  padding: 2px 0;
   width: 45%;
 }
 #sb-counter a {

@@ -26,7 +26,31 @@ pngIds = [
     "sb-nav-play",
     "sb-nav-pause",
     "sb-nav-previous"
-];
+],
+
+/**
+ * The container element.
+ *
+ * @type    {HTMLElement}
+ * @private
+ */
+container,
+
+/**
+ * The overlay element.
+ *
+ * @type    {HTMLElement}
+ * @private
+ */
+overlay,
+
+/**
+ * The wrapper element.
+ *
+ * @type    {HTMLElement}
+ * @private
+ */
+wrapper;
 
 /**
  * Animates the given property of el to the given value over a specified duration. If a
@@ -40,19 +64,18 @@ pngIds = [
  * @private
  */
 function animate(el, property, to, duration, callback) {
-    var opacity = (property == "opacity");
+    var isOpacity = (property == "opacity");
     // default unit is px for properties other than opacity
-    var set = opacity ? setOpacity : function(el, to) { el.style[property] = to + "px" };
+    var set = isOpacity ? S.setOpacity : function(el, to) { el.style[property] = to + "px" };
 
-    if (duration == 0 || (!opacity && !S.options.animate) || (opacity && !S.options.animateFade)) {
+    if (duration == 0 || (!isOpacity && !S.options.animate) || (isOpacity && !S.options.animateFade)) {
         set(el, to);
         if (callback)
             callback();
         return;
     }
 
-    var from = parseFloat(getStyle(el, property)) || 0;
-
+    var from = parseFloat(S.getStyle(el, property)) || 0;
     var delta = to - from;
     if (delta == 0) {
         if (callback)
@@ -86,9 +109,9 @@ function animate(el, property, to, duration, callback) {
  * @private
  */
 function setSize() {
-    apply(K.container.style, {
-        height: getWindowSize("Height") + "px",
-        width: getWindowSize("Width") + "px"
+    apply(container.style, {
+        height: S.getWindowSize("Height") + "px",
+        width: S.getWindowSize("Width") + "px"
     });
 }
 
@@ -99,7 +122,7 @@ function setSize() {
  * @private
  */
 function setPosition() {
-    apply(K.container.style, {
+    apply(container.style, {
         top: document.documentElement.scrollTop + "px",
         left: document.documentElement.scrollLeft + "px"
     });
@@ -153,11 +176,11 @@ function toggleLoading(on, callback) {
         anim = (playerName == "img" || playerName == "html"); // fade on images & html
 
     if (on) {
-        setOpacity(loading, 0);
+        S.setOpacity(loading, 0);
         loading.style.display = "";
 
         var wrapped = function() {
-            clearOpacity(loading);
+            S.clearOpacity(loading);
             if (callback)
                 callback();
         }
@@ -170,7 +193,7 @@ function toggleLoading(on, callback) {
     } else {
         var wrapped = function() {
             loading.style.display = "none";
-            clearOpacity(loading);
+            S.clearOpacity(loading);
             if (callback)
                 callback();
         }
@@ -247,10 +270,10 @@ function buildBars(callback) {
                 counter += '<a onclick="Shadowbox.change(' + i + ');"'
                 if (i == S.current)
                     counter += ' class="sb-counter-current"';
-                counter += '>' + (i++) + '</a>';
+                counter += ">" + (i++) + "</a>";
             }
         } else {
-            counter = (S.current + 1) + ' ' + S.lang.of + ' ' + len;
+            counter = [S.current + 1, S.lang.of, len].join(' ');
         }
     }
 
@@ -266,24 +289,16 @@ function buildBars(callback) {
  * @private
  */
 function showBars(callback) {
-    var wrapper = get("sb-wrapper"),
-        title = get("sb-title"),
-        info = get("sb-info"),
-        titleInner = get("sb-title-inner"),
+    var titleInner = get("sb-title-inner"),
         infoInner = get("sb-info-inner"),
-        titleHeight = parseInt(getStyle(titleInner, "height")) || 0,
-        infoHeight = parseInt(getStyle(infoInner, "height")) || 0,
         duration = 0.35;
 
     // clear visibility before animating into view
     titleInner.style.visibility = infoInner.style.visibility = "";
 
-    if (titleInner.innerHTML != '') {
-        animate(title, "height", titleHeight, duration);
-        animate(wrapper, "paddingTop", 0, duration);
-    }
-    animate(info, "height", infoHeight, duration);
-    animate(wrapper, "paddingBottom", 0, duration, callback);
+    if (titleInner.innerHTML != "")
+        animate(titleInner, "marginTop", 0, duration);
+    animate(infoInner, "marginTop", 0, duration, callback);
 }
 
 /**
@@ -294,28 +309,23 @@ function showBars(callback) {
  * @private
  */
 function hideBars(anim, callback) {
-    var wrapper = get("sb-wrapper"),
-        title = get("sb-title"),
+    var title = get("sb-title"),
         info = get("sb-info"),
+        titleHeight = title.offsetHeight,
+        infoHeight = info.offsetHeight,
         titleInner = get("sb-title-inner"),
         infoInner = get("sb-info-inner"),
-        titleHeight = parseInt(getStyle(titleInner, "height")) || 0,
-        infoHeight = parseInt(getStyle(infoInner, "height")) || 0,
         duration = (anim ? 0.35 : 0);
 
-    animate(title, "height", 0, duration);
-    animate(info, "height", 0, duration);
-    animate(wrapper, "paddingTop", titleHeight, duration);
-    animate(wrapper, "paddingBottom", infoHeight, duration, function() {
-        // hide bars here in case of overflow, build after hidden
+    animate(titleInner, "marginTop", titleHeight, duration);
+    animate(infoInner, "marginTop", infoHeight * -1, duration, function() {
         titleInner.style.visibility = infoInner.style.visibility = "hidden";
         callback();
     });
 }
 
 /**
- * Adjusts the height of #sb-body and centers #sb-wrapper vertically
- * in the viewport.
+ * Adjusts the height of #sb-body and centers #sb-wrapper vertically in the viewport.
  *
  * @param   {Number}    height      The height to use for #sb-body
  * @param   {Number}    top         The top to use for #sb-wrapper
@@ -325,7 +335,6 @@ function hideBars(anim, callback) {
  */
 function adjustHeight(height, top, anim, callback) {
     var body = get("sb-body"),
-        wrapper = get("sb-wrapper"),
         duration = (anim ? S.options.resizeDuration : 0);
 
     animate(body, "height", height, duration);
@@ -342,8 +351,7 @@ function adjustHeight(height, top, anim, callback) {
  * @private
  */
 function adjustWidth(width, left, anim, callback) {
-    var wrapper = get("sb-wrapper"),
-        duration = (anim ? S.options.resizeDuration : 0);
+    var duration = (anim ? S.options.resizeDuration : 0);
 
     animate(wrapper, "width", width, duration);
     animate(wrapper, "left", left, duration, callback);
@@ -355,24 +363,24 @@ function adjustWidth(width, left, anim, callback) {
  *
  * @param   {Number}    height      The content height
  * @param   {Number}    width       The content width
- * @param   {Boolean}   resizable   True if the content is able to be resized
  * @return  {Object}                The new dimensions object
  * @private
  */
-function setDimensions(height, width, resizable) {
-    var height = parseInt(height),
+function setDimensions(height, width) {
+    var bodyInner = get("sb-body-inner"),
+        height = parseInt(height),
         width = parseInt(width),
-        overlay = get("sb-overlay"),
-        wrapper = get("sb-wrapper"),
-        bodyInner = get("sb-body-inner"),
         topBottom = wrapper.offsetHeight - bodyInner.offsetHeight,
         leftRight = wrapper.offsetWidth - bodyInner.offsetWidth,
-        // overlay should provide window dimensions here
-        maxHeight = overlay.offsetHeight,
-        maxWidth = overlay.offsetWidth,
-        padding = parseInt(S.options.viewportPadding) || 0;
 
-    return S.setDimensions(height, width, maxHeight, maxWidth, topBottom, leftRight, padding, resizable);
+        // default to the default viewport padding
+        padding = parseInt(S.options.viewportPadding) || 20,
+
+        // overlay should provide proper window dimensions here
+        maxHeight = overlay.offsetHeight,
+        maxWidth = overlay.offsetWidth;
+
+    return S.setDimensions(height, width, maxHeight, maxWidth, topBottom, leftRight, padding);
 }
 
 /**
@@ -529,21 +537,24 @@ K.options = {
 };
 
 /**
- * Initialization function. Called immediately after this skin's markup
- * has been appended to the document with all of the necessary language
- * replacements done.
+ * Initialization function. Called immediately after this skin's markup has been
+ * appended to the document with all of the necessary language replacements done.
  *
  * @public
  */
 K.init = function() {
-    appendHTML(document.body, sprintf(K.markup, S.lang));
+    S.appendHTML(document.body, sprintf(K.markup, S.lang));
 
     K.body = get("sb-body-inner");
-    K.container = get("sb-container");
+
+    // cache oft-used elements
+    container = get("sb-container");
+    overlay = get("sb-overlay");
+    wrapper = get("sb-wrapper");
 
     // use absolute positioning in browsers that don't support fixed
     if (!supportsFixed)
-        get("sb-container").style.position = "absolute";
+        container.style.position = "absolute";
 
     if (!supportsOpacity) {
         // support transparent PNG's via AlphaImageLoader
@@ -551,7 +562,7 @@ K.init = function() {
         each(pngIds, function(i, id) {
             el = get(id);
             if (el) {
-                m = getStyle(el, "backgroundImage").match(re);
+                m = S.getStyle(el, "backgroundImage").match(re);
                 if (m) {
                     el.style.backgroundImage = "none";
                     el.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled=true,src=" +
@@ -561,22 +572,16 @@ K.init = function() {
         });
     }
 
-    // set up window resize event handler
+    // window resize event handler, use 50 ms buffer to prevent jerky resizing
     var timer;
     addEvent(window, "resize", function() {
-        // use 50 ms event buffering to prevent jerky window resizing
         if (timer) {
             clearTimeout(timer);
             timer = null;
         }
 
-        if (open) {
-            timer = setTimeout(function() {
-                K.onWindowResize();
-                if (S.player.onWindowResize)
-                    S.player.onWindowResize();
-            }, 50);
-        }
+        if (open)
+            timer = setTimeout(K.onWindowResize, 50);
     });
 }
 
@@ -588,10 +593,6 @@ K.init = function() {
  * @public
  */
 K.onOpen = function(obj, callback) {
-    var container = get("sb-container"),
-        overlay = get("sb-overlay"),
-        wrapper = get("sb-wrapper");
-
     setSize();
 
     var dims = setDimensions(S.options.initialHeight, S.options.initialWidth);
@@ -600,7 +601,7 @@ K.onOpen = function(obj, callback) {
 
     if (S.options.showOverlay) {
         overlay.style.backgroundColor = S.options.overlayColor;
-        setOpacity(overlay, 0);
+        S.setOpacity(overlay, 0);
 
         if (!S.options.modal)
             addEvent(overlay, "click", S.close);
@@ -643,7 +644,7 @@ K.onLoad = function(changing, callback) {
             return;
 
         if (!changing)
-            get("sb-wrapper").style.visibility = "visible";
+            wrapper.style.visibility = "visible";
 
         buildBars(callback);
     });
@@ -661,7 +662,7 @@ K.onReady = function(callback) {
         return;
 
     var player = S.player,
-        dims = setDimensions(player.height, player.width, player.resizable);
+        dims = setDimensions(player.height, player.width);
 
     var wrapped = function() {
         showBars(callback);
@@ -700,10 +701,6 @@ K.onShow = function(callback) {
  * @public
  */
 K.onClose = function() {
-    var container = get("sb-container"),
-        overlay = get("sb-overlay"),
-        wrapper = get("sb-wrapper");
-
     if (!supportsFixed)
         removeEvent(window, "scroll", setPosition);
 
@@ -714,7 +711,7 @@ K.onClose = function() {
     if (overlayOn) {
         animate(overlay, "opacity", 0, S.options.fadeDuration, function() {
             container.style.visibility = "hidden";
-            clearOpacity(overlay);
+            S.clearOpacity(overlay);
         });
     } else {
         container.style.visibility = "hidden";
@@ -752,20 +749,14 @@ K.onWindowResize = function() {
     setSize();
 
     var player = S.player,
-        dims = setDimensions(player.height, player.width, player.resizable);
+        dims = setDimensions(player.height, player.width);
 
     // adjust width first to eliminate horizontal scroll bar
     adjustWidth(dims.width, dims.left);
     adjustHeight(dims.innerHeight, dims.top);
 
-    var el = get(S.playerId);
-    if (el) {
-        // resize resizable content when in resize mode
-        if (player.resizable && S.options.handleOversize == "resize") {
-            el.height = dims.resizeHeight;
-            el.width = dims.resizeWidth;
-        }
-    }
+    if (player.onWindowResize)
+        player.onWindowResize();
 }
 
 S.skin = K;

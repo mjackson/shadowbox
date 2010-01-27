@@ -731,9 +731,7 @@ S.getPlayer = function(content) {
 }
 
 /**
- * Calculates the dimensions for Shadowbox according to the given parameters. Will determine
- * if the object is oversized (too large for the maxHeight/maxWidth) and will automatically
- * constrain resizable objects according to user preference.
+ * Calculates the dimensions for Shadowbox.
  *
  * @param   {Number}    height      The height of the object
  * @param   {Number}    width       The width of the object
@@ -741,11 +739,10 @@ S.getPlayer = function(content) {
  * @param   {Number}    maxWidth    The maximum available width
  * @param   {Number}    topBottom   The extra top/bottom required for borders/toolbars
  * @param   {Number}    leftRight   The extra left/right required for borders/toolbars
- * @param   {Boolean}   resizable   True if the content is able to be resized
  * @return  {Object}                The new dimensions object
  * @public
  */
-S.setDimensions = function(height, width, maxHeight, maxWidth, topBottom, leftRight, padding, resizable) {
+S.setDimensions = function(height, width, maxHeight, maxWidth, topBottom, leftRight, padding) {
     var originalHeight = height,
         originalWidth = width;
 
@@ -762,33 +759,24 @@ S.setDimensions = function(height, width, maxHeight, maxWidth, topBottom, leftRi
         changeWidth = (originalWidth - width) / originalWidth,
         oversized = (changeHeight > 0 || changeWidth > 0);
 
-    // determine resized height/width
-    var resizeHeight, resizeWidth;
-    if (resizable && oversized && S.options.handleOversize == "resize") {
+    // adjust height/width if too large
+    if (oversized) {
         // preserve aspect ratio according to greatest change
         if (changeHeight > changeWidth) {
             width = Math.round((originalWidth / originalHeight) * height);
         } else if (changeWidth > changeHeight) {
             height = Math.round((originalHeight / originalWidth) * width);
         }
-        resizeHeight = height;
-        resizeWidth = width;
-    } else {
-        resizeHeight = originalHeight;
-        resizeWidth = originalWidth;
     }
 
-    // every number should be an integer
     S.dimensions = {
-        innerHeight:    height,
-        innerWidth:     width,
         height:         height + topBottom,
         width:          width + leftRight,
+        innerHeight:    height,
+        innerWidth:     width,
         top:            Math.floor((maxHeight - (height + extraHeight)) / 2 + padding),
         left:           Math.floor((maxWidth - (width + extraWidth)) / 2 + padding),
-        oversized:      oversized,
-        resizeHeight:   resizeHeight,
-        resizeWidth:    resizeWidth
+        oversized:      oversized
     };
 
     return S.dimensions;
@@ -982,7 +970,7 @@ function load(changing) {
         S.applyOptions(obj.options);
     }
 
-    S.player = new S[player](obj);
+    S.player = new S[player](obj, S.playerId);
 
     // preload neighboring gallery images
     if (S.gallery.length > 1) {

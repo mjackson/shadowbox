@@ -14,10 +14,12 @@ var qtControllerHeight = 16;
  * Constructor. The QuickTime player class for Shadowbox.
  *
  * @param   {Object}    obj     The content object
+ * @param   {String}    id      The player id
  * @public
  */
-S.qt = function(obj) {
+S.qt = function(obj, id) {
     this.obj = obj;
+    this.id = id;
 
     // height/width default to 300 pixels
     this.height = obj.height ? parseInt(obj.height, 10) : 300;
@@ -44,8 +46,8 @@ S.qt.prototype = {
 
         var html = "<object",
             movie = {
-                id:         S.playerId,
-                name:       S.playerId,
+                id:         this.id,
+                name:       this.id,
                 height:     this.height,
                 width:      this.width,
                 kioskmode:  "true"
@@ -84,10 +86,10 @@ S.qt.prototype = {
      */
     remove: function() {
         try {
-            document[S.playerId].Stop(); // stop QT video stream
+            document[this.id].Stop(); // stop QT video stream
         } catch(e) {}
 
-        var el = get(S.playerId);
+        var el = get(this.id);
         if (el)
             remove(el);
     }
