@@ -3,20 +3,21 @@
  */
 
 /**
+ * Resource used to preload images. It's class-level so that when a new image is requested,
+ * the same resource can be reassigned, cancelling the original's callback.
+ *
+ * @type    {Image}
+ * @private
+ */
+var pre,
+
+/**
  * Keeps track of 4 floating values (x, y, startx, & starty) that are used in the drag calculations.
  *
  * @type    {Object}
  * @private
  */
-var drag,
-
-/**
- * Holds the draggable element so we don't have to fetch it every time the mouse moves.
- *
- * @type    {HTMLElement}
- * @private
- */
-draggable,
+dragData,
 
 /**
  * The id to use for the drag layer.
@@ -27,14 +28,20 @@ draggable,
 dragId = "sb-drag-layer",
 
 /**
- * Resource used to preload images. It's class-level so that when a new
- * image is requested, the same resource can be reassigned, cancelling
- * the original's callback.
+ * The transparent element that is used to listen for drag events.
  *
  * @type    {HTMLElement}
  * @private
  */
-pre;
+dragLayer,
+
+/**
+ * The draggable element.
+ *
+ * @type    {HTMLElement}
+ * @private
+ */
+dragTarget;
 
 /**
  * Resets the class drag variable.
@@ -42,81 +49,71 @@ pre;
  * @private
  */
 function resetDrag() {
-    drag = {
+    dragData = {
         x:      0,
         y:      0,
-        startx: null,
-        starty: null
+        startX: null,
+        startY: null
     };
 }
 
 /**
- * Toggles the drag function on and off.
+ * Enables a transparent drag layer on top of images.
  *
  * @param   {Number}    height  The height of the drag layer
  * @param   {Number}    width   The width of the drag layer
  * @private
  */
-function toggleDrag(height, width) {
-    if (height) {
-        resetDrag();
+function enableDrag(height, width) {
+    resetDrag();
 
-        // add transparent drag layer to prevent browser dragging of actual image
-        var style = [
-            "position:absolute",
-            "height:" + height + "px",
-            "width:" + width + "px",
-            "cursor:" + (S.isGecko ? "-moz-grab" : "move"),
-            "background-color:" + (S.isIE ? "#fff;filter:alpha(opacity=0)" : "transparent")
-        ].join(";");
+    // add transparent drag layer to prevent browser dragging of actual image
+    var style = [
+        "position:absolute",
+        "height:" + height + "px",
+        "width:" + width + "px",
+        "cursor:" + (S.isGecko ? "-moz-grab" : "move"),
+        "background-color:" + (S.isIE ? "#fff;filter:alpha(opacity=0)" : "transparent")
+    ].join(";");
 
-        appendHTML(S.skin.body, '<div id="' + dragId + '" style="' + style + '"></div>');
-        addEvent(dragLayer, "mousedown", listenDrag);
-    } else {
-        var dragLayer = get(dragId);
-        if (dragLayer) {
-            removeEvent(dragLayer, "mousedown", listenDrag);
-            remove(dragLayer);
-        }
-        draggable = null;
-    }
+    appendHTML(S.skin.body, '<div id="' + dragId + '" style="' + style + '"></div>');
+
+    dragLayer = get(dragId);
+    addEvent(dragLayer, "mousedown", startDrag);
 }
 
 /**
- * Sets up a drag listener on the document. Called when the mouse button is
- * pressed (mousedown).
+ * Disables the drag layer.
+ *
+ * @private
+ */
+function disableDrag() {
+    removeEvent(dragLayer, "mousedown", startDrag);
+    remove(dragLayer);
+    dragLayer = dragTarget = null;
+}
+
+/**
+ * Sets up a drag listener on the document.
  *
  * @param   {Event}     e   The mousedown event
  * @private
  */
-function listenDrag(e) {
+function startDrag(e) {
     // prevent browser dragging
     preventDefault(e);
 
     var xy = getPageXY(e);
-    drag.startx = xy[0];
-    drag.starty = xy[1];
+    drag.startX = xy[0];
+    drag.startY = xy[1];
 
-    draggable = get(S.playerId);
+    dragTarget = get(S.player.id);
+
     addEvent(document, "mousemove", positionDrag);
-    addEvent(document, "mouseup", unlistenDrag);
+    addEvent(document, "mouseup", endDrag);
 
     if (S.isGecko)
-        get(dragId).style.cursor = "-moz-grabbing";
-}
-
-/**
- * Removes the drag listener. Called when the mouse button is released
- * (mouseup).
- *
- * @private
- */
-function unlistenDrag() {
-    removeEvent(document, "mousemove", positionDrag);
-    removeEvent(document, "mouseup", unlistenDrag);
-
-    if (S.isGecko)
-        get(dragId).style.cursor = "-moz-grab";
+        dragLayer.style.cursor = "-moz-grabbing";
 }
 
 /**
@@ -130,17 +127,31 @@ function positionDrag(e) {
         dims = S.dimensions,
         xy = getPageXY(e);
 
-    var movex = xy[0] - drag.startx;
-    drag.startx += movex;
-    // x boundaries
-    drag.x = Math.max(Math.min(0, drag.x + movex), dims.innerWidth - player.width);
-    draggable.style.left = drag.x + "px";
+    var moveX = xy[0] - drag.startX;
+    drag.startX += moveX;
+    drag.x = Math.max(Math.min(0, drag.x + moveX), dims.innerWidth - player.width);
 
-    var movey = xy[1] - drag.starty;
-    drag.starty += movey;
-    // y boundaries
-    drag.y = Math.max(Math.min(0, drag.y + movey), dims.innerHeight - player.height);
-    draggable.style.top = drag.y + "px";
+    var moveY = xy[1] - drag.startY;
+    drag.startY += moveY;
+    drag.y = Math.max(Math.min(0, drag.y + moveY), dims.innerHeight - player.height);
+
+    apply(dragTarget.style, {
+        left: drag.x + "px",
+        top: drag.y + "px
+    });
+}
+
+/**
+ * Removes the drag listener from the document.
+ *
+ * @private
+ */
+function endDrag() {
+    removeEvent(document, "mousemove", positionDrag);
+    removeEvent(document, "mouseup", endDrag);
+
+    if (S.isGecko)
+        dragLayer.style.cursor = "-moz-grab";
 }
 
 /**
@@ -208,8 +219,7 @@ S.img.prototype = {
         if (el)
             remove(el);
 
-        // disable drag layer
-        toggleDrag();
+        disableDrag();
 
         // prevent old image requests from loading
         if (pre) {
@@ -227,10 +237,9 @@ S.img.prototype = {
     onLoad: function() {
         var dims = S.dimensions;
 
-        // listen for drag, in the case of oversized images, the "resized"
-        // height/width will actually be the original image height/width
+        // listen for drag when image is oversized
         if (dims.oversized && S.options.handleOversize == "drag")
-            toggleDrag(dims.resizeHeight, dims.resizeWidth);
+            enableDrag(dims.innerHeight, dims.innerWidth);
     },
 
     /**
@@ -242,20 +251,23 @@ S.img.prototype = {
         var dims = S.dimensions,
             el = get(this.id);
 
+        if (!el)
+            return;
+
         switch (S.options.handleOversize) {
         case "resize":
             el.height = dims.innerHeight;
             el.width = dims.innerWidth;
             break;
         case "drag":
-            if (draggable) {
-                var top = parseInt(getStyle(draggable, "top")),
-                    left = parseInt(getStyle(draggable, "left"));
+            if (dragTarget) {
+                var top = parseInt(getStyle(el, "top")),
+                    left = parseInt(getStyle(el, "left"));
                 // fix positioning when enlarging viewport
                 if (top + this.height < dims.innerHeight)
-                    draggable.style.top = dims.innerHeight - this.height + "px";
+                    el.style.top = dims.innerHeight - this.height + "px";
                 if (left + this.width < dims.innerWidth)
-                    draggable.style.left = dims.innerWidth - this.width + "px";
+                    el.style.left = dims.innerWidth - this.width + "px";
             }
             break;
         }
