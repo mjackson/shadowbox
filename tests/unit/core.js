@@ -56,38 +56,22 @@ test("setDimensions", function() {
     var dims;
 
     // perfect fit
-    dims = Shadowbox.setDimensions(100, 100, 100, 100, 0, 0, 0, true);
-    equal(dims.innerHeight, 100);
-    equal(dims.innerWidth, 100);
+    dims = Shadowbox.setDimensions(100, 100, 100, 100, 0, 0, 0);
     equal(dims.height, 100);
     equal(dims.width, 100);
+    equal(dims.innerHeight, 100);
+    equal(dims.innerWidth, 100);
     equal(dims.top, 0);
     equal(dims.left, 0);
     equal(dims.oversized, false);
-    equal(dims.resizeHeight, 100);
-    equal(dims.resizeWidth, 100);
 
-    // oversized and resizable
-    dims = Shadowbox.setDimensions(100, 200, 50, 50, 0, 0, 0, true);
-    equal(dims.innerHeight, 25);
-    equal(dims.innerWidth, 50);
+    // oversized
+    dims = Shadowbox.setDimensions(100, 200, 50, 50, 0, 0, 0);
     equal(dims.height, 25);
     equal(dims.width, 50);
+    equal(dims.innerHeight, 25);
+    equal(dims.innerWidth, 50);
     equal(dims.top, 12);
     equal(dims.left, 0);
     equal(dims.oversized, true);
-    equal(dims.resizeHeight, 25);
-    equal(dims.resizeWidth, 50);
-
-    // oversized and not resizable
-    dims = Shadowbox.setDimensions(100, 200, 50, 50, 0, 0, 0, false);
-    equal(dims.innerHeight, 50);
-    equal(dims.innerWidth, 50);
-    equal(dims.height, 50);
-    equal(dims.width, 50);
-    equal(dims.top, 0);
-    equal(dims.left, 0);
-    equal(dims.oversized, true);
-    equal(dims.resizeHeight, 100);
-    equal(dims.resizeWidth, 200);
 });
