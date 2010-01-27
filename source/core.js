@@ -870,7 +870,7 @@ function filterGallery() {
         } else if (obj.player == "swf" || obj.player == "flv") {
             flashVersion = (obj.options && obj.options.flashVersion) || S.options.flashVersion;
 
-            if (!S.flash.hasFlashPlayerVersion(version)) {
+            if (!S.flash.hasFlashPlayerVersion(flashVersion)) {
                 // express install will be triggered because the client does not meet the
                 // minimum required version of Flash. set height and width to those of expressInstall.swf
                 obj.width = 310;

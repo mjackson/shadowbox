@@ -48,13 +48,14 @@ S.select = function(selector) {
     } else {
         var length = selector.length;
         if (length) {
-            if (typeof selector == "object") {
+            var type = typeof selector;
+            if (type == "object") {
                 if (S.find && length == 2 && typeof selector[0] == "string" && selector[1].nodeType) {
                     links = S.find(selector[0], selector[1]); // selector + context
                 } else {
                     links = Array.prototype.slice.call(selector, 0); // array of links (or node list)
                 }
-            } else if (S.find && typeof selector == "string") {
+            } else if (type == "string" && S.find) {
                 links = S.find(selector);
             }
         } else {
@@ -161,7 +162,7 @@ S.clearCache = function() {
  * @private
  */
 function handleClick(e) {
-    //preventDefault(e); // good for debugging
+    preventDefault(e); // good for debugging
 
     S.open(this);
 
