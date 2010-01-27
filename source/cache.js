@@ -36,10 +36,10 @@ S.cache = {};
  * @public
  */
 S.select = function(selector) {
-    var links;
+    var links = [];
 
     if (!selector) {
-        var rel, links = [];
+        var rel;
         each(document.getElementsByTagName("a"), function(i, el) {
             rel = el.getAttribute("rel");
             if (rel && relAttr.test(rel))
@@ -48,17 +48,17 @@ S.select = function(selector) {
     } else {
         var length = selector.length;
         if (length) {
-            if (selector.push) {
+            if (typeof selector == "object") {
                 if (S.find && length == 2 && typeof selector[0] == "string" && selector[1].nodeType) {
                     links = S.find(selector[0], selector[1]); // selector + context
                 } else {
-                    links = selector; // array of links
+                    links = Array.prototype.slice.call(selector, 0); // array of links (or node list)
                 }
-            } else if (typeof selector == "string" && S.find) {
+            } else if (S.find && typeof selector == "string") {
                 links = S.find(selector);
             }
         } else {
-            links = [selector]; // single link
+            links.push(selector); // single link
         }
     }
 

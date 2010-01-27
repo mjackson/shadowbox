@@ -2,14 +2,16 @@ module("cache");
 
 test("select", function() {
     var sel = Shadowbox.select();
-    ok(sel.length == 1, 'Automatically select all links with rel="shadowbox"');
+    equal(sel.length, 1, 'Automatically select all links with rel="shadowbox"');
     var anchor1 = document.getElementById('anchor1');
     var anchor2 = document.getElementById('anchor2');
     var sel = Shadowbox.select(anchor1);
-    ok(sel.length == 1, 'Select one element when given explicitly');
+    equal(sel.length, 1, 'Select one element when given explicitly');
     var sel = Shadowbox.select([anchor1, anchor2]);
-    ok(sel.length == 2, 'Select multiple elements when given explicitly');
-    ok(sel[0] == anchor1, 'Keep references to original elements');
+    equal(sel.length, 2, 'Select multiple elements when given in an array');
+    equal(sel[0], anchor1, 'Keep references to original elements');
+    var sel = Shadowbox.select(document.getElementById('main').getElementsByTagName('a'));
+    equal(sel.length, 3, 'Select multiple elements when given in a node list');
 });
 
 test("setup (automatic)", function() {
