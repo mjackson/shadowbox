@@ -668,12 +668,12 @@ S.buildObject = function(link, options) {
         if (match)
             obj.gallery = escape(match[2]);
 
-        // other parameters
+        // extract any other parameters
         each(rel.split(';'), function(i, p) {
             match = p.match(inlineParam);
             if (match) {
                 if (match[1] == "options") {
-                    eval("apply(obj.options," + match[2] + ")");
+                    eval("obj.options=" + match[2]);
                 } else {
                     obj[match[1]] = match[2];
                 }
