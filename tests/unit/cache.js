@@ -23,6 +23,7 @@ test("setup (manual)", function() {
     var anchor2 = document.getElementById("anchor2");
     ok(Shadowbox.getCache(anchor2) == false, "Cache miss for new link object");
     Shadowbox.setup(anchor2);
+
     var cacheObj = Shadowbox.getCache(anchor2);
     ok(cacheObj, "Cache contains manually setup object");
 });
@@ -34,6 +35,7 @@ test("buildObject", function() {
     ok(cacheObj.title == "Snow Leopard", "Cache object pulls title from link element");
     ok(cacheObj.options.animate === false, "Inline boolean option is parsed correctly");
     ok(cacheObj.options.animSequence === 'hw', "Inline string option is parsed correctly");
+
     var anchor2 = document.getElementById("anchor2");
     var cacheObj = Shadowbox.getCache(anchor2);
     equal(cacheObj.title, "", "Cache object has empty title");
