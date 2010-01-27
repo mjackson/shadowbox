@@ -162,7 +162,7 @@ S.clearCache = function() {
  * @private
  */
 function handleClick(e) {
-    preventDefault(e); // good for debugging
+    //preventDefault(e); // good for debugging
 
     S.open(this);
 
