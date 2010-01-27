@@ -57,6 +57,18 @@ S.swf.prototype = {
         // active and user has not selected anything
         S.flash.expressInstallCallback();
         S.flash.removeSWF(this.id);
+    },
+
+    /**
+     * Called when the window is resized.
+     *
+     * @public
+     */
+    onWindowResize: function() {
+        var dims = S.dimensions,
+            el = get(this.id);
+        el.height = dims.innerHeight;
+        el.width = dims.innerWidth;
     }
 
 }
