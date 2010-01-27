@@ -5,29 +5,6 @@
 var E = Ext.lib.Event;
 
 /**
- * Gets the value of the style on the given element.
- *
- * @param   {HTMLElement}   el          The element
- * @param   {String}        style       The name of the style
- * @return  {mixed}                     The value of the given style
- * @private
- */
-function getStyle(el, style) {
-    return Ext.get(el).getStyle(style);
-}
-
-/**
- * Appends an HTML fragment to the given element.
- *
- * @param   {HTMLElement}   el          The element to append to
- * @param   {String}        html        The HTML fragment to use
- * @private
- */
-function appendHTML(el, html) {
-    Ext.DomHelper.append(el, html);
-}
-
-/**
  * Gets the target of the given event. The event object passed will be
  * the same object that is passed to listeners registered with
  * addEvent().

@@ -2,40 +2,7 @@
  * The YUI adapter for Shadowbox.
  */
 
-var E = YAHOO.util.Event,
-    D = YAHOO.util.Dom;
-
-/**
- * Gets the value of the style on the given element.
- *
- * @param   {HTMLElement}   el          The element
- * @param   {String}        style       The name of the style
- * @return  {mixed}                     The value of the given style
- * @private
- */
-function getStyle(el, style) {
-    return D.getStyle(el, style);
-}
-
-/**
- * Appends an HTML fragment to the given element.
- *
- * @param   {HTMLElement}   el          The element to append to
- * @param   {String}        html        The HTML fragment to use
- * @private
- */
-function appendHTML(el, html) {
-    if (el.insertAdjacentHTML) {
-        el.insertAdjacentHTML("BeforeEnd", html);
-    } else if(el.lastChild) {
-        var range = el.ownerDocument.createRange();
-        range.setStartAfter(el.lastChild);
-        var frag = range.createContextualFragment(html);
-        el.appendChild(frag);
-    } else {
-        el.innerHTML = html;
-    }
-}
+var E = YAHOO.util.Event;
 
 /**
  * Gets the target of the given event. The event object passed will be
