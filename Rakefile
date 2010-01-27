@@ -1,5 +1,9 @@
+def root(*args)
+  File.join(File.dirname(__FILE__), *args)
+end
+
 require 'yaml'
-require File.dirname(__FILE__) + '/tools/shadowbox'
+require root('tools', 'shadowbox')
 
 def use_params(params_file)
   fail "Unable to find configuration file #{params_file}" unless File.exist?(params_file)
@@ -68,21 +72,22 @@ task :build do |t|
   File.open(build("shadowbox.js"), 'w') do |f|
     files.each do |file|
       js = File.read(source(file) + ".js")
-      js.gsub!('@VERSION', version).gsub!('@DATE', "Date: " + Time.now.inspect) if file == "intro"
+      js.sub!('@VERSION', version).sub!('@DATE', "Date: " + Time.now.inspect) if file == "intro"
       f << js + "\n"
     end
   end
 
-  resources = Dir[source('resources/*.png')].map {|file| File.basename(file) }
+  resources = []
   resources << 'shadowbox.css'
+  resources += Dir[source('resources', '*.png')].map {|file| File.basename(file) }
   resources << 'player.swf' if $PARAMS['players'].include?('flv')
   resources << 'expressInstall.swf' unless ($PARAMS["players"] & ["swf", "flv"]).empty?
   resources.each do |resource|
     cp source('resources', resource), build(resource)
   end
 
-  cp File.dirname(__FILE__) + '/README', build('README')
-  cp File.dirname(__FILE__) + '/LICENSE', build('LICENSE')
+  cp root('README'), build('README')
+  cp root('LICENSE'), build('LICENSE')
 
   if $PARAMS["compress"]
     js = build('shadowbox.js')
@@ -98,12 +103,12 @@ end
 namespace :build do
   desc "Create a build for running the examples"
   task :examples do
-    sub_build(File.dirname(__FILE__) + '/examples/build.yml')
+    sub_build(root('examples', 'build.yml'))
   end
 
   desc "Create a build for running the tests"
   task :tests do
-    sub_build(File.dirname(__FILE__) + '/tests/build.yml')
+    sub_build(root('tests', 'build.yml'))
   end
 end
 
@@ -111,8 +116,8 @@ desc "Clean up all temporary files"
 task :clean do
   files = [
     $PARAMS['target'],
-    File.dirname(__FILE__) + '/examples/build',
-    File.dirname(__FILE__) + '/tests/build'
+    root('examples', 'build'),
+    root('tests', 'build')
   ]
 
   files.each do |file|
