@@ -46,7 +46,7 @@ S.flv.prototype = {
         tmp.id = this.id;
         body.appendChild(tmp);
 
-        var height = dims.innerHeight, // use resized dimensions
+        var height = dims.innerHeight,
             width = dims.innerWidth,
             swf = S.path + "player.swf",
             version = S.options.flashVersion,
