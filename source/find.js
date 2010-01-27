@@ -4,7 +4,7 @@
  *  Released under the MIT, BSD, and GPL Licenses.
  *  More information: http://sizzlejs.com/
  *
- * Modified for inclusion in the Shadowbox JavaScript library.
+ * Modified for inclusion in Shadowbox.js
  */
 S.find = (function(){
 
