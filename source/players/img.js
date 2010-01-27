@@ -12,6 +12,14 @@
 var pre,
 
 /**
+ * The id to use for the drag proxy element.
+ *
+ * @type    {String}
+ * @private
+ */
+proxyId = "sb-drag-proxy",
+
+/**
  * Keeps track of 4 floating values (x, y, startx, & starty) that are used in the drag calculations.
  *
  * @type    {Object}
@@ -20,20 +28,12 @@ var pre,
 dragData,
 
 /**
- * The id to use for the drag layer.
- *
- * @type    {String}
- * @private
- */
-dragId = "sb-drag-layer",
-
-/**
  * The transparent element that is used to listen for drag events.
  *
  * @type    {HTMLElement}
  * @private
  */
-dragLayer,
+dragProxy,
 
 /**
  * The draggable element.
@@ -58,28 +58,38 @@ function resetDrag() {
 }
 
 /**
- * Enables a transparent drag layer on top of images.
+ * Updates the drag proxy dimensions.
  *
- * @param   {Number}    height  The height of the drag layer
- * @param   {Number}    width   The width of the drag layer
  * @private
  */
-function enableDrag(height, width) {
+function updateProxy() {
+    var dims = S.dimensions;
+    apply(dragProxy.style, {
+        height: dims.innerHeight + "px",
+        width: dims.innerWidth + "px"
+    });
+}
+
+/**
+ * Enables a transparent drag layer on top of images.
+ *
+ * @private
+ */
+function enableDrag() {
     resetDrag();
 
-    // add transparent drag layer to prevent browser dragging of actual image
+    // add transparent proxy layer to prevent browser dragging of actual image
     var style = [
         "position:absolute",
-        "height:" + height + "px",
-        "width:" + width + "px",
         "cursor:" + (S.isGecko ? "-moz-grab" : "move"),
         "background-color:" + (S.isIE ? "#fff;filter:alpha(opacity=0)" : "transparent")
     ].join(";");
+    S.appendHTML(S.skin.body, '<div id="' + proxyId + '" style="' + style + '"></div>');
 
-    appendHTML(S.skin.body, '<div id="' + dragId + '" style="' + style + '"></div>');
+    dragProxy = get(proxyId);
+    updateProxy();
 
-    dragLayer = get(dragId);
-    addEvent(dragLayer, "mousedown", startDrag);
+    addEvent(dragProxy, "mousedown", startDrag);
 }
 
 /**
@@ -88,10 +98,10 @@ function enableDrag(height, width) {
  * @private
  */
 function disableDrag() {
-    if (dragLayer) {
-        removeEvent(dragLayer, "mousedown", startDrag);
-        remove(dragLayer);
-        dragLayer = null;
+    if (dragProxy) {
+        removeEvent(dragProxy, "mousedown", startDrag);
+        remove(dragProxy);
+        dragProxy = null;
     }
 
     dragTarget = null;
@@ -108,8 +118,8 @@ function startDrag(e) {
     preventDefault(e);
 
     var xy = getPageXY(e);
-    drag.startX = xy[0];
-    drag.startY = xy[1];
+    dragData.startX = xy[0];
+    dragData.startY = xy[1];
 
     dragTarget = get(S.player.id);
 
@@ -117,7 +127,7 @@ function startDrag(e) {
     addEvent(document, "mouseup", endDrag);
 
     if (S.isGecko)
-        dragLayer.style.cursor = "-moz-grabbing";
+        dragProxy.style.cursor = "-moz-grabbing";
 }
 
 /**
@@ -131,17 +141,17 @@ function positionDrag(e) {
         dims = S.dimensions,
         xy = getPageXY(e);
 
-    var moveX = xy[0] - drag.startX;
-    drag.startX += moveX;
-    drag.x = Math.max(Math.min(0, drag.x + moveX), dims.innerWidth - player.width);
+    var moveX = xy[0] - dragData.startX;
+    dragData.startX += moveX;
+    dragData.x = Math.max(Math.min(0, dragData.x + moveX), dims.innerWidth - player.width);
 
-    var moveY = xy[1] - drag.startY;
-    drag.startY += moveY;
-    drag.y = Math.max(Math.min(0, drag.y + moveY), dims.innerHeight - player.height);
+    var moveY = xy[1] - dragData.startY;
+    dragData.startY += moveY;
+    dragData.y = Math.max(Math.min(0, dragData.y + moveY), dims.innerHeight - player.height);
 
     apply(dragTarget.style, {
-        left: drag.x + "px",
-        top: drag.y + "px"
+        left: dragData.x + "px",
+        top: dragData.y + "px"
     });
 }
 
@@ -155,7 +165,7 @@ function endDrag() {
     removeEvent(document, "mouseup", endDrag);
 
     if (S.isGecko)
-        dragLayer.style.cursor = "-moz-grab";
+        dragProxy.style.cursor = "-moz-grab";
 }
 
 /**
@@ -206,9 +216,18 @@ S.img.prototype = {
         img.src = this.obj.content;
         img.style.position = "absolute";
 
+        var height, width;
+        if (dims.oversized && S.options.handleOversize == "resize") {
+            height = dims.innerHeight;
+            width = dims.innerWidth;
+        } else {
+            height = this.height;
+            width = this.width;
+        }
+
         // need to use setAttribute here for IE's sake
-        img.setAttribute("height", dims.innerHeight)
-        img.setAttribute("width", dims.innerWidth)
+        img.setAttribute("height", height);
+        img.setAttribute("width", width);
 
         body.appendChild(img);
     },
@@ -243,7 +262,7 @@ S.img.prototype = {
 
         // listen for drag when image is oversized
         if (dims.oversized && S.options.handleOversize == "drag")
-            enableDrag(dims.innerHeight, dims.innerWidth);
+            enableDrag();
     },
 
     /**
@@ -252,26 +271,26 @@ S.img.prototype = {
      * @public
      */
     onWindowResize: function() {
-        var dims = S.dimensions,
-            el = get(this.id);
-
-        if (!el)
-            return;
+        var dims = S.dimensions;
 
         switch (S.options.handleOversize) {
         case "resize":
+            var el = get(this.id);
             el.height = dims.innerHeight;
             el.width = dims.innerWidth;
             break;
         case "drag":
             if (dragTarget) {
-                var top = parseInt(getStyle(el, "top")),
-                    left = parseInt(getStyle(el, "left"));
-                // fix positioning when enlarging viewport
+                var top = parseInt(S.getStyle(dragTarget, "top")),
+                    left = parseInt(S.getStyle(dragTarget, "left"));
+
+                // fix positioning when viewport is enlarged
                 if (top + this.height < dims.innerHeight)
-                    el.style.top = dims.innerHeight - this.height + "px";
+                    dragTarget.style.top = dims.innerHeight - this.height + "px";
                 if (left + this.width < dims.innerWidth)
-                    el.style.left = dims.innerWidth - this.width + "px";
+                    dragTarget.style.left = dims.innerWidth - this.width + "px";
+
+                updateProxy();
             }
             break;
         }
