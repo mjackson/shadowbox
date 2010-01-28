@@ -53,7 +53,10 @@ S.select = function(selector) {
                 if (S.find && length == 2 && typeof selector[0] == "string" && selector[1].nodeType) {
                     links = S.find(selector[0], selector[1]); // selector + context
                 } else {
-                    links = Array.prototype.slice.call(selector, 0); // array of links (or node list)
+                    // array of links (or node list)
+                    for (var i = 0; i < length; ++i) {
+                        links[i] = selector[i];
+                    }
                 }
             } else if (type == "string" && S.find) {
                 links = S.find(selector);
