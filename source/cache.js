@@ -48,18 +48,17 @@ S.select = function(selector) {
     } else {
         var length = selector.length;
         if (length) {
-            var type = typeof selector;
-            if (type == "object") {
-                if (S.find && length == 2 && typeof selector[0] == "string" && selector[1].nodeType) {
-                    links = S.find(selector[0], selector[1]); // selector + context
-                } else {
-                    // array of links (or node list)
-                    for (var i = 0; i < length; ++i) {
-                        links[i] = selector[i];
-                    }
+            if (typeof selector == "string") {
+                if (S.find)
+                    links = S.find(selector); // css selector
+            } else if (length == 2 && typeof selector[0] == "string" && selector[1].nodeType) {
+                if (S.find)
+                    links = S.find(selector[0], selector[1]); // css selector + context
+            } else {
+                // array of links (or node list)
+                for (var i = 0; i < length; ++i) {
+                    links[i] = selector[i];
                 }
-            } else if (type == "string" && S.find) {
-                links = S.find(selector);
             }
         } else {
             links.push(selector); // single link
