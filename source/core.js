@@ -126,6 +126,31 @@ S.ease = function(state) {
 }
 
 /**
+ * An object containing names of plugins and links to their respective download pages.
+ *
+ * @type    {Object}
+ * @public
+ */
+S.errorInfo = {
+    fla: {
+        name: "Flash",
+        url:  "http://www.adobe.com/products/flashplayer/"
+    },
+    qt: {
+        name: "QuickTime",
+        url:  "http://www.apple.com/quicktime/download/"
+    },
+    wmp: {
+        name: "Windows Media Player",
+        url:  "http://www.microsoft.com/windows/windowsmedia/"
+    },
+    f4m: {
+        name: "Flip4Mac",
+        url:  "http://www.flip4mac.com/wmv_download.htm"
+    }
+};
+
+/**
  * The content objects in the current set.
  *
  * @type    {Array}
@@ -192,30 +217,6 @@ S.options = {
      * @type    {Boolean}
      */
     enableKeys: true,
-
-    /**
-     * An object containing names of plugins and links to their respective download pages.
-     *
-     * @type    {Object}
-     */
-    errors: {
-        fla: {
-            name: "Flash",
-            url:  "http://www.adobe.com/products/flashplayer/"
-        },
-        qt: {
-            name: "QuickTime",
-            url:  "http://www.apple.com/quicktime/download/"
-        },
-        wmp: {
-            name: "Windows Media Player",
-            url:  "http://www.microsoft.com/windows/windowsmedia/"
-        },
-        f4m: {
-            name: "Flip4Mac",
-            url:  "http://www.flip4mac.com/wmv_download.htm"
-        }
-    },
 
     /**
      * Parameters to pass to flash <object>'s.
@@ -432,57 +433,17 @@ S.open = function(obj) {
     if (open)
         return;
 
-    // non-cached link, build an object on the fly
-    if (obj.tagName && !(obj = S.getCache(obj)))
-        obj = S.buildObject(obj);
-
-    if (obj.push) {
-        // obj is a gallery of objects
-        S.gallery = obj;
-        S.current = 0;
-    } else {
-        if (obj.gallery) {
-            // gallery object, build gallery from cached gallery objects
-            S.gallery = [];
-            S.current = null;
-
-            var o;
-            for (var key in S.cache) {
-                o = S.cache[key];
-                if (o.gallery && o.gallery == obj.gallery) {
-                    if (S.current == null && o.content == obj.content)
-                        S.current = S.gallery.length;
-                    S.gallery.push(o);
-                }
-            }
-
-            if (S.current == null) {
-                S.gallery.unshift(obj);
-                S.current = 0;
-            }
-        } else {
-            // single object, no gallery
-            S.gallery = [obj];
-            S.current = 0;
-        }
-    }
-
-    // use apply to break references to each gallery object here because
-    // the code may modify certain properties of these objects from here
-    // on out and we want to preserve the original in case it is used
-    // again in a future call
-    each(S.gallery, function(i, o) {
-        S.gallery[i] = apply({}, o);
-    });
+    S.makeGallery(obj);
 
     obj = S.getCurrent();
-    if (obj.options)
-        S.applyOptions(obj.options);
+    S.applyOptions(obj.options || {});
 
     filterGallery();
 
     // anything left to display?
     if (S.gallery.length) {
+        obj = S.getCurrent();
+
         if (S.options.onOpen(obj) === false)
             return;
 
@@ -783,12 +744,64 @@ S.setDimensions = function(height, width, maxHeight, maxWidth, topBottom, leftRi
 }
 
 /**
+ * Populates the gallery array with objects that belong in the same gallery
+ * as the given object.
+ *
+ * @param   {mixed}     obj
+ * @public
+ */
+S.makeGallery = function(obj) {
+    // non-cached link element, build an object on the fly
+    if (obj.tagName && !(obj = S.getCache(obj)))
+        obj = S.buildObject(obj);
+
+    if (obj.push) {
+        // obj is a gallery of objects
+        S.gallery = obj;
+        S.current = 0;
+    } else {
+        if (obj.gallery) {
+            // gallery object, build gallery from cached gallery objects
+            S.gallery = [];
+            S.current = null;
+
+            var o;
+            for (var key in S.cache) {
+                o = S.cache[key];
+                if (o.gallery && o.gallery == obj.gallery) {
+                    if (S.current == null && o.content == obj.content)
+                        S.current = S.gallery.length;
+                    S.gallery.push(o);
+                }
+            }
+
+            if (S.current == null) {
+                S.gallery.unshift(obj);
+                S.current = 0;
+            }
+        } else {
+            // single object, no gallery
+            S.gallery = [obj];
+            S.current = 0;
+        }
+    }
+
+    // use apply to break references to each gallery object here because
+    // the code may modify certain properties of these objects from here
+    // on out and we want to preserve the original in case it is used
+    // again in a future call
+    each(S.gallery, function(i, o) {
+        S.gallery[i] = apply({}, o);
+    });
+}
+
+/**
  * Filters the current gallery for unsupported objects.
  *
  * @private
  */
-function filterGallery() {
-    var errors = S.options.errors, plugins = S.plugins, obj, remove, needed,
+filterGallery = function() {
+    var err = S.errorInfo, plugins = S.plugins, obj, remove, needed,
         m, format, replace, inlineEl, flashVersion;
 
     for (var i = 0; i < S.gallery.length; ++i) {
@@ -836,15 +849,15 @@ function filterGallery() {
                 switch (needed) {
                 case "qtf4m":
                     format = "shared";
-                    replace = [errors.qt.url, errors.qt.name, errors.f4m.url, errors.f4m.name];
+                    replace = [err.qt.url, err.qt.name, err.f4m.url, err.f4m.name];
                     break;
                 case "qtwmp":
                     format = "either";
-                    replace = [errors.qt.url, errors.qt.name, errors.wmp.url, errors.wmp.name];
+                    replace = [err.qt.url, err.qt.name, err.wmp.url, err.wmp.name];
                     break;
                 default:
                     format = "single";
-                    replace = [errors[needed].url, errors[needed].name];
+                    replace = [err[needed].url, err[needed].name];
                 }
 
                 obj.player = "html";
@@ -967,7 +980,7 @@ function load(changing) {
     if (changing) {
         S.player.remove();
         S.revertOptions();
-        S.applyOptions(obj.options);
+        S.applyOptions(obj.options || {});
     }
 
     S.player = new S[player](obj, S.playerId);

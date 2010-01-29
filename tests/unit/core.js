@@ -75,3 +75,14 @@ test("setDimensions", function() {
     equal(dims.left, 0);
     equal(dims.oversized, true);
 });
+
+test("makeGallery", function() {
+    Shadowbox.setup();
+    console.dir(Shadowbox.cache);
+    var link3 = document.getElementById("link3");
+    Shadowbox.makeGallery(link3);
+    console.log(Shadowbox.gallery);
+    equal(Shadowbox.gallery[0].link, link3);
+    equal(Shadowbox.gallery[1].link, document.getElementById("link4"));
+    Shadowbox.clearCache();
+});

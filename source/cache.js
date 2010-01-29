@@ -56,9 +56,8 @@ S.select = function(selector) {
                     links = S.find(selector[0], selector[1]); // css selector + context
             } else {
                 // array of links (or node list)
-                for (var i = 0; i < length; ++i) {
+                for (var i = 0; i < length; ++i)
                     links[i] = selector[i];
-                }
             }
         } else {
             links.push(selector); // single link
