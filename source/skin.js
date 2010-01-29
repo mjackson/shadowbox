@@ -593,6 +593,8 @@ K.init = function() {
  * @public
  */
 K.onOpen = function(obj, callback) {
+    container.style.display = "block";
+
     setSize();
 
     var dims = setDimensions(S.options.initialHeight, S.options.initialWidth);
@@ -708,16 +710,20 @@ K.onClose = function() {
 
     wrapper.style.visibility = "hidden";
 
+    var callback = function() {
+        container.style.visibility = "hidden";
+        toggleTroubleElements(true);
+        container.style.display = "none";
+    }
+
     if (overlayOn) {
         animate(overlay, "opacity", 0, S.options.fadeDuration, function() {
-            container.style.visibility = "hidden";
+            callback();
             S.clearOpacity(overlay);
         });
     } else {
-        container.style.visibility = "hidden";
+        callback();
     }
-
-    toggleTroubleElements(true);
 }
 
 /**

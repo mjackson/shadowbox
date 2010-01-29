@@ -12,6 +12,7 @@
   z-index: 999;
   text-align: left;
   visibility: hidden;
+  display: none;
 }
 #sb-overlay {
   position: relative;
