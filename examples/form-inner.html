@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+
+<head>
+
+<title>Shadowbox Form Example</title>
+
+<style type="text/css">
+body {
+  background-color: #eee;
+  text-align: center;
+  margin-top: 40px;
+}
+#query {
+  color: #aaa;
+}
+</style>
+
+<script type="text/javascript">
+function blur() {
+    if (this.value == "") {
+        this.style.color = "#aaa";
+        this.value = "Search";
+    }
+}
+
+function focus() {
+    this.style.color = "#000";
+
+    if (this.value == "Search")
+        this.value = "";
+}
+
+function click() {
+    var s = window.parent.Shadowbox;
+    var q = document.getElementById("query");
+    var t = q.value == "Search" ? "You didn't enter anything!" : "You entered: " + q.value;
+
+    alert(s.version);
+    s.open({
+        player:     'html',
+        title:      'Search Query',
+        content:    '<div style="padding-top:40px;text-align:center">' + t + '</div>',
+        width:      300,
+        height:     100
+    });
+}
+
+window.onload = function() {
+    var q = document.getElementById("query");
+    q.onfocus = focus;
+    q.onblur = blur;
+
+    var s = document.getElementById("submit");
+    s.onclick = click;
+}
+</script>
+
+</head>
+
+<body>
+
+<input id="query" type="text" value="Search">
+<input id="submit" type="submit" value="Go">
+
+</body>
+
+</html>

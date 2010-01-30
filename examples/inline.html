@@ -4,7 +4,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>Thumb</title>
+<title>Inline HTML</title>
 <link rel="stylesheet" type="text/css" href="files/style.css">
 <link rel="stylesheet" type="text/css" href="build/shadowbox.css">
 <script type="text/javascript" src="build/shadowbox.js"></script>
@@ -13,8 +13,13 @@ Shadowbox.init();
 </script>
 </head>
 <body>
-    <p>This example demonstrates how to trigger Shadowbox by clicking on a thumbnail image.</p>
-    <p><a rel="shadowbox" href="files/tiger.jpg" title="Tiger"><img alt="Tiger" src="files/tiger-thumb.jpg"></a></p>
+    <p>This example demonstrates how to pull some HTML from another element that is already in the page into Shadowbox.</p>
+    <p><a rel="shadowbox" href="#inline-sample">Click Here</a></p>
     <p id="foot">This file is part of <a href="http://shadowbox-js.com/">Shadowbox.js</a>.</p>
+    <div id="inline-sample" style="display:none;">
+        <div id="inline-sample-content" style="padding:20px;color:white;">
+            <p>This content was taken from a hidden div in this page!</p>
+        </div>
+    </div>
 </body>
 </html>
