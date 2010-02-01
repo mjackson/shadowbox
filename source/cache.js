@@ -115,7 +115,7 @@ S.addCache = function(link, options) {
         addEvent(link, "click", handleClick);
     }
 
-    S.cache[key] = S.buildObject(link, options);
+    S.cache[key] = S.makeObject(link, options);
 }
 
 /**
