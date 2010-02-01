@@ -602,8 +602,7 @@ K.init = function() {
  * @public
  */
 K.onOpen = function(obj, callback) {
-    // IE triggers window resize event when container display is set to block, prevent
-    // the callback being fired with this little workaround
+    // prevent window resize events from firing until we're finished
     doWindowResize = false;
 
     container.style.display = "block";
@@ -633,7 +632,7 @@ K.onOpen = function(obj, callback) {
     container.style.visibility = "visible";
 
     if (overlayOn) {
-        animate(overlay, "opacity", parseFloat(S.options.overlayOpacity), S.options.fadeDuration, callback);
+        animate(overlay, "opacity", S.options.overlayOpacity, S.options.fadeDuration, callback);
     } else {
         callback();
     }
@@ -676,9 +675,6 @@ K.onReady = function(callback) {
     if (!open)
         return;
 
-    // wait until the player is ready to re-enable window resize listener
-    doWindowResize = true;
-
     var player = S.player,
         dims = setDimensions(player.height, player.width);
 
@@ -711,6 +707,9 @@ K.onReady = function(callback) {
  */
 K.onShow = function(callback) {
     toggleLoading(false, callback);
+
+    // re-enable window resize events
+    doWindowResize = true;
 }
 
 /**
@@ -728,15 +727,12 @@ K.onClose = function() {
 
     var callback = function() {
         container.style.visibility = "hidden";
-        toggleTroubleElements(true);
         container.style.display = "none";
+        toggleTroubleElements(true);
     }
 
     if (overlayOn) {
-        animate(overlay, "opacity", 0, S.options.fadeDuration, function() {
-            callback();
-            S.clearOpacity(overlay);
-        });
+        animate(overlay, "opacity", 0, S.options.fadeDuration, callback);
     } else {
         callback();
     }
