@@ -76,11 +76,30 @@ test("setDimensions", function() {
     equal(dims.oversized, true);
 });
 
-test("makeGallery", function() {
+test("makeGallery (automatic)", function() {
     Shadowbox.setup();
     var link3 = document.getElementById("link3");
-    Shadowbox.makeGallery(link3);
-    equal(Shadowbox.gallery[0].link, link3);
-    equal(Shadowbox.gallery[1].link, document.getElementById("link4"));
+    var link4 = document.getElementById("link4");
+    var gc = Shadowbox.makeGallery(link3);
+    var gallery = gc[0];
+    var current = gc[1];
+    equal(gallery[0].link, link3);
+    equal(gallery[1].link, link4);
     Shadowbox.clearCache();
+});
+
+test("makeGallery (manual)", function() {
+    var link3 = document.getElementById("link3");
+    var gc = Shadowbox.makeGallery(link3);
+    var gallery = gc[0];
+    var current = gc[1];
+    equal(gallery[0].link, link3);
+});
+
+test("makeObject", function() {
+    var link1 = document.getElementById("link1");
+    var obj = Shadowbox.makeObject(link1);
+    ok(obj.content, "HREF parsed");
+    equal(obj.title, "My Image", "Title parsed correctly");
+    equal(obj.gallery, null, "Does not belong to a gallery");
 });
