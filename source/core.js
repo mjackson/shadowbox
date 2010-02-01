@@ -423,8 +423,16 @@ S.init = function(options) {
 }
 
 /**
- * Opens the given object in Shadowbox. This object should be either link element or
- * an object similar to one produced by Shadowbox.buildObject.
+ * Opens the given object in Shadowbox. This object may be any of the following:
+ *
+ * - A URL specifying the location of some content to display
+ * - An HTML link object (A or AREA tag) that links to some content
+ * - A custom object similar to one produced by Shadowbox.makeObject
+ * - An array of any of the above
+ *
+ * Note: When a single link object is given, Shadowbox will automatically search
+ * for other cached link objects that have been set up in the same gallery and
+ * display them all together.
  *
  * @param   {mixed}     obj
  * @public
@@ -433,9 +441,15 @@ S.open = function(obj) {
     if (open)
         return;
 
-    S.makeGallery(obj);
+    var gc = S.makeGallery(obj);
+    S.gallery = gc[0];
+    S.current = gc[1];
 
     obj = S.getCurrent();
+
+    if (obj == null)
+        return;
+
     S.applyOptions(obj.options || {});
 
     filterGallery();
@@ -579,119 +593,6 @@ S.previous = function() {
 }
 
 /**
- * Extracts parameters from a link element and returns an object containing
- * (most of) the following keys:
- *
- * - link: the link element
- * - title: the object's title
- * - player: the player to use for the object
- * - content: the object's URL
- * - gallery: the gallery the object belongs to (optional)
- * - height: the height of the object (only necessary for movies)
- * - width: the width of the object (only necessary for movies)
- * - options: custom options to use (optional)
- *
- * A custom set of options may be passed in here that will be applied when
- * this object is displayed. However, any options that are specified in
- * the link's HTML markup will trump options given here.
- *
- * @param   {HTMLElement}   link        The link element to process
- * @param   {Object}        options     A set of options to use for the object
- * @return  {Object}                    An object representing the link
- * @public
- */
-S.buildObject = function(link, options) {
-    var obj = {
-        link:       link,
-        title:      link.getAttribute("title") || "",
-        content:    link.href // don't use getAttribute here
-    };
-
-    // remove link-level options from top-level options
-    if (options) {
-        each(["player", "title", "height", "width", "gallery"], function(i, o) {
-            if (typeof options[o] != "undefined") {
-                obj[o] = options[o];
-                delete options[o];
-            }
-        });
-    }
-    obj.options = options || {};
-
-    if (!obj.player)
-        obj.player = S.getPlayer(obj.content);
-
-    // HTML options always trump JavaScript options, so do these last
-    var rel = link.getAttribute("rel");
-    if (rel) {
-        // extract gallery name from shadowbox[name] format
-        var match = rel.match(galleryName);
-        if (match)
-            obj.gallery = escape(match[2]);
-
-        // extract any other parameters
-        each(rel.split(';'), function(i, p) {
-            match = p.match(inlineParam);
-            if (match) {
-                if (match[1] == "options") {
-                    eval("obj.options=" + match[2]);
-                } else {
-                    obj[match[1]] = match[2];
-                }
-            }
-        });
-    }
-
-    return obj;
-}
-
-/**
- * Attempts to automatically determine the correct player to use based on the
- * given content attribute. If the content type can be detected but is not
- * supported, the return value will be 'unsupported-*' where * will be the
- * player abbreviation (e.g. 'qt' = QuickTime). Defaults to 'iframe' where the
- * content type cannot automatically be determined.
- *
- * @param   {String}    content     The content attribute of the item
- * @return  {String}                The name of the player to use
- * @public
- */
-S.getPlayer = function(content) {
-    if (content.indexOf("#") > -1 && content.indexOf(document.location.href) == 0)
-        return "inline";
-
-    // strip query string for player detection purposes
-    var q = content.indexOf("?");
-    if (q > -1)
-        content = content.substring(0, q);
-
-    // get file extension
-    var ext, m = content.match(fileExtension)
-    if (m)
-        ext = m[0];
-
-    if (ext) {
-        if (S.img && S.img.ext.indexOf(ext) > -1)
-            return "img";
-        if (S.swf && S.swf.ext.indexOf(ext) > -1)
-            return "swf";
-        if (S.flv && S.flv.ext.indexOf(ext) > -1)
-            return "flv";
-        if (S.qt && S.qt.ext.indexOf(ext) > -1) {
-            if (S.wmp && S.wmp.ext.indexOf(ext) > -1) {
-                return "qtwmp"; // can be played by either QuickTime or Windows Media Player
-            } else {
-                return "qt";
-            }
-        }
-        if (S.wmp && S.wmp.ext.indexOf(ext) > -1)
-            return "wmp";
-    }
-
-    return "iframe";
-}
-
-/**
  * Calculates the dimensions for Shadowbox.
  *
  * @param   {Number}    height      The height of the object
@@ -744,55 +645,182 @@ S.setDimensions = function(height, width, maxHeight, maxWidth, topBottom, leftRi
 }
 
 /**
- * Populates the gallery array with objects that belong in the same gallery
- * as the given object.
+ * Returns an array with two elements. The first is an array of objects that
+ * constitutes the gallery, and the second is the index of the given object in
+ * that array.
  *
  * @param   {mixed}     obj
+ * @return  {Array}     An array containing the gallery and current index
  * @public
  */
 S.makeGallery = function(obj) {
-    // non-cached link element, build an object on the fly
-    if (obj.tagName && !(obj = S.getCache(obj)))
-        obj = S.buildObject(obj);
+    var gallery = [], current = -1;
 
-    if (obj.push) {
-        // obj is a gallery of objects
-        S.gallery = obj;
-        S.current = 0;
+    if (typeof obj == "string")
+        obj = [obj];
+
+    if (typeof obj.length == "number") {
+        each(obj, function(i, o) {
+            if (o.content) {
+                gallery[i] = o;
+            } else {
+                gallery[i] = {content: o};
+            }
+        });
+        current = 0;
     } else {
+        if (obj.tagName) {
+            // check the cache for this object before building one on the fly
+            var cacheObj = S.getCache(obj);
+            obj = cacheObj ? cacheObj : S.makeObject(obj);
+        }
+
         if (obj.gallery) {
             // gallery object, build gallery from cached gallery objects
-            S.gallery = [];
-            S.current = null;
+            gallery = [];
 
             var o;
             for (var key in S.cache) {
                 o = S.cache[key];
                 if (o.gallery && o.gallery == obj.gallery) {
-                    if (S.current == null && o.content == obj.content)
-                        S.current = S.gallery.length;
-                    S.gallery.push(o);
+                    if (current == -1 && o.content == obj.content)
+                        current = gallery.length;
+                    gallery.push(o);
                 }
             }
 
-            if (S.current == null) {
-                S.gallery.unshift(obj);
-                S.current = 0;
+            if (current == -1) {
+                gallery.unshift(obj);
+                current = 0;
             }
         } else {
             // single object, no gallery
-            S.gallery = [obj];
-            S.current = 0;
+            gallery = [obj];
+            current = 0;
         }
     }
 
     // use apply to break references to each gallery object here because
     // the code may modify certain properties of these objects from here
-    // on out and we want to preserve the original in case it is used
-    // again in a future call
-    each(S.gallery, function(i, o) {
-        S.gallery[i] = apply({}, o);
+    // on out and we want to preserve the original in case the same object
+    // is used again in a future call
+    each(gallery, function(i, o) {
+        gallery[i] = apply({}, o);
     });
+
+    return [gallery, current];
+}
+
+/**
+ * Extracts parameters from a link element and returns an object containing
+ * (most of) the following keys:
+ *
+ * - content:  The URL of the linked to content
+ * - player:   The abbreviated name of the player to use for the object (can automatically
+ *             be determined in most cases)
+ * - title:    The title to use for the object (optional)
+ * - gallery:  The name of the gallery the object belongs to (optional)
+ * - height:   The height of the object (in pixels, only required for movies and Flash)
+ * - width:    The width of the object (in pixels, only required for movies and Flash)
+ * - options:  A set of options to use for this object (optional)
+ * - link:     A reference to the original link element
+ *
+ * A custom set of options may be passed in here that will be applied when
+ * this object is displayed. However, any options that are specified in
+ * the link's HTML markup will trump options given here.
+ *
+ * @param   {HTMLElement}   link
+ * @param   {Object}        options
+ * @return  {Object}        An object representing the link
+ * @public
+ */
+S.makeObject = function(link, options) {
+    var obj = {
+        // accessing the href attribute directly here (instead of using
+        // getAttribute) should give a full URL instead of a relative one
+        content:    link.href,
+        title:      link.getAttribute("title") || "",
+        link:       link
+    };
+
+    // remove link-level options from top-level options
+    if (options) {
+        options = apply({}, options);
+        each(["player", "title", "height", "width", "gallery"], function(i, o) {
+            if (typeof options[o] != "undefined") {
+                obj[o] = options[o];
+                delete options[o];
+            }
+        });
+        obj.options = options;
+    } else {
+        obj.options = {};
+    }
+
+    if (!obj.player)
+        obj.player = S.getPlayer(obj.content);
+
+    // HTML options always trump JavaScript options, so do these last
+    var rel = link.getAttribute("rel");
+    if (rel) {
+        // extract gallery name from shadowbox[name] format
+        var match = rel.match(galleryName);
+        if (match)
+            obj.gallery = escape(match[2]);
+
+        // extract any other parameters
+        each(rel.split(';'), function(i, p) {
+            match = p.match(inlineParam);
+            if (match)
+                obj[match[1]] = match[2];
+        });
+    }
+
+    return obj;
+}
+
+/**
+ * Attempts to automatically determine the correct player to use for an object based
+ * on its content attribute. Defaults to "iframe" when the content type cannot
+ * automatically be determined.
+ *
+ * @param   {String}    content     The content attribute of the object
+ * @return  {String}                The name of the player to use
+ * @public
+ */
+S.getPlayer = function(content) {
+    if (content.indexOf("#") > -1 && content.indexOf(document.location.href) == 0)
+        return "inline";
+
+    // strip query string for player detection purposes
+    var q = content.indexOf("?");
+    if (q > -1)
+        content = content.substring(0, q);
+
+    // get file extension
+    var ext, m = content.match(fileExtension)
+    if (m)
+        ext = m[0];
+
+    if (ext) {
+        if (S.img && S.img.ext.indexOf(ext) > -1)
+            return "img";
+        if (S.swf && S.swf.ext.indexOf(ext) > -1)
+            return "swf";
+        if (S.flv && S.flv.ext.indexOf(ext) > -1)
+            return "flv";
+        if (S.qt && S.qt.ext.indexOf(ext) > -1) {
+            if (S.wmp && S.wmp.ext.indexOf(ext) > -1) {
+                return "qtwmp"; // can be played by either QuickTime or Windows Media Player
+            } else {
+                return "qt";
+            }
+        }
+        if (S.wmp && S.wmp.ext.indexOf(ext) > -1)
+            return "wmp";
+    }
+
+    return "iframe";
 }
 
 /**
@@ -800,7 +828,7 @@ S.makeGallery = function(obj) {
  *
  * @private
  */
-filterGallery = function() {
+function filterGallery() {
     var err = S.errorInfo, plugins = S.plugins, obj, remove, needed,
         m, format, replace, inlineEl, flashVersion;
 
@@ -917,11 +945,7 @@ function listenKeys(on) {
     if (!S.options.enableKeys)
         return;
 
-    if (on) {
-        addEvent(document, "keydown", handleKey);
-    } else {
-        removeEvent(document, "keydown", handleKey);
-    }
+    (on ? addEvent : removeEvent)(document, "keydown", handleKey);
 }
 
 /**
