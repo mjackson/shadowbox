@@ -50,7 +50,15 @@ overlay,
  * @type    {HTMLElement}
  * @private
  */
-wrapper;
+wrapper,
+
+/**
+ * True if the window resize event is allowed to fire.
+ *
+ * @type    {Boolean}
+ * @private
+ */
+doWindowResize = true;
 
 /**
  * Animates the given property of el to the given value over a specified duration. If a
@@ -64,12 +72,15 @@ wrapper;
  * @private
  */
 function animate(el, property, to, duration, callback) {
-    var isOpacity = (property == "opacity");
-    // default unit is px for properties other than opacity
-    var set = isOpacity ? S.setOpacity : function(el, to) { el.style[property] = to + "px" };
+    var isOpacity = (property == "opacity"),
+    anim = isOpacity ? S.setOpacity : function(el, value) {
+        // default unit is px for properties other than opacity
+        el.style[property] = "" +
+            value + "px";
+    };
 
     if (duration == 0 || (!isOpacity && !S.options.animate) || (isOpacity && !S.options.animateFade)) {
-        set(el, to);
+        anim(el, to);
         if (callback)
             callback();
         return;
@@ -95,11 +106,12 @@ function animate(el, property, to, duration, callback) {
         if (time >= end) {
             clearInterval(interval);
             interval = null;
-            set(el, to);
+            anim(el, to);
             if (callback)
                 callback();
-        } else
-            set(el, from + ease((time - begin) / duration) * delta);
+        } else {
+            anim(el, from + ease((time - begin) / duration) * delta);
+        }
     }, 10); // 10 ms interval is minimum on WebKit
 }
 
@@ -109,10 +121,8 @@ function animate(el, property, to, duration, callback) {
  * @private
  */
 function setSize() {
-    apply(container.style, {
-        height: S.getWindowSize("Height") + "px",
-        width: S.getWindowSize("Width") + "px"
-    });
+    container.style.height = S.getWindowSize("Height") + "px";
+    container.style.width = S.getWindowSize("Width") + "px";
 }
 
 /**
@@ -122,10 +132,8 @@ function setSize() {
  * @private
  */
 function setPosition() {
-    apply(container.style, {
-        top: document.documentElement.scrollTop + "px",
-        left: document.documentElement.scrollLeft + "px"
-    });
+    container.style.top = document.documentElement.scrollTop + "px";
+    container.style.left = document.documentElement.scrollLeft + "px";
 }
 
 /**
@@ -177,7 +185,7 @@ function toggleLoading(on, callback) {
 
     if (on) {
         S.setOpacity(loading, 0);
-        loading.style.display = "";
+        loading.style.display = "block";
 
         var wrapped = function() {
             S.clearOpacity(loading);
@@ -325,27 +333,28 @@ function hideBars(anim, callback) {
 }
 
 /**
- * Adjusts the height of #sb-body and centers #sb-wrapper vertically in the viewport.
+ * Adjusts the height of #sb-wrapper-inner and centers #sb-wrapper vertically
+ * in the viewport.
  *
- * @param   {Number}    height      The height to use for #sb-body
- * @param   {Number}    top         The top to use for #sb-wrapper
+ * @param   {Number}    height      The height (in pixels)
+ * @param   {Number}    top         The top (in pixels)
  * @param   {Boolean}   anim        True to animate the transition
  * @param   {Function}  callback    The callback to use when finished
  * @private
  */
 function adjustHeight(height, top, anim, callback) {
-    var body = get("sb-body"),
+    var wrapperInner = get("sb-wrapper-inner"),
         duration = (anim ? S.options.resizeDuration : 0);
 
-    animate(body, "height", height, duration);
-    animate(wrapper, "top", top, duration, callback);
+    animate(wrapper, "top", top, duration);
+    animate(wrapperInner, "height", height, duration, callback);
 }
 
 /**
- * Adjusts the width and left of #sb-wrapper.
+ * Adjusts the width and left position of #sb-wrapper.
  *
- * @param   {Number}    width       The width to use for #sb-wrapper
- * @param   {Number}    left        The left to use for #sb-wrapper
+ * @param   {Number}    width       The width (in pixels)
+ * @param   {Number}    left        The left (in pixels)
  * @param   {Boolean}   anim        True to animate the transition
  * @param   {Function}  callback    The callback to use when finished
  * @private
@@ -353,13 +362,12 @@ function adjustHeight(height, top, anim, callback) {
 function adjustWidth(width, left, anim, callback) {
     var duration = (anim ? S.options.resizeDuration : 0);
 
-    animate(wrapper, "width", width, duration);
-    animate(wrapper, "left", left, duration, callback);
+    animate(wrapper, "left", left, duration);
+    animate(wrapper, "width", width, duration, callback);
 }
 
 /**
- * Calculates the dimensions for Shadowbox, taking into account the borders
- * and surrounding elements of #sb-body.
+ * Calculates the dimensions for Shadowbox.
  *
  * @param   {Number}    height      The content height
  * @param   {Number}    width       The content width
@@ -404,10 +412,12 @@ K.markup = "" +
         '<div id="sb-title">' +
             '<div id="sb-title-inner"></div>' +
         '</div>' +
-        '<div id="sb-body">' +
-            '<div id="sb-body-inner"></div>' +
-            '<div id="sb-loading">' +
-                '<a onclick="Shadowbox.close()">{cancel}</a>' +
+        '<div id="sb-wrapper-inner">' +
+            '<div id="sb-body">' +
+                '<div id="sb-body-inner"></div>' +
+                '<div id="sb-loading">' +
+                    '<div id="sb-loading-inner"><span>{loading}</span></div>' +
+                '</div>' +
             '</div>' +
         '</div>' +
         '<div id="sb-info">' +
@@ -420,7 +430,6 @@ K.markup = "" +
                     '<a id="sb-nav-pause" title="{pause}" onclick="Shadowbox.pause()"></a>' +
                     '<a id="sb-nav-previous" title="{previous}" onclick="Shadowbox.previous()"></a>' +
                 '</div>' +
-                '<div style="clear:both"></div>' +
             '</div>' +
         '</div>' +
     '</div>' +
@@ -572,7 +581,7 @@ K.init = function() {
         });
     }
 
-    // window resize event handler, use 50 ms buffer to prevent jerky resizing
+    // add window resize event handler, use 10 ms buffer to prevent jerky resizing
     var timer;
     addEvent(window, "resize", function() {
         if (timer) {
@@ -581,7 +590,7 @@ K.init = function() {
         }
 
         if (open)
-            timer = setTimeout(K.onWindowResize, 50);
+            timer = setTimeout(K.onWindowResize, 10);
     });
 }
 
@@ -593,6 +602,10 @@ K.init = function() {
  * @public
  */
 K.onOpen = function(obj, callback) {
+    // IE triggers window resize event when container display is set to block, prevent
+    // the callback being fired with this little workaround
+    doWindowResize = false;
+
     container.style.display = "block";
 
     setSize();
@@ -662,6 +675,9 @@ K.onLoad = function(changing, callback) {
 K.onReady = function(callback) {
     if (!open)
         return;
+
+    // wait until the player is ready to re-enable window resize listener
+    doWindowResize = true;
 
     var player = S.player,
         dims = setDimensions(player.height, player.width);
@@ -752,6 +768,9 @@ K.onPause = function() {
  * @public
  */
 K.onWindowResize = function() {
+    if (!doWindowResize)
+        return;
+
     setSize();
 
     var player = S.player,

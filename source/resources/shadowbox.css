@@ -2,7 +2,14 @@
  * CSS styles for Shadowbox.
  */
 
-/*_____________________________________________  container, overlay, & wrapper  */
+/* typography */
+#sb-title-inner, #sb-info-inner, #sb-loading-inner, div.sb-message {
+  font-family: "HelveticaNeue-Light","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-weight: 200;
+  color: #fff;
+}
+
+/* container, overlay, & wrapper */
 #sb-container {
   position: fixed;
   margin: 0;
@@ -22,52 +29,63 @@
 #sb-wrapper {
   position: absolute;
   visibility: hidden;
+  width: 100px; /* explicit width helps offset children calculate their width */
 }
-#sb-wrapper img {
-  border: none;
+#sb-wrapper-inner {
+  position: relative;
+  border: 1px solid #303030;
+  overflow: hidden;
+  height: 100px; /* explicit height helps offset children calculate their height */
 }
 
-/*____________________________________________________________________  body  */
+/* body */
 #sb-body {
   position: relative;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  border: 1px solid #303030;
+  height: 100%;
 }
 #sb-body-inner {
-  position: relative;
+  position: absolute;
   height: 100%;
-  display: block;
+  width: 100%;
 }
 #sb-player.html {
   height: 100%;
   overflow: auto; /* make html content scrollable */
 }
+#sb-body img {
+  border: none;
+}
 
-/*_________________________________________________________________  loading  */
+/* loading */
 #sb-loading {
-  position: absolute;
-  top: 0;
-  width: 100%;
+  position: relative;
   height: 100%;
+}
+#sb-loading-inner {
+  position: absolute;
+  font-size: 14px;
+  line-height: 24px;
+  height: 24px;
+  top: 50%;
+  margin-top: -12px;
+  width: 100%;
   text-align: center;
-  padding-top: 10px;
+}
+#sb-loading-inner span {
+  background: url(loading.gif) no-repeat;
+  padding-left: 34px;
+  display: inline-block;
 }
 #sb-body, #sb-loading {
   background-color: #060606; /* should match loading image background color */
 }
 
-/*____________________________________________________________  title & info  */
+/* title & info */
 #sb-title, #sb-info {
   position: relative;
   margin: 0; /* these must have no vertical margin or padding */
   padding: 0;
   overflow: hidden;
-}
-#sb-title-inner, #sb-info-inner {
-  position: relative;
-  font-family: 'Lucida Grande', Tahoma, sans-serif;
 }
 #sb-title, #sb-title-inner {
   height: 26px;
@@ -75,7 +93,6 @@
 }
 #sb-title-inner {
   font-size: 16px;
-  color: #fff;
 }
 #sb-info, #sb-info-inner {
   height: 20px;
@@ -83,10 +100,9 @@
 }
 #sb-info-inner {
   font-size: 12px;
-  color: #fff;
 }
 
-/*_____________________________________________________________________  nav  */
+/* nav */
 #sb-nav {
   float: right;
   height: 16px;
@@ -118,7 +134,7 @@
   background-image: url(pause.png);
 }
 
-/*_________________________________________________________________  counter  */
+/* counter */
 #sb-counter {
   float: left;
   width: 45%;
@@ -133,9 +149,8 @@
   text-decoration: underline;
 }
 
-/*________________________________________________________________  messages  */
+/* messages */
 div.sb-message {
-  font-family: 'Lucida Grande', Tahoma, sans-serif;
   font-size: 12px;
   padding: 10px;
   text-align: center;

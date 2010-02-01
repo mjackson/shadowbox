@@ -79,6 +79,7 @@ task :build do |t|
 
   resources = []
   resources << 'shadowbox.css'
+  resources << 'loading.gif'
   resources += Dir[source('resources', '*.png')].map {|file| File.basename(file) }
   resources << 'player.swf' if $PARAMS['players'].include?('flv')
   resources << 'expressInstall.swf' unless ($PARAMS["players"] & ["swf", "flv"]).empty?
