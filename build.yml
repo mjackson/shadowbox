@@ -9,11 +9,11 @@ language: en
 # An array of names of players found in source/players
 players: [flv, html, iframe, img, qt, swf, wmp]
 
-# YES to include support for CSS selectors (via Sizzle.js), NO to decline
+# YES to include support for CSS selectors, NO to decline
 css_support: YES
 
 # YES to compress the code, NO to use the source code
-compress: YES
+compress: NO
 
 # The directory to output the build to
 target: build
