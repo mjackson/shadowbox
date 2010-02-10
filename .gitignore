@@ -2,4 +2,4 @@
 .DS_Store
 build
 examples/build
-tools/build
+tests/build
