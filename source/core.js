@@ -91,14 +91,6 @@ slideStart,
 slideTimer;
 
 /**
- * The id to use for the Shadowbox player element.
- *
- * @type    {String}
- * @public
- */
-S.playerId = "sb-player";
-
-/**
  * The index of the current object in the gallery array.
  *
  * @type    {Number}
@@ -159,6 +151,14 @@ S.errorInfo = {
 S.gallery = [];
 
 /**
+ * A function that will be called as soon as the DOM is ready.
+ *
+ * @type    {Function}
+ * @public
+ */
+S.onReady = noop;
+
+/**
  * The URL path to the Shadowbox script.
  *
  * @type    {String}
@@ -173,6 +173,14 @@ S.path = null;
  * @public
  */
 S.player = null;
+
+/**
+ * The id to use for the Shadowbox player element.
+ *
+ * @type    {String}
+ * @public
+ */
+S.playerId = "sb-player";
 
 /**
  * Various options that control Shadowbox' behavior.
@@ -390,12 +398,15 @@ S.revertOptions = function() {
 
 /**
  * Initializes the Shadowbox environment. If options are given here, they
- * will override the defaults.
+ * will override the defaults. A callback may be provided that will be called
+ * when the document is ready. This function can be used for setting up links
+ * using Shadowbox.setup.
  *
  * @param   {Object}    options
+ * @param   {Function}  callback
  * @public
  */
-S.init = function(options) {
+S.init = function(options, callback) {
     if (initialized)
         return;
 
@@ -418,6 +429,9 @@ S.init = function(options) {
             }
         }
     }
+
+    if (callback)
+        S.onReady = callback;
 
     bindLoad();
 }

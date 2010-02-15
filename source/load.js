@@ -93,6 +93,8 @@ S.load = function() {
 
     checkSupport();
 
+    S.onReady();
+
     if (!S.options.skipSetup)
         S.setup();
 
