@@ -3,7 +3,8 @@ require 'fileutils'
 module Shadowbox
 
   @source_dir = File.join(File.dirname(__FILE__), '..', 'source')
-  @compiler = File.join(File.dirname(__FILE__), 'compiler-20091217.jar')
+  #@compiler = File.join(File.dirname(__FILE__), 'compiler-20091217.jar')
+  @compiler = File.join(File.dirname(__FILE__), 'yuicompressor-2.4.2.jar')
 
   # get the current version of the code from the source
   @current_version = File.open(File.join(@source_dir, 'core.js')) do |f|
@@ -41,7 +42,8 @@ module Shadowbox
     def compress(file, outfile=nil)
       result = case file
                when /\.js$/
-                 %x<java -jar #{@compiler} --js #{file}>
+                 #%x<java -jar #{@compiler} --js #{file}>
+                 %x<java -jar #{@compiler} --type js #{file}>
                when /\.css$/
                  css = File.read(file)
                  css.gsub!(/\/\*.*?\*\//m, '')
