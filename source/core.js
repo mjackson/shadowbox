@@ -812,9 +812,9 @@ S.getPlayer = function(content) {
         content = content.substring(0, q);
 
     // get file extension
-    var ext, m = content.match(fileExtension)
+    var ext, m = content.match(fileExtension);
     if (m)
-        ext = m[0];
+        ext = m[0].toLowerCase();
 
     if (ext) {
         if (S.img && S.img.ext.indexOf(ext) > -1)
