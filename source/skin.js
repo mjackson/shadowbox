@@ -278,7 +278,7 @@ function buildBars(callback) {
                 counter += '<a onclick="Shadowbox.change(' + i + ');"'
                 if (i == S.current)
                     counter += ' class="sb-counter-current"';
-                counter += ">" + (i++) + "</a>";
+                counter += ">" + (++i) + "</a>";
             }
         } else {
             counter = [S.current + 1, S.lang.of, len].join(' ');
