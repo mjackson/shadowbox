@@ -381,14 +381,18 @@ function setDimensions(height, width) {
         topBottom = wrapper.offsetHeight - bodyInner.offsetHeight,
         leftRight = wrapper.offsetWidth - bodyInner.offsetWidth,
 
+        // overlay should provide proper window dimensions here
+        maxHeight = overlay.offsetHeight,
+        maxWidth = overlay.offsetWidth,
+
         // default to the default viewport padding
         padding = parseInt(S.options.viewportPadding) || 20,
 
-        // overlay should provide proper window dimensions here
-        maxHeight = overlay.offsetHeight,
-        maxWidth = overlay.offsetWidth;
+        // only preserve aspect ratio if there is something to display and
+        // it's not draggable
+        preserveAspect = (S.player && S.options.handleOversize != "drag");
 
-    return S.setDimensions(height, width, maxHeight, maxWidth, topBottom, leftRight, padding);
+    return S.setDimensions(height, width, maxHeight, maxWidth, topBottom, leftRight, padding, preserveAspect);
 }
 
 /**

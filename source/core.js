@@ -609,16 +609,20 @@ S.previous = function() {
 /**
  * Calculates the dimensions for Shadowbox.
  *
- * @param   {Number}    height      The height of the object
- * @param   {Number}    width       The width of the object
- * @param   {Number}    maxHeight   The maximum available height
- * @param   {Number}    maxWidth    The maximum available width
- * @param   {Number}    topBottom   The extra top/bottom required for borders/toolbars
- * @param   {Number}    leftRight   The extra left/right required for borders/toolbars
- * @return  {Object}                The new dimensions object
+ * @param   {Number}    height          The height of the object
+ * @param   {Number}    width           The width of the object
+ * @param   {Number}    maxHeight       The maximum available height
+ * @param   {Number}    maxWidth        The maximum available width
+ * @param   {Number}    topBottom       The extra top/bottom required for borders/toolbars
+ * @param   {Number}    leftRight       The extra left/right required for borders/toolbars
+ * @param   {Number}    padding         The amount of padding (in pixels) to maintain around
+ *                                      the edge of the viewport
+ * @param   {Boolean}   preserveAspect  True to preserve the original aspect ratio when the
+ *                                      given dimensions are too large
+ * @return  {Object}                    The new dimensions object
  * @public
  */
-S.setDimensions = function(height, width, maxHeight, maxWidth, topBottom, leftRight, padding) {
+S.setDimensions = function(height, width, maxHeight, maxWidth, topBottom, leftRight, padding, preserveAspect) {
     var originalHeight = height,
         originalWidth = width;
 
@@ -636,7 +640,7 @@ S.setDimensions = function(height, width, maxHeight, maxWidth, topBottom, leftRi
         oversized = (changeHeight > 0 || changeWidth > 0);
 
     // adjust height/width if too large
-    if (oversized) {
+    if (preserveAspect && oversized) {
         // preserve aspect ratio according to greatest change
         if (changeHeight > changeWidth) {
             width = Math.round((originalWidth / originalHeight) * height);
