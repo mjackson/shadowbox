@@ -9,13 +9,19 @@ linking page.
 
 For more information, please see http://shadowbox-js.com/.
 
-Usage
------
+Installation and Usage
+----------------------
 
-For detailed usage instructions, please see the usage page at http://shadowbox-js.com/usage.html.
+For detailed installation and usage instructions, please see the usage page at
+http://shadowbox-js.com/usage.html.
 
 How to Build
 ------------
+
+IMPORTANT: The following instructions are for those who would like to create a custom build
+of Shadowbox on their own machines. Most users will not want to do this and instead should
+simply download, install, and use Shadowbox as described on the Shadowbox website at
+http://shadowbox-js.com/usage.html.
 
 In order to build Shadowbox on your own machine you must have the Ruby programming
 language (http://ruby-lang.org/) installed as well as the Rake build tool
@@ -60,6 +66,8 @@ License
 
 The Shadowbox license is available online at http://shadowbox-js.com/LICENSE.
 
-Shadowbox employs several open source libraries including Sizzle.js (http://sizzlejs.com/),
-swfobject (http://code.google.com/p/swfobject/), and the Closure Compiler
-(http://code.google.com/p/closure-compiler/).
+Credits
+-------
+
+Shadowbox employs several open source libraries including Sizzle.js (http://sizzlejs.com/)
+and swfobject (http://code.google.com/p/swfobject/).
