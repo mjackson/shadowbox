@@ -149,8 +149,8 @@ function toggleTroubleElements(on) {
         });
     } else {
         visibilityCache = [];
-        each(S.options.troubleElements, function(tag) {
-            each(document.getElementsByTagName(tag), function(el) {
+        each(S.options.troubleElements, function(i, tag) {
+            each(document.getElementsByTagName(tag), function(j, el) {
                 visibilityCache.push([el, el.style.visibility]);
                 el.style.visibility = "hidden";
             });
