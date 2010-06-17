@@ -76,6 +76,8 @@ module Shadowbox
       :compress     => false
     }
 
+    attr_reader :data
+
     def initialize(data={})
       @data = DEFAULTS
       update!(data)
