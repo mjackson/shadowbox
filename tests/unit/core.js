@@ -65,8 +65,18 @@ test("setDimensions", function() {
     equal(dims.left, 0);
     equal(dims.oversized, false);
 
-    // oversized
+    // oversized, don't preserve the aspect of the original
     dims = Shadowbox.setDimensions(100, 200, 50, 50, 0, 0, 0);
+    equal(dims.height, 50);
+    equal(dims.width, 50);
+    equal(dims.innerHeight, 50);
+    equal(dims.innerWidth, 50);
+    equal(dims.top, 0);
+    equal(dims.left, 0);
+    equal(dims.oversized, true);
+
+    // oversized, preserve the aspect of the original
+    dims = Shadowbox.setDimensions(100, 200, 50, 50, 0, 0, 0, true);
     equal(dims.height, 25);
     equal(dims.width, 50);
     equal(dims.innerHeight, 25);
