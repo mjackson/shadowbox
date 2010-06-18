@@ -7,7 +7,7 @@ S.lang = {
     of:         "af",
     loading:    "loader",
     cancel:     "Annuller",
-    next:       "NÊste",
+    next:       "Næste",
     previous:   "Forrige",
     play:       "Start",
     pause:      "Pause",
