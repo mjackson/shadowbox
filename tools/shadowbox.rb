@@ -1,25 +1,25 @@
+$LOAD_PATH.unshift(File.expand_path('../yuicompressor-1.2.0/lib', __FILE__))
+
 require 'fileutils'
+require 'yuicompressor'
 
 module Shadowbox
+  @source_dir = File.expand_path('../../source', __FILE__)
 
-  @source_dir = File.join(File.dirname(__FILE__), '..', 'source')
-  #@compiler = File.join(File.dirname(__FILE__), 'compiler-20091217.jar')
-  @compiler = File.join(File.dirname(__FILE__), 'yuicompressor-2.4.2.jar')
-
-  # get the current version of the code from the source
+  # Get the current version of the code from the source.
   @current_version = File.open(File.join(@source_dir, 'core.js')) do |f|
-    f.read.match(/version: ['"]([\w.]+)['"]/)[1]
+    f.read.match(/version: (['"])([\w.]+)\1/)[2]
   end
 
   %w{adapters languages players}.each do |dir|
     available = Dir.glob(File.join(@source_dir, dir, '*.js')).map do |file|
-      File.basename(file, ".js")
+      File.basename(file, '.js')
     end
     instance_variable_set("@available_#{dir}".to_sym, available)
   end
 
-  @default_adapter = "base"
-  @default_language = "en"
+  @default_adapter = 'base'
+  @default_language = 'en'
   @default_players = @available_players.dup
 
   class << self
@@ -42,16 +42,9 @@ module Shadowbox
     def compress(file, outfile=nil)
       result = case file
                when /\.js$/
-                 #%x<java -jar #{@compiler} --js #{file}>
-                 %x<java -jar #{@compiler} --type js #{file}>
+                 YUICompressor.compress_js(File.new(file, 'r'))
                when /\.css$/
-                 css = File.read(file)
-                 css.gsub!(/\/\*.*?\*\//m, '')
-                 css.gsub!(/^\s+/, '')
-                 css.gsub!(/(,|:)\s+/, '\1')
-                 css.gsub!(/\s+\{/, '{')
-                 css.gsub!(/(\{|;).*?(\S)/m, '\1\2')
-                 css
+                 YUICompressor.compress_css(File.new(file, 'r'))
                else
                  raise ArgumentError
                end
@@ -59,7 +52,7 @@ module Shadowbox
       if outfile
         File.open(outfile, 'w') {|f| f << result }
       else
-        $stdout.puts result
+        $stdout.puts(result)
       end
     end
   end
@@ -152,9 +145,7 @@ module Shadowbox
       files << 'find' if css_support
       files << 'flash' if requires_flash?
       files << File.join('languages', language)
-      players.each do |player|
-        files << File.join('players', player)
-      end
+      files.concat(players.map {|p| File.join('players', p) })
       files << 'skin'
       files << 'outro'
 
@@ -189,5 +180,4 @@ module Shadowbox
       end
     end
   end
-
 end
