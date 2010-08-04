@@ -1,14 +1,10 @@
 require 'yaml'
-require File.join(File.dirname(__FILE__), 'tools', 'shadowbox')
-
-def config(file)
-  fail "Unable to find configuration file #{file}" unless File.exist?(file)
-  YAML.load_file(file)
-end
+require File.expand_path('../tools/shadowbox', __FILE__)
 
 def builder(file=nil)
   file = (ENV['CONFIG'] || 'build.yml') unless file
-  Shadowbox::Builder.new(config(file))
+  fail "Unable to find configuration file #{file}" unless File.exist?(file)
+  Shadowbox::Builder.new(YAML.load_file(file))
 end
 
 def examples_builder
@@ -19,7 +15,7 @@ def tests_builder
   builder File.join(File.dirname(__FILE__), 'tests', 'build.yml')
 end
 
-task :default => [:build]
+task :default => :build
 
 desc 'Create a custom build based on settings in build.yml (or $CONFIG)'
 task :build do
