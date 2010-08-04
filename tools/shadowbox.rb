@@ -38,30 +38,29 @@ module Shadowbox
     def valid_player?(player)
       @available_players.include?(player)
     end
+  end
 
-    def compress(file, outfile=nil)
-      result = case file
-               when /\.js$/
-                 YUICompressor.compress_js(File.new(file, 'r'))
-               when /\.css$/
-                 YUICompressor.compress_css(File.new(file, 'r'))
-               else
-                 raise ArgumentError
-               end
+  class Target
+    include FileUtils
 
-      if outfile
-        File.open(outfile, 'w') {|f| f << result }
-      else
-        $stdout.puts(result)
+    def initialize(dir)
+      raise ArgumentError, 'Invalid directory: %s' % dir unless File.directory?(dir)
+      raise ArgumentError, 'Directory "%s" is not writable' % dir unless File.writable?(dir)
+      @dir = dir
+    end
+
+    def []=(file, contents)
+      dest = File.join(@dir, file)
+      dest_dir = File.dirname(dest)
+      mkdir_p(dest_dir) unless File.directory?(dest_dir)
+      File.open(dest, 'w') do |f|
+        f.write(contents)
       end
     end
   end
 
   class Builder
-    include FileUtils
-
     DEFAULTS = {
-      :target       => 'build',
       :adapter      => Shadowbox.default_adapter,
       :language     => Shadowbox.default_language,
       :players      => Shadowbox.default_players,
@@ -94,9 +93,34 @@ module Shadowbox
       end
     end
 
-    def run!
+    def run!(target)
       validate!
-      run
+
+      # Concatenate all JavaScript files.
+      js = js_files.inject('') do |m, file|
+        code = File.read(file)
+        if File.basename(file) == 'intro.js'
+          code.sub!('@VERSION', Shadowbox.current_version)
+          code.sub!('@DATE', 'Date: ' + Time.now.inspect)
+        end
+        m << code
+        m << "\n"
+      end
+
+      target['shadowbox.js'] = compress ? YUICompressor.compress_js(js) : js
+
+      # Concatenate all CSS files.
+      css = css_files.inject('') do |m, file|
+        m << File.read(file)
+        m << "\n"
+      end
+
+      target['shadowbox.css'] = compress ? YUICompressor.compress_css(css) : css
+
+      # Copy all other resources.
+      resource_files.each do |file|
+        target[File.basename(file)] = File.read(file)
+      end
     end
 
     def [](key)
@@ -117,24 +141,9 @@ module Shadowbox
       end
     end
 
-  private
-
-    def root(*args)
-      File.join(File.dirname(__FILE__), '..', *args)
-    end
-
-    def source(*args)
-      File.join(Shadowbox.source_dir, *args)
-    end
-
-    def build(*args)
-      File.join(target, *args)
-    end
-
-    def run
-      mkdir_p target
-
+    def js_files
       files = []
+
       files << 'intro'
       files << 'core'
       files << 'util'
@@ -145,39 +154,38 @@ module Shadowbox
       files << 'find' if css_support
       files << 'flash' if requires_flash?
       files << File.join('languages', language)
-      files.concat(players.map {|p| File.join('players', p) })
+      files += players.map {|p| File.join('players', p) }
       files << 'skin'
       files << 'outro'
 
-      File.open(build('shadowbox.js'), 'w') do |f|
-        files.each do |file|
-          js = File.read(source(file) + '.js')
-          js.
-            sub!('@VERSION', Shadowbox.current_version).
-            sub!('@DATE', 'Date: ' + Time.now.inspect) if file == 'intro'
-          f.puts(js)
-        end
-      end
+      files.map {|f| source(f) + '.js' }
+    end
 
-      resources = []
-      resources << 'shadowbox.css'
-      resources << 'loading.gif'
-      resources += Dir[source('resources', '*.png')].map {|file| File.basename(file) }
-      resources << 'player.swf' if players.include?('flv')
-      resources << 'expressInstall.swf' if requires_flash?
-      resources.each do |resource|
-        cp source('resources', resource), build(resource)
-      end
+    def css_files
+      [ source('resources', 'shadowbox.css') ]
+    end
 
-      cp root('README'),  build('README')
-      cp root('LICENSE'), build('LICENSE')
+    def resource_files
+      files = []
 
-      if compress
-        js = build('shadowbox.js')
-        Shadowbox.compress(js, js)
-        css = build('shadowbox.css')
-        Shadowbox.compress(css, css)
-      end
+      files << source('resources', 'loading.gif')
+      files += Dir.glob(source('resources', '*.png'))
+      files << source('resources', 'player.swf') if players.include?('flv')
+      files << source('resources', 'expressInstall.swf') if requires_flash?
+      files << root('README')
+      files << root('LICENSE')
+
+      files
+    end
+
+  private
+
+    def root(*args)
+      File.join(File.dirname(Shadowbox.source_dir), *args)
+    end
+
+    def source(*args)
+      File.join(Shadowbox.source_dir, *args)
     end
   end
 end
