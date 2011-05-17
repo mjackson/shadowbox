@@ -444,20 +444,24 @@ S.init = function(options, callback) {
  * - A custom object similar to one produced by Shadowbox.makeObject
  * - An array of any of the above
  *
+ * If an array is given, the second parameter specifies the index of the first
+ * element, that should be displayed.
+ *
  * Note: When a single link object is given, Shadowbox will automatically search
  * for other cached link objects that have been set up in the same gallery and
  * display them all together.
  *
  * @param   {mixed}     obj
+ * @param	{Integer}	index (optional)
  * @public
  */
-S.open = function(obj) {
+S.open = function(obj, index) {
     if (open)
         return;
-
+	
     var gc = S.makeGallery(obj);
     S.gallery = gc[0];
-    S.current = gc[1];
+    S.current = index || gc[1];
 
     obj = S.getCurrent();
 

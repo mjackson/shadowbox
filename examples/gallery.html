@@ -1,0 +1,45 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+    "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>Gallery</title>
+		<link rel="stylesheet" type="text/css" href="files/style.css">
+		<link rel="stylesheet" type="text/css" href="build/shadowbox.css">
+		<script type="text/javascript" src="build/shadowbox.js"></script>
+		<script type="text/javascript">
+			Shadowbox.init();
+			var images = [{
+				content: 'files/hongkong-1.jpg',
+				player: 'img',
+				title: 'First Image'
+			}, {
+				content: 'files/hongkong-2.jpg',
+				player: 'img',
+				title: 'Second Image'
+			}, {
+				content: 'files/hongkong-3.jpg',
+				player: 'img',
+				title: 'Third Image'
+			}];
+			function openShadowbox(index) {
+				Shadowbox.open(images, index);
+			}
+		</script>
+	</head>
+	<body>
+		<p>
+			This example shows how to use Shadowbox.open and start at a certain position in the gallery.
+		</p>
+	    <p>
+	    	<img src="files/hongkong.jpg" width="600" height="82" alt="Hong Kong" usemap="#hongkong">
+		    <map id="hongkong" name="hongkong">
+		        <area shape="rect" coords="43,27,135,77" href="#" onclick="openShadowbox(0)" alt="">
+		        <area shape="rect" coords="191,11,286,74" href="#" onclick="openShadowbox(1)" alt="">
+		        <area shape="rect" coords="419,2,502,81" href="#" onclick="openShadowbox(2)" alt="">
+		    </map>
+	    </p>
+	    <p id="foot">This file is part of <a href="http://shadowbox-js.com/">Shadowbox.js</a>.</p>
+	</body>
+</html>

@@ -98,6 +98,11 @@ jQuery.fn.shadowbox = function(options) {
         var cls = this.className || '';
         opts.width  = parseInt((cls.match(/w:(\d+)/)||[])[1]) || opts.width;
         opts.height = parseInt((cls.match(/h:(\d+)/)||[])[1]) || opts.height;
+		// title
+		var title = el.attr('title');
+		if (title) {
+			opts.title = title;
+		}
         Shadowbox.setup(el, opts);
     });
 }
