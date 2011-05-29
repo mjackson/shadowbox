@@ -16,6 +16,8 @@ var S = {
 
 }
 
+var root = document.documentElement;
+
 var ua = navigator.userAgent.toLowerCase();
 
 // operating system detection
@@ -1215,7 +1217,8 @@ function remove(el) {
  * @type    {Boolean}
  * @private
  */
-var supportsOpacity = true,
+var supportsOpacity = "opacity" in root.style &&
+    typeof root.style.opacity === "string",
 
 /**
  * True if the browser supports fixed positioning.
@@ -1234,9 +1237,6 @@ supportsFixed = true;
 function checkSupport() {
     var body = document.body,
         div = document.createElement("div");
-
-    // detect opacity support
-    supportsOpacity = typeof div.style.opacity === "string";
 
     // detect support for fixed positioning
     div.style.position = "fixed";
