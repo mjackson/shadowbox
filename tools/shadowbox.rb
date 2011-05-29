@@ -11,24 +11,18 @@ module Shadowbox
     f.read.match(/version: (['"])([\w.]+)\1/)[2]
   end
 
-  %w{languages players}.each do |dir|
+  %w{players}.each do |dir|
     available = Dir.glob(File.join(@source_dir, dir, '*.js')).map do |file|
       File.basename(file, '.js')
     end
     instance_variable_set("@available_#{dir}".to_sym, available)
   end
 
-  @default_language = 'en'
   @default_players = @available_players.dup
 
   class << self
     attr_reader :source_dir, :compiler, :current_version
-    attr_reader :available_languages, :available_players
-    attr_reader :default_language, :default_players
-
-    def valid_language?(language)
-      @available_languages.include?(language)
-    end
+    attr_reader :available_players, :default_players
 
     def valid_player?(player)
       @available_players.include?(player)
@@ -56,7 +50,6 @@ module Shadowbox
 
   class Builder
     DEFAULTS = {
-      :language => Shadowbox.default_language,
       :players  => Shadowbox.default_players,
       :compress => false
     }
@@ -79,7 +72,6 @@ module Shadowbox
     end
 
     def validate!
-      raise ArgumentError, "Unknown language: #{language}" unless Shadowbox.valid_language?(language)
       players.each do |player|
         raise ArgumentError, "Unknown player: #{player}" unless Shadowbox.valid_player?(player)
       end
@@ -142,7 +134,6 @@ module Shadowbox
       files << 'plugins'
       files << 'cache'
       files << 'flash' if requires_flash?
-      files << File.join('languages', language)
       files += players.map {|p| File.join('players', p) }
       files << 'skin'
       files << 'outro'

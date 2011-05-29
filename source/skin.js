@@ -281,7 +281,7 @@ function buildBars(callback) {
                 counter += ">" + (++i) + "</a>";
             }
         } else {
-            counter = [S.current + 1, S.lang.of, len].join(' ');
+            counter = [S.current + 1, len].join('/');
         }
     }
 
@@ -419,20 +419,18 @@ K.markup = "" +
         '<div id="sb-wrapper-inner">' +
             '<div id="sb-body">' +
                 '<div id="sb-body-inner"></div>' +
-                '<div id="sb-loading">' +
-                    '<div id="sb-loading-inner"><span>{loading}</span></div>' +
-                '</div>' +
+                '<div id="sb-loading"></div>' +
             '</div>' +
         '</div>' +
         '<div id="sb-info">' +
             '<div id="sb-info-inner">' +
                 '<div id="sb-counter"></div>' +
                 '<div id="sb-nav">' +
-                    '<a id="sb-nav-close" title="{close}" onclick="Shadowbox.close()"></a>' +
-                    '<a id="sb-nav-next" title="{next}" onclick="Shadowbox.next()"></a>' +
-                    '<a id="sb-nav-play" title="{play}" onclick="Shadowbox.play()"></a>' +
-                    '<a id="sb-nav-pause" title="{pause}" onclick="Shadowbox.pause()"></a>' +
-                    '<a id="sb-nav-previous" title="{previous}" onclick="Shadowbox.previous()"></a>' +
+                    '<a id="sb-nav-close" onclick="Shadowbox.close()"></a>' +
+                    '<a id="sb-nav-next" onclick="Shadowbox.next()"></a>' +
+                    '<a id="sb-nav-play" onclick="Shadowbox.play()"></a>' +
+                    '<a id="sb-nav-pause" onclick="Shadowbox.pause()"></a>' +
+                    '<a id="sb-nav-previous" onclick="Shadowbox.previous()"></a>' +
                 '</div>' +
             '</div>' +
         '</div>' +
@@ -551,12 +549,12 @@ K.options = {
 
 /**
  * Initialization function. Called immediately after this skin's markup has been
- * appended to the document with all of the necessary language replacements done.
+ * appended to the document.
  *
  * @public
  */
 K.init = function() {
-    S.appendHTML(document.body, sprintf(K.markup, S.lang));
+    S.appendHTML(document.body, K.markup);
 
     K.body = get("sb-body-inner");
 

@@ -833,7 +833,7 @@ S.getPlayer = function(content) {
  */
 function filterGallery() {
     var err = S.errorInfo, plugins = S.plugins, obj, remove, needed,
-        m, format, replace, inlineEl, flashVersion;
+        m, inlineEl, flashVersion;
 
     for (var i = 0; i < S.gallery.length; ++i) {
         obj = S.gallery[i]
@@ -859,11 +859,8 @@ function filterGallery() {
         if (needed) {
             if (S.options.handleUnsupported == "link") {
                 // generate a link to the appropriate plugin download page
-                format = "single";
-                replace = [err[needed].url, err[needed].name];
-
                 obj.player = "html";
-                obj.content = '<div class="sb-message">' + sprintf(S.lang.errors[format], replace) + '</div>';
+                obj.content = '<div class="sb-message">Please download <a href="' + err[needed].url + '">' + err[needed].name + '</a> in order to view this content.</div>';
             } else {
                 remove = true;
             }
@@ -1097,27 +1094,6 @@ function apply(original, extension) {
 function each(obj, callback) {
     var i = 0, len = obj.length;
     for (var value = obj[0]; i < len && callback.call(value, i, value) !== false; value = obj[++i]) {}
-}
-
-/**
- * Formats a string with the elements in the replacement array. The string should contain
- * tokens in the format {n} where n corresponds to the index of property name of the replacement
- * in the replace object.
- *
- * Example:
- *
- * format('Hello {0}', ['World']); // "Hello World"
- * format('Hello {world}', {world: "World"}); // "Hello World"
- *
- * @param   {String}        str         The format spec string
- * @param   {Array|Object}  replace     The array/object of replacement values
- * @return  {String}                    The formatted string
- * @private
- */
-function sprintf(str, replace) {
-    return str.replace(/\{(\w+?)\}/g, function(match, i) {
-        return replace[i];
-    });
 }
 
 /**
