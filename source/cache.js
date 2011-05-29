@@ -42,25 +42,20 @@ S.select = function(selector) {
         var rel;
         each(document.getElementsByTagName("a"), function(i, el) {
             rel = el.getAttribute("rel");
-            if (rel && relAttr.test(rel))
+            if (rel && relAttr.test(rel)) {
                 links.push(el);
+            }
         });
     } else {
-        var length = selector.length;
-        if (length) {
-            if (typeof selector == "string") {
-                if (S.find)
-                    links = S.find(selector); // css selector
-            } else if (length == 2 && typeof selector[0] == "string" && selector[1].nodeType) {
-                if (S.find)
-                    links = S.find(selector[0], selector[1]); // css selector + context
-            } else {
-                // array of links (or node list)
-                for (var i = 0; i < length; ++i)
-                    links[i] = selector[i];
+        var type = typeof selector;
+        if ((type === "object" || type === "function") && selector.length) {
+            // array of links (or node list)
+            for (var i = 0; i < selector.length; ++i) {
+                links[i] = selector[i];
             }
         } else {
-            links.push(selector); // single link
+            // single link
+            links.push(selector);
         }
     }
 

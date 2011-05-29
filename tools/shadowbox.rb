@@ -56,10 +56,9 @@ module Shadowbox
 
   class Builder
     DEFAULTS = {
-      :language     => Shadowbox.default_language,
-      :players      => Shadowbox.default_players,
-      :css_support  => true,
-      :compress     => false
+      :language => Shadowbox.default_language,
+      :players  => Shadowbox.default_players,
+      :compress => false
     }
 
     attr_reader :data
@@ -142,7 +141,6 @@ module Shadowbox
       files << 'load'
       files << 'plugins'
       files << 'cache'
-      files << 'find' if css_support
       files << 'flash' if requires_flash?
       files << File.join('languages', language)
       files += players.map {|p| File.join('players', p) }
