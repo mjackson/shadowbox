@@ -8,7 +8,9 @@
  * @type    {Number}
  * @private
  */
-var qtControllerHeight = 16;
+var qtControllerHeight = 16,
+
+OBJECT = document.createElement("object");
 
 /**
  * Constructor. The QuickTime player class for Shadowbox.
