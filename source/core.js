@@ -1228,24 +1228,15 @@ var supportsOpacity = "opacity" in root.style &&
  */
 supportsFixed = true;
 
-/**
- * Checks the level of support the browser provides. Should be called when
- * the DOM is ready to be manipulated.
- *
- * @private
- */
-function checkSupport() {
-    var body = document.body,
-        div = document.createElement("div");
-
-    // detect support for fixed positioning
+(function () {
+    var div = document.createElement("div");
     div.style.position = "fixed";
     div.style.margin = 0;
     div.style.top = "20px";
-    body.appendChild(div, body.firstChild);
+    root.appendChild(div, root.firstChild);
     supportsFixed = div.offsetTop == 20;
-    body.removeChild(div);
-}
+    root.removeChild(div);
+})();
 
 /**
  * Gets the computed value of the style on the given element.

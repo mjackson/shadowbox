@@ -13,20 +13,18 @@ function getWindowSize(dimension) {
     return document.body["client" + dimension];
 }
 
-var supportsFixed = true;
+var root = document.documentElement,
+    supportsFixed = true;
 
-function checkSupport() {
-    var body = document.body,
-        div = document.createElement("div");
-
+(function () {
+    var div = document.createElement("div");
     div.style.position = "fixed";
     div.style.margin = 0;
     div.style.top = "20px";
-
-    body.appendChild(div, body.firstChild);
+    root.appendChild(div, root.firstChild);
     supportsFixed = div.offsetTop == 20;
-    body.removeChild(div);
-}
+    root.removeChild(div);
+})();
 
 window.onload = function() {
     checkSupport();
