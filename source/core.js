@@ -30,15 +30,6 @@ Array.prototype.contains = Array.prototype.contains || function (obj) {
 
 var ua = navigator.userAgent.toLowerCase();
 
-// operating system detection
-if (ua.indexOf('windows') > -1 || ua.indexOf('win32') > -1) {
-    S.isWindows = true;
-} else if (ua.indexOf('macintosh') > -1 || ua.indexOf('mac os x') > -1) {
-    S.isMac = true;
-} else if (ua.indexOf('linux') > -1) {
-    S.isLinux = true;
-}
-
 // browser detection -- deprecated. the goal is to use object detection
 // instead of the user agent string
 S.isIE = ua.indexOf('msie') > -1;
@@ -147,10 +138,6 @@ S.errorInfo = {
     wmp: {
         name: "Windows Media Player",
         url:  "http://www.microsoft.com/windows/windowsmedia/"
-    },
-    f4m: {
-        name: "Flip4Mac",
-        url:  "http://www.flip4mac.com/wmv_download.htm"
     }
 };
 
@@ -886,12 +873,8 @@ function filterGallery() {
                 needed = "qt";
             break;
         case "wmp":
-            if (S.isMac) {
-                if (plugins.qt && plugins.f4m) {
-                    obj.player = "qt";
-                } else {
-                    needed = "qtf4m";
-                }
+            if (plugins.qt && plugins.f4m) {
+                obj.player = "qt";
             } else if (!plugins.wmp) {
                 needed = "wmp";
             }
@@ -912,10 +895,6 @@ function filterGallery() {
             if (S.options.handleUnsupported == "link") {
                 // generate a link to the appropriate plugin download page(s)
                 switch (needed) {
-                case "qtf4m":
-                    format = "shared";
-                    replace = [err.qt.url, err.qt.name, err.f4m.url, err.f4m.name];
-                    break;
                 case "qtwmp":
                     format = "either";
                     replace = [err.qt.url, err.qt.name, err.wmp.url, err.wmp.name];

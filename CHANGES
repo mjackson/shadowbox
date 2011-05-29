@@ -5,3 +5,5 @@
 
   * Removed CSS support. This requires users to use arrays of objects instead of
     CSS selectors when specifying content.
+
+  * Removed dependence on sniffing for various operating systems.
