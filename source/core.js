@@ -81,7 +81,33 @@ slideStart,
  * @type    {Number}
  * @private
  */
-slideTimer;
+slideTimer,
+
+/**
+ * True if this browser supports opacity.
+ *
+ * @type    {Boolean}
+ * @private
+ */
+supportsOpacity = "opacity" in root.style && typeof root.style.opacity === "string",
+
+/**
+ * True if the browser supports fixed positioning.
+ *
+ * @type    {Boolean}
+ * @private
+ */
+supportsFixed = false;
+
+(function () {
+    var div = document.createElement("div");
+    div.style.position = "fixed";
+    div.style.margin = 0;
+    div.style.top = "20px";
+    root.appendChild(div, root.firstChild);
+    supportsFixed = div.offsetTop == 20;
+    root.removeChild(div);
+})();
 
 /**
  * The index of the current object in the gallery array.
@@ -1123,33 +1149,6 @@ function get(id) {
 function remove(el) {
     el.parentNode.removeChild(el);
 }
-
-/**
- * True if this browser supports opacity.
- *
- * @type    {Boolean}
- * @private
- */
-var supportsOpacity = "opacity" in root.style &&
-    typeof root.style.opacity === "string",
-
-/**
- * True if the browser supports fixed positioning.
- *
- * @type    {Boolean}
- * @private
- */
-supportsFixed = true;
-
-(function () {
-    var div = document.createElement("div");
-    div.style.position = "fixed";
-    div.style.margin = 0;
-    div.style.top = "20px";
-    root.appendChild(div, root.firstChild);
-    supportsFixed = div.offsetTop == 20;
-    root.removeChild(div);
-})();
 
 /**
  * Gets the computed value of the style on the given element.
