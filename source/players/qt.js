@@ -53,16 +53,18 @@ S.qt.prototype = {
                 kioskmode:  "true"
             };
 
-        if (S.isIE) {
+        if ("classid" in OBJECT && "codeBase" in OBJECT) {
             movie.classid = "clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B";
-            movie.codebase = "http://www.apple.com/qtactivex/qtplugin.cab#version=6,0,2,0";
+            movie.codeBase = "http://www.apple.com/qtactivex/qtplugin.cab#version=6,0,2,0";
         } else {
             movie.type = "video/quicktime";
             movie.data = this.obj.content;
         }
 
-        for (var m in movie)
+        for (var m in movie) {
             html += " " + m + '="' + movie[m] + '"';
+        }
+
         html += ">";
 
         var params = {
@@ -72,8 +74,10 @@ S.qt.prototype = {
             autoplay:   autoplay
         };
 
-        for (var p in params)
+        for (var p in params) {
             html += '<param name="' + p + '" value="' + params[p] + '">';
+        }
+
         html += "</object>";
 
         body.innerHTML = html;
@@ -90,8 +94,9 @@ S.qt.prototype = {
         } catch(e) {}
 
         var el = get(this.id);
-        if (el)
+        if (el) {
             remove(el);
+        }
     }
 
 }

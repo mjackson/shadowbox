@@ -16,8 +16,6 @@ var S = {
 
 }
 
-var root = document.documentElement;
-
 Array.prototype.contains = Array.prototype.contains || function (obj) {
     for (var i = 0; i < this.length; ++i) {
         if (this[i] === obj) {
@@ -28,21 +26,13 @@ Array.prototype.contains = Array.prototype.contains || function (obj) {
     return false;
 }
 
-var ua = navigator.userAgent.toLowerCase();
-
-// browser detection -- deprecated. the goal is to use object detection
-// instead of the user agent string
-S.isIE = ua.indexOf('msie') > -1;
-S.isIE6 = ua.indexOf('msie 6') > -1;
-S.isIE7 = ua.indexOf('msie 7') > -1;
-S.isGecko = ua.indexOf('gecko') > -1 && ua.indexOf('safari') == -1;
-S.isWebKit = ua.indexOf('applewebkit/') > -1;
-
 var inlineId = /#(.+)$/,
     galleryName = /^(light|shadow)box\[(.*?)\]/i,
     inlineParam = /\s*([a-z_]*?)\s*=\s*(.+)\s*/,
     fileExtension = /[0-9a-z]+$/i,
-    scriptPath = /(.+\/)shadowbox\.js/i;
+    scriptPath = /(.+\/)shadowbox\.js/i,
+
+root = document.documentElement,
 
 /**
  * True if Shadowbox is currently open, false otherwise.
@@ -50,7 +40,7 @@ var inlineId = /#(.+)$/,
  * @type    {Boolean}
  * @private
  */
-var open = false,
+open = false,
 
 /**
  * True if Shadowbox has been initialized, false otherwise.
@@ -61,8 +51,8 @@ var open = false,
 initialized = false,
 
 /**
- * The previous set of options that were used before Shadowbox.applyOptions was
- * called.
+ * The previous set of options that were used before Shadowbox.applyOptions
+ * was called.
  *
  * @type    {Object}
  * @private

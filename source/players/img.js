@@ -81,8 +81,8 @@ function enableDrag() {
     // add transparent proxy layer to prevent browser dragging of actual image
     var style = [
         "position:absolute",
-        "cursor:" + (S.isGecko ? "-moz-grab" : "move"),
-        "background-color:" + (S.isIE ? "#fff;filter:alpha(opacity=0)" : "transparent")
+        "cursor:move",
+        "background-color:" + (supportsOpacity ? "transparent" : "#fff;filter:alpha(opacity=0)")
     ].join(";");
     S.appendHTML(S.skin.body, '<div id="' + proxyId + '" style="' + style + '"></div>');
 
@@ -125,9 +125,6 @@ function startDrag(e) {
 
     addEvent(document, "mousemove", positionDrag);
     addEvent(document, "mouseup", endDrag);
-
-    if (S.isGecko)
-        dragProxy.style.cursor = "-moz-grabbing";
 }
 
 /**
@@ -163,9 +160,6 @@ function positionDrag(e) {
 function endDrag() {
     removeEvent(document, "mousemove", positionDrag);
     removeEvent(document, "mouseup", endDrag);
-
-    if (S.isGecko)
-        dragProxy.style.cursor = "-moz-grab";
 }
 
 /**
