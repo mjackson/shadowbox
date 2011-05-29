@@ -19,20 +19,22 @@ if (navigator.plugins && navigator.plugins.length) {
     });
     names = names.join(',');
 
-    var f4m = names.indexOf('Flip4Mac') > -1;
+    var f4m = names.contains('Flip4Mac');
 
     S.plugins = {
-        fla:    names.indexOf('Shockwave Flash') > -1,
-        qt:     names.indexOf('QuickTime') > -1,
-        wmp:    !f4m && names.indexOf('Windows Media') > -1, // if it's Flip4Mac, it's not really WMP
+        fla:    names.contains('Shockwave Flash'),
+        qt:     names.contains('QuickTime'),
+        wmp:    !f4m && names.contains('Windows Media'), // if it's Flip4Mac, it's not really WMP
         f4m:    f4m
     };
 } else {
     var detectPlugin = function(name) {
         var axo;
+
         try {
             axo = new ActiveXObject(name);
         } catch(e) {}
+
         return !!axo;
     }
 

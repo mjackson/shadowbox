@@ -18,6 +18,16 @@ var S = {
 
 var root = document.documentElement;
 
+Array.prototype.contains = Array.prototype.contains || function (obj) {
+    for (var i = 0; i < this.length; ++i) {
+        if (this[i] === obj) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 var ua = navigator.userAgent.toLowerCase();
 
 // operating system detection
@@ -809,35 +819,42 @@ S.makeObject = function(link, options) {
  * @public
  */
 S.getPlayer = function(content) {
-    if (content.indexOf("#") > -1 && content.indexOf(document.location.href) == 0)
+    if (content.indexOf("#") > -1 && content.indexOf(document.location.href) == 0) {
         return "inline";
+    }
 
     // strip query string for player detection purposes
     var q = content.indexOf("?");
-    if (q > -1)
+    if (q > -1) {
         content = content.substring(0, q);
+    }
 
     // get file extension
     var ext, m = content.match(fileExtension);
-    if (m)
+    if (m) {
         ext = m[0].toLowerCase();
+    }
 
     if (ext) {
-        if (S.img && S.img.ext.indexOf(ext) > -1)
+        if (S.img && S.img.ext.contains(ext)) {
             return "img";
-        if (S.swf && S.swf.ext.indexOf(ext) > -1)
+        }
+        if (S.swf && S.swf.ext.contains(ext)) {
             return "swf";
-        if (S.flv && S.flv.ext.indexOf(ext) > -1)
+        }
+        if (S.flv && S.flv.ext.contains(ext)) {
             return "flv";
-        if (S.qt && S.qt.ext.indexOf(ext) > -1) {
-            if (S.wmp && S.wmp.ext.indexOf(ext) > -1) {
+        }
+        if (S.qt && S.qt.ext.contains(ext)) {
+            if (S.wmp && S.wmp.ext.contains(ext)) {
                 return "qtwmp"; // can be played by either QuickTime or Windows Media Player
             } else {
                 return "qt";
             }
         }
-        if (S.wmp && S.wmp.ext.indexOf(ext) > -1)
+        if (S.wmp && S.wmp.ext.contains(ext)) {
             return "wmp";
+        }
     }
 
     return "iframe";
@@ -1106,23 +1123,6 @@ function finish() {
         S.play(); // kick off next slide
 
     listenKeys(true);
-}
-
-if (!Array.prototype.indexOf) {
-    Array.prototype.indexOf = function(obj, from) {
-        var len = this.length >>> 0;
-
-        from = from || 0;
-        if (from < 0)
-            from += len;
-
-        for (; from < len; ++from) {
-            if (from in this && this[from] === obj)
-                return from;
-        }
-
-        return -1;
-    }
 }
 
 /**
