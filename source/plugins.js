@@ -4,8 +4,6 @@
  *
  * - fla: Flash player
  * - qt: QuickTime player
- * - wmp: Windows Media player
- * - f4m: Flip4Mac plugin
  *
  * @type    {Object}
  * @public
@@ -19,13 +17,9 @@ if (navigator.plugins && navigator.plugins.length) {
     });
     names = names.join(',');
 
-    var f4m = names.contains('Flip4Mac');
-
     S.plugins = {
         fla:    names.contains('Shockwave Flash'),
-        qt:     names.contains('QuickTime'),
-        wmp:    !f4m && names.contains('Windows Media'), // if it's Flip4Mac, it's not really WMP
-        f4m:    f4m
+        qt:     names.contains('QuickTime')
     };
 } else {
     var detectPlugin = function(name) {
@@ -40,8 +34,6 @@ if (navigator.plugins && navigator.plugins.length) {
 
     S.plugins = {
         fla:    detectPlugin('ShockwaveFlash.ShockwaveFlash'),
-        qt:     detectPlugin('QuickTime.QuickTime'),
-        wmp:    detectPlugin('wmplayer.ocx'),
-        f4m:    false
+        qt:     detectPlugin('QuickTime.QuickTime')
     };
 }

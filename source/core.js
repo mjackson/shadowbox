@@ -124,10 +124,6 @@ S.errorInfo = {
     qt: {
         name: "QuickTime",
         url:  "http://www.apple.com/quicktime/download/"
-    },
-    wmp: {
-        name: "Windows Media Player",
-        url:  "http://www.microsoft.com/windows/windowsmedia/"
     }
 };
 
@@ -823,14 +819,7 @@ S.getPlayer = function(content) {
             return "flv";
         }
         if (S.qt && S.qt.ext.contains(ext)) {
-            if (S.wmp && S.wmp.ext.contains(ext)) {
-                return "qtwmp"; // can be played by either QuickTime or Windows Media Player
-            } else {
-                return "qt";
-            }
-        }
-        if (S.wmp && S.wmp.ext.contains(ext)) {
-            return "wmp";
+            return "qt";
         }
     }
 
@@ -855,27 +844,13 @@ function filterGallery() {
         switch (obj.player) {
         case "flv":
         case "swf":
-            if (!plugins.fla)
+            if (!plugins.fla) {
                 needed = "fla";
-            break;
-        case "qt":
-            if (!plugins.qt)
-                needed = "qt";
-            break;
-        case "wmp":
-            if (plugins.qt && plugins.f4m) {
-                obj.player = "qt";
-            } else if (!plugins.wmp) {
-                needed = "wmp";
             }
             break;
-        case "qtwmp":
-            if (plugins.qt) {
-                obj.player = "qt";
-            } else if (plugins.wmp) {
-                obj.player = "wmp";
-            } else {
-                needed = "qtwmp";
+        case "qt":
+            if (!plugins.qt) {
+                needed = "qt";
             }
             break;
         }
@@ -883,16 +858,9 @@ function filterGallery() {
         // handle unsupported elements
         if (needed) {
             if (S.options.handleUnsupported == "link") {
-                // generate a link to the appropriate plugin download page(s)
-                switch (needed) {
-                case "qtwmp":
-                    format = "either";
-                    replace = [err.qt.url, err.qt.name, err.wmp.url, err.wmp.name];
-                    break;
-                default:
-                    format = "single";
-                    replace = [err[needed].url, err[needed].name];
-                }
+                // generate a link to the appropriate plugin download page
+                format = "single";
+                replace = [err[needed].url, err[needed].name];
 
                 obj.player = "html";
                 obj.content = '<div class="sb-message">' + sprintf(S.lang.errors[format], replace) + '</div>';

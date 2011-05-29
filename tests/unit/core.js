@@ -37,19 +37,12 @@ test("getPlayer", function() {
     equal(g("movie.moov"), "qt", ".moov extension");
     equal(g("movie.movie"), "qt", ".movie extension");
     equal(g("movie.mp4"), "qt", ".mp4 extension");
+    equal(g("movie.avi"), "qt", ".avi extension");
+    equal(g("movie.mpg"), "qt", ".mpg extension");
+    equal(g("movie.mpeg"), "qt", ".mpeg extension");
 
     // swf
     equal(g("movie.swf"), "swf", ".swf extension");
-
-    // wmp
-    equal(g("movie.asf"), "wmp", ".asf extension");
-    equal(g("movie.wm"), "wmp", ".wm extension");
-    equal(g("movie.wmv"), "wmp", ".wmv extension");
-
-    // qtwmp
-    equal(g("movie.avi"), "qtwmp", ".avi extension");
-    equal(g("movie.mpg"), "qtwmp", ".mpg extension");
-    equal(g("movie.mpeg"), "qtwmp", ".mpeg extension");
 });
 
 test("setDimensions", function() {
