@@ -11,25 +11,20 @@ module Shadowbox
     f.read.match(/version: (['"])([\w.]+)\1/)[2]
   end
 
-  %w{adapters languages players}.each do |dir|
+  %w{languages players}.each do |dir|
     available = Dir.glob(File.join(@source_dir, dir, '*.js')).map do |file|
       File.basename(file, '.js')
     end
     instance_variable_set("@available_#{dir}".to_sym, available)
   end
 
-  @default_adapter = 'base'
   @default_language = 'en'
   @default_players = @available_players.dup
 
   class << self
     attr_reader :source_dir, :compiler, :current_version
-    attr_reader :available_adapters, :available_languages, :available_players
-    attr_reader :default_adapter, :default_language, :default_players
-
-    def valid_adapter?(adapter)
-      @available_adapters.include?(adapter)
-    end
+    attr_reader :available_languages, :available_players
+    attr_reader :default_language, :default_players
 
     def valid_language?(language)
       @available_languages.include?(language)
@@ -61,7 +56,6 @@ module Shadowbox
 
   class Builder
     DEFAULTS = {
-      :adapter      => Shadowbox.default_adapter,
       :language     => Shadowbox.default_language,
       :players      => Shadowbox.default_players,
       :css_support  => true,
@@ -86,7 +80,6 @@ module Shadowbox
     end
 
     def validate!
-      raise ArgumentError, "Unknown adapter: #{adapter}" unless Shadowbox.valid_adapter?(adapter)
       raise ArgumentError, "Unknown language: #{language}" unless Shadowbox.valid_language?(language)
       players.each do |player|
         raise ArgumentError, "Unknown player: #{player}" unless Shadowbox.valid_player?(player)
@@ -146,8 +139,6 @@ module Shadowbox
 
       files << 'intro'
       files << 'core'
-      files << 'util'
-      files << File.join('adapters', adapter)
       files << 'load'
       files << 'plugins'
       files << 'cache'
