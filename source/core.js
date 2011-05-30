@@ -26,8 +26,7 @@ Array.prototype.contains = Array.prototype.contains || function (obj) {
     return false;
 }
 
-var inlineId = /#(.+)$/,
-    galleryName = /^(light|shadow)box\[(.*?)\]/i,
+var galleryName = /^(light|shadow)box\[(.*?)\]/i,
     inlineParam = /\s*([a-z_]*?)\s*=\s*(.+)\s*/,
     fileExtension = /[0-9a-z]+$/i,
     scriptPath = /(.+\/)shadowbox\.js/i,
@@ -818,10 +817,6 @@ S.makeObject = function(link, options) {
  * @public
  */
 S.getPlayer = function(content) {
-    if (content.indexOf("#") > -1 && content.indexOf(document.location.href) == 0) {
-        return "inline";
-    }
-
     // strip query string for player detection purposes
     var q = content.indexOf("?");
     if (q > -1) {
@@ -859,7 +854,7 @@ S.getPlayer = function(content) {
  */
 function filterGallery() {
     var err = S.errorInfo, plugins = S.plugins, obj, remove, needed,
-        m, inlineEl, flashVersion;
+        m, flashVersion;
 
     for (var i = 0; i < S.gallery.length; ++i) {
         obj = S.gallery[i]
@@ -888,21 +883,6 @@ function filterGallery() {
                 obj.player = "html";
                 obj.content = '<div class="sb-message">Please download <a href="' + err[needed].url + '">' + err[needed].name + '</a> in order to view this content.</div>';
             } else {
-                remove = true;
-            }
-        } else if (obj.player == "inline") {
-            // inline element, retrieve innerHTML
-            m = inlineId.exec(obj.content);
-            if (m) {
-                inlineEl = get(m[1]);
-                if (inlineEl) {
-                    obj.content = inlineEl.innerHTML;
-                } else {
-                    // cannot find element with id
-                    remove = true;
-                }
-            } else {
-                // cannot determine element id from content string
                 remove = true;
             }
         } else if (obj.player == "swf" || obj.player == "flv") {
@@ -991,13 +971,12 @@ function handleKey(e) {
 function load(changing) {
     listenKeys(false);
 
-    var obj = S.getCurrent();
+    var obj = S.getCurrent(),
+        player = obj.player;
 
-    // determine player, inline is really just html
-    var player = (obj.player == "inline" ? "html" : obj.player);
-
-    if (typeof S[player] != "function")
+    if (typeof S[player] !== "function") {
         throw "unknown player " + player;
+    }
 
     if (changing) {
         S.player.remove();
@@ -1010,12 +989,12 @@ function load(changing) {
     // preload neighboring gallery images
     if (S.gallery.length > 1) {
         var next = S.gallery[S.current + 1] || S.gallery[0];
-        if (next.player == "img") {
+        if (next.player === "img") {
             var a = new Image();
             a.src = next.content;
         }
         var prev = S.gallery[S.current - 1] || S.gallery[S.gallery.length - 1];
-        if (prev.player == "img") {
+        if (prev.player === "img") {
             var b = new Image();
             b.src = prev.content;
         }

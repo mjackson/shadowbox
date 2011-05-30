@@ -9,3 +9,8 @@
   * Removed dependence on sniffing for various operating systems.
 
   * Removed support for video playback using Windows Media Player.
+
+  * Removed dependence on various language-specific files in favor of using
+    universal symbols in the UI.
+
+  * Removed support for "inline" player type.

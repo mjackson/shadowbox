@@ -15,10 +15,8 @@ test("getPlayer", function() {
     equal(g("movie.flv"), "flv", ".flv extension");
     equal(g("movie.m4v"), "flv", ".m4v extension");
 
-    // inline & iframe
-    var h = document.location.href;
-    equal(g(h), "iframe", "same document");
-    equal(g(h + '#id'), "inline", "same document with hash");
+    // iframe
+    equal(g(document.location.href), "iframe", "same document");
     equal(g('/'), "iframe", "same domain, root document");
     equal(g('/#name'), "iframe", "same domain, root document with hash");
     equal(g('/index.html'), "iframe", "same domain, external document");
