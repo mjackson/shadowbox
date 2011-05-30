@@ -953,12 +953,13 @@ function listenKeys(on) {
  */
 function handleKey(e) {
     // don't handle events with modifier keys
-    if (e.metaKey || e.shiftKey || e.altKey || e.ctrlKey)
+    if (e.metaKey || e.shiftKey || e.altKey || e.ctrlKey) {
         return;
+    }
 
-    var code = keyCode(e), handler;
+    var handler;
 
-    switch (code) {
+    switch (e.keyCode) {
     case 81: // q
     case 88: // x
     case 27: // esc
@@ -976,7 +977,7 @@ function handleKey(e) {
     }
 
     if (handler) {
-        preventDefault(e);
+        e.preventDefault();
         handler();
     }
 }
@@ -1286,31 +1287,6 @@ function getPageXY(e) {
     return [x, y];
 }
 
-/**
- * Prevents the event's default behavior. The event object passed will
- * be the same object that is passed to listeners registered with
- * addEvent().
- *
- * @param   {Event}     e       The event object
- * @private
- */
-function preventDefault(e) {
-    e.preventDefault();
-}
-
-/**
- * Gets the key code of the given event object (keydown). The event
- * object here will be the same object that is passed to listeners
- * registered with addEvent().
- *
- * @param   {Event}     e       The event object
- * @return  {Number}            The key code of the event
- * @private
- */
-function keyCode(e) {
-    return e.which ? e.which : e.keyCode;
-}
-
 // Event handling functions below modified from original by Dean Edwards
 // http://dean.edwards.name/my/events.js
 
@@ -1362,8 +1338,9 @@ addEvent.handleEvent = function(event) {
 
     for (var i in handlers) {
         this.__handleEvent = handlers[i];
-        if (this.__handleEvent(event) === false)
+        if (this.__handleEvent(event) === false) {
             result = false;
+        }
     }
 
     return result;
@@ -1380,6 +1357,7 @@ addEvent.stopPropagation = function() {
 addEvent.fixEvent = function(e) {
     e.preventDefault = addEvent.preventDefault;
     e.stopPropagation = addEvent.stopPropagation;
+    e.keyCode = e.which;
     return e;
 }
 

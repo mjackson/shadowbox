@@ -115,7 +115,7 @@ function disableDrag() {
  */
 function startDrag(e) {
     // prevent browser dragging
-    preventDefault(e);
+    e.preventDefault();
 
     var xy = getPageXY(e);
     dragData.startX = xy[0];

@@ -158,10 +158,11 @@ S.clearCache = function() {
  * @private
  */
 function handleClick(e) {
-    //preventDefault(e); // good for debugging
+    //e.preventDefault(); // good for debugging
 
     S.open(this);
 
-    if (S.gallery.length)
-        preventDefault(e);
+    if (S.gallery.length) {
+        e.preventDefault();
+    }
 }
