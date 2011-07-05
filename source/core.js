@@ -28,7 +28,7 @@ Array.prototype.contains = Array.prototype.contains || function (obj) {
 
 var galleryName = /^(light|shadow)box\[(.*?)\]/i,
     inlineParam = /\s*([a-z_]*?)\s*=\s*(.+)\s*/,
-    fileExtension = /\.[0-9a-z]+$/i,
+    fileExtension = /\.([0-9a-z]+)(?:[\?#]|$)/i,
     scriptPath = /(.+\/)shadowbox\.js/i,
 
 root = document.documentElement,
@@ -826,7 +826,7 @@ S.getPlayer = function(content) {
     // get file extension
     var ext, m = content.match(fileExtension);
     if (m) {
-        ext = m[0].toLowerCase();
+        ext = m[1].toLowerCase();
     }
 
     if (ext) {
