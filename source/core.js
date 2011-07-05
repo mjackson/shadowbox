@@ -28,7 +28,7 @@ Array.prototype.contains = Array.prototype.contains || function (obj) {
 
 var galleryName = /^(light|shadow)box\[(.*?)\]/i,
     inlineParam = /\s*([a-z_]*?)\s*=\s*(.+)\s*/,
-    fileExtension = /[0-9a-z]+$/i,
+    fileExtension = /\.[0-9a-z]+$/i,
     scriptPath = /(.+\/)shadowbox\.js/i,
 
 root = document.documentElement,
