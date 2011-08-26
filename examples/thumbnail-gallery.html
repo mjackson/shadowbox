@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>Shadowbox &raquo; Thumbnail Gallery Example</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="/shadowbox.css">
+    <script type="text/javascript" src="/shadowbox.js"></script>
+    <style type="text/css">
+    a[rel] {
+        display: inline-block;
+        margin-left: 10px;
+    }
+    </style>
+  </head>
+  <body>
+    <h1>Thumbnail Gallery Example</h1>
+
+    <p>
+    This example demonstrates how to open a gallery of images in Shadowbox by
+    clicking on a thumbnail of any image in the gallery. As in the simple
+    <a href="thumbnail-photo.html">thumbnail example</a> each thumbnail is wrapped
+    in a link element with a <code>rel="shadowbox"</code> attribute. Additionally,
+    to ensure that Shadowbox displays all images in the same gallery, we include
+    the name of the gallery that image belongs to between square brackets
+    immediately after (e.g. <code>rel="shadowbox[gallery-name]"</code>). Then,
+    when any image with the same gallery name is opened it will be opened alongside
+    all other images in that same gallery.
+    </p>
+
+    <p>
+    Note: When using this method the gallery order will reflect the same order
+    that the elements are found in the DOM.
+    </p>
+
+    <p>
+    <a rel="shadowbox[balloon]" href="files/balloon.jpg"><img src="files/balloon.jpg" height="120"></a>
+    <a rel="shadowbox[balloon]" href="files/balloon2.jpg"><img src="files/balloon2.jpg" height="120"></a>
+    <a rel="shadowbox[balloon]" href="files/balloon3.jpg"><img src="files/balloon3.jpg" height="120"></a>
+    </p>
+
+    <p>This file is part of <a href="http://shadowbox-js.com/">Shadowbox</a>.</p>
+  </body>
+</html>

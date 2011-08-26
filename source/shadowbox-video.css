@@ -1,0 +1,57 @@
+/**
+ * This file is part of Shadowbox
+ * http://shadowbox-js.com/
+ * Copyright 2007-2011 Michael Jackson
+ */
+
+#sb-controls {
+  position: absolute;
+  display: none;
+  bottom: 40px;
+  left: 50%;
+  margin-left: -78px;
+  width: 156px;
+  height: 64px;
+  background: url("shadowbox-controls.png") 0 0 repeat-x;
+}
+
+#sb-controls.paused {
+  display: block;
+}
+
+#shadowbox.active #sb-controls, #sb-body:hover #sb-controls {
+  display: block;
+}
+
+#sb-rewind, #sb-play, #sb-volume {
+  float: left;
+  height: 100%;
+  background: url("shadowbox-controls.png") no-repeat;
+  cursor: pointer;
+}
+
+#sb-rewind {
+  width: 26px;
+  background-position: -84px -64px;
+  margin-left: 16px;
+}
+
+#sb-play {
+  width: 42px;
+  background-position: -42px -64px;
+  margin-left: 15px;
+}
+
+#sb-controls.paused #sb-play {
+  background-position: 0 -64px;
+}
+
+#sb-volume {
+  width: 26px;
+  background-position: -110px -64px;
+  margin-left: 15px;
+}
+
+#sb-controls.muted #sb-volume {
+  background-position: -136px -64px;
+}

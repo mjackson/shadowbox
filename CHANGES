@@ -1,16 +1,31 @@
 = HEAD
 
-  * Removed dependency on most external frameworks such as jQuery, Prototype,
-    Sizzle, Mootools, etc.
+  * Reorganized and greatly simplified the code and build process.
 
-  * Removed CSS support. This requires users to use arrays of objects instead of
-    CSS selectors when specifying content.
+  * Added support for video playback using HTML5 with Flash fallback. Video
+    playback via Windows Media Player and QuickTime browser plugins is no longer
+    supported.
+
+  * Added support for live triggering of Shadowbox. This removes the need for
+    manual setup/caching, and makes it easier to trigger Shadowbox on
+    dynamically generated DOM elements. Thanks to Diego Perini for his ideas
+    in this area.
+
+  * Added support for WebKit on iPhone and Android.
+
+  * Added support for Internet Explorer 9.
+
+  * Require HTML5 doctype.
+
+  * Removed dependency on JavaScript frameworks such as jQuery, swfobject,
+    Sizzle, etc.
+
+  * Removed CSS selector support.
 
   * Removed dependence on sniffing for various operating systems.
 
-  * Removed support for video playback using Windows Media Player.
+  * Removed dependency on various language-specific files.
 
-  * Removed dependence on various language-specific files in favor of using
-    universal symbols in the UI.
+  * Removed inline and html players.
 
-  * Removed support for "inline" player type.
+  * Dropped support for Internet Explorer 6.
