@@ -46,11 +46,8 @@ module Shadowbox
         name = File.basename(file)
         code = File.read(file)
 
-        # Replace @VERSION and @DATE markers in shadowbox.js.
-        if name == 'shadowbox.js'
-          code.sub!('@VERSION', Shadowbox.version)
-          code.sub!('@DATE', date)
-        end
+        # Replace @VERSION marker in shadowbox.js.
+        code.sub!('@VERSION', Shadowbox.version) if name == 'shadowbox.js'
 
         memo << [name, code]
       end
@@ -59,11 +56,8 @@ module Shadowbox
         name = File.basename(file)
         code = File.read(file)
 
-        # Replace @VERSION and @DATE markers in shadowbox.css.
-        if name == 'shadowbox.css'
-          code.sub!('@VERSION', Shadowbox.version)
-          code.sub!('@DATE', date)
-        end
+        # Replace @VERSION marker in shadowbox.css.
+        code.sub!('@VERSION', Shadowbox.version) if name == 'shadowbox.css'
 
         memo << [name, code]
       end

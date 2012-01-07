@@ -1,6 +1,5 @@
 /*!
  * Shadowbox, version @VERSION
- * Date: @DATE
  * http://shadowbox-js.com/
  * Copyright 2007-2011 Michael Jackson
  */
