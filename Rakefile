@@ -17,7 +17,7 @@ def target_dir
 end
 
 def default_port
-  (ENV['PORT'] || 5000).to_i
+  (ENV['PORT'] || 3000).to_i
 end
 
 task :default => :build
