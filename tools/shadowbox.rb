@@ -40,6 +40,7 @@ module Shadowbox
 
     dirs = [build_dir, examples_dir]
     app = Rack::Cascade.new(dirs.map {|dir| Rack::File.new(dir) })
+    app = Rack::CommonLogger.new(app)
 
     Index.new(app)
   end
