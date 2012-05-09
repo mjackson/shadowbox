@@ -38,5 +38,7 @@ end
 
 desc "Serve examples over HTTP on $PORT, defaults to #{default_port}"
 task :serve do
-  Rack::Handler::Thin.run(Shadowbox.examples_app, :Port => default_port)
+  require 'rack'
+  app = Rack::CommonLogger.new(Shadowbox.examples_app)
+  Rack::Handler::Thin.run(app, :Port => default_port)
 end
