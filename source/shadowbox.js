@@ -210,10 +210,10 @@
     gallery = [];
 
     // Normalize into player objects and append them to the gallery.
-    var index = options.startIndex,
-      player;
+    var index = options.startIndex, player;
     for (var i = 0, len = objs.length; i < len; ++i) {
       player = makePlayer(objs[i]);
+
       if (player) {
         gallery.push(player);
       } else {
@@ -304,11 +304,11 @@
       var size = getWrapperSize();
 
       var fromWidth = parseInt(getStyle(wrapper, "width")) || 0,
-        fromHeight = parseInt(getStyle(wrapper, "height")) || 0,
-        toWidth = size[0],
-        toHeight = size[1],
-        changeWidth = toWidth - fromWidth,
-        changeHeight = toHeight - fromHeight;
+          fromHeight = parseInt(getStyle(wrapper, "height")) || 0,
+          toWidth = size[0],
+          toHeight = size[1],
+          changeWidth = toWidth - fromWidth,
+          changeHeight = toHeight - fromHeight;
 
       // Open to the correct dimensions. Use the low-level animation
       // primitive to make this transition as smooth as possible.
@@ -486,7 +486,7 @@
 
     // Calculate the change in height/width.
     var changeWidth = (originalWidth - width) / originalWidth,
-      changeHeight = (originalHeight - height) / originalHeight;
+        changeHeight = (originalHeight - height) / originalHeight;
 
     // Adjust height/width if oversized.
     if (changeWidth > 0 || changeHeight > 0) {
@@ -524,7 +524,7 @@
   }
 
   var troubleElements = ["select", "object", "embed", "canvas"],
-    visibilityCache = [];
+      visibilityCache = [];
 
   /**
    * Toggles the visibility of elements that are troublesome for overlays.
@@ -592,8 +592,7 @@
     }
 
     if (obj && typeof obj.url == "string") {
-      var id = "sb-player-" + String(guid++),
-        playerFn;
+      var id = "sb-player-" + String(guid++), playerFn;
 
       if (obj.player) {
         playerFn = obj.player;
@@ -778,9 +777,9 @@
     }
 
     var matcher = /^(?:shadow|light)box(?:\[(\w+)\])?$/i,
-      links = [],
-      index = 0,
-      match;
+        links = [],
+        index = 0,
+        match;
 
     // Find an ancestor node with rel="shadowbox" attribute.
     while (target) {
@@ -797,6 +796,7 @@
               if (link == target) {
                 index = links.length;
               }
+
               links.push(link);
             }
           });
@@ -811,7 +811,7 @@
     }
 
     // Good for debugging.
-    e.preventDefault();
+    // e.preventDefault();
 
     if (links.length > 0 && open(links, {startIndex: index})) {
       // Prevent the browser from following the link.
@@ -1020,6 +1020,7 @@
 
     for (var i = 1; i < len; ++i) {
       ext = arguments[i];
+
       for (var prop in ext) {
         obj[prop] = ext[prop];
       }
@@ -1064,12 +1065,13 @@
     duration = (duration || 0.35) * 1000;
 
     var ease = options.ease,
-      begin = now(),
-      end = begin + duration,
-      time;
+        begin = now(),
+        end = begin + duration,
+        time;
 
     var timer = setInterval(function() {
       time = now();
+
       if (time >= end) {
         clearInterval(timer);
         timer = null;
@@ -1130,6 +1132,7 @@
    */
   function empty(element) {
     var child = element.firstChild;
+
     while (child) {
       remove(child);
       child = element.firstChild;
@@ -1294,9 +1297,7 @@
   function handleEvent(e) {
     e = e || fixEvent(((this.ownerDocument || this.document || this).parentWindow || window).event);
 
-    var handlers = this.events[e.type],
-      result = true;
-
+    var handlers = this.events[e.type], result = true;
     for (var id in handlers) {
       if (handlers[id].call(this, e) === false) {
         result = false;

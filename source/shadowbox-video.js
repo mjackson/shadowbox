@@ -20,10 +20,10 @@
 
   // Detect video support, adapted from Modernizr.
   var video = dom("video"),
-    canPlay = video.canPlayType && function (type) {
-      var able = video.canPlayType(type);
-      return able != "" && able != "no";
-    };
+      canPlay = video.canPlayType && function (type) {
+        var able = video.canPlayType(type);
+        return able != "" && able != "no";
+      };
 
   if (canPlay) {
     var mp4 = 'video/mp4; codecs="avc1.42E01E';
