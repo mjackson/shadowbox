@@ -486,7 +486,7 @@
 
     // Calculate the change in height/width.
     var changeWidth = (originalWidth - width) / originalWidth,
-      changeHeight = (originalHeight - height) / originalHeight;
+        changeHeight = (originalHeight - height) / originalHeight;
 
     // Adjust height/width if oversized.
     if (changeWidth > 0 || changeHeight > 0) {
@@ -524,7 +524,7 @@
   }
 
   var troubleElements = ["select", "object", "embed", "canvas"],
-    visibilityCache = [];
+      visibilityCache = [];
 
   /**
    * Toggles the visibility of elements that are troublesome for overlays.

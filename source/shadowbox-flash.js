@@ -57,11 +57,13 @@
         vars.push(varName + "=" + this.vars[varName]);
       }
 
+      var params = utils.apply({}, this.params, {flashvars: vars.join("&")});
+
       this._el = swf(this.url, {
         id: this.id,
         width: this.width,
         height: this.height
-      }, utils.apply({}, this.params, {flashvars: vars.join("&")}));
+      }, params);
 
       utils.empty(element);
       dom(element, this._el);

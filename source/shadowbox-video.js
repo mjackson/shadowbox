@@ -20,10 +20,10 @@
 
   // Detect video support, adapted from Modernizr.
   var video = dom("video"),
-    canPlay = video.canPlayType && function (type) {
-      var able = video.canPlayType(type);
-      return able != "" && able != "no";
-    };
+      canPlay = video.canPlayType && function (type) {
+        var able = video.canPlayType(type);
+        return able !== "" && able !== "no";
+      };
 
   if (canPlay) {
     var mp4 = 'video/mp4; codecs="avc1.42E01E';
@@ -169,17 +169,10 @@
      * Returns true if this player is supported on this browser.
      */
     isSupported: function () {
-      if (supportsH264 && this.encodings["h264"]) {
-        return true;
-      } else if (supportsFlash && (this.encodings["flv"] || this.encodings["h264"])) {
-        return true;
-      } else if (supportsOgg && this.encodings["ogg"]) {
-        return true;
-      } else if (supportsWebm && this.encodings["webm"]) {
-        return true;
-      }
-
-      return false;
+      return (supportsH264 && this.encodings.h264) ||
+             (supportsFlash && (this.encodings.flv || this.encodings.h264)) ||
+             (supportsOgg && this.encodings.ogg) ||
+             (supportsWebm && this.encodings.webm);
     },
 
     /**
@@ -187,14 +180,14 @@
      * Returns the newly created element, false if none was created.
      */
     insert: function (element) {
-      if (supportsH264 && this.encodings["h264"]) {
-        this._createVideo(this.encodings["h264"]);
-      } else if (supportsFlash && (this.encodings["flv"] || this.encodings["h264"])) {
-        this._createSwf(this.encodings["flv"] || this.encodings["h264"]);
-      } else if (supportsOgg && this.encodings["ogg"]) {
-        this._createVideo(this.encodings["ogg"]);
-      } else if (supportsWebm && this.encodings["webm"]) {
-        this._createVideo(this.encodings["webm"]);
+      if (supportsH264 && this.encodings.h264) {
+        this._createVideo(this.encodings.h264);
+      } else if (supportsFlash && (this.encodings.flv || this.encodings.h264)) {
+        this._createSwf(this.encodings.flv || this.encodings.h264);
+      } else if (supportsOgg && this.encodings.ogg) {
+        this._createVideo(this.encodings.ogg);
+      } else if (supportsWebm && this.encodings.webm) {
+        this._createVideo(this.encodings.webm);
       }
 
       if (!this._el) {
