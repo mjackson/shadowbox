@@ -1,35 +1,26 @@
-require 'fileutils'
-require 'shadowbox'
 require 'yuicompressor'
+require 'shadowbox'
 
 module Shadowbox
+  # Outputs all files to stdout.
   class Target
-    include FileUtils
 
-    def initialize(output_dir, compress=false)
-      @output_dir = output_dir
-      @compress = !!compress
-    end
-
-    attr_accessor :output_dir, :compress
-
-    def []=(file, contents)
-      dest_file = File.join(@output_dir, file)
-      dest_dir = File.dirname(dest_file)
-
-      mkdir_p(dest_dir) unless File.directory?(dest_dir)
-
-      if @compress
-        if /\.js$/ === file
-          contents = compress_js(contents)
-        elsif /\.css$/ === file
-          contents = compress_css(contents)
+    def flush!(compiler, compress=false)
+      compiler.each do |file, contents|
+        if compress
+          case file
+          when /\.js$/  then write(file, compress_js(contents))
+          when /\.css$/ then write(file, compress_css(contents))
+          else write(file, contents)
+          end
+        else
+          write(file, contents)
         end
       end
+    end
 
-      File.open(dest_file, 'w') do |f|
-        f.write(contents)
-      end
+    def write(file, contents)
+      puts "#{file}: #{contents}"
     end
 
   private
@@ -41,5 +32,6 @@ module Shadowbox
     def compress_css(code)
       YUICompressor.compress_css(code)
     end
+
   end
 end

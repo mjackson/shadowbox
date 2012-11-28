@@ -1,11 +1,15 @@
+require 'rack'
+
 module Shadowbox
-  autoload :Compiler, "shadowbox/compiler"
-  autoload :Target, "shadowbox/target"
+
+  autoload :Compiler,         'shadowbox/compiler'
+  autoload :DirectoryTarget,  'shadowbox/directory_target'
+  autoload :Target,           'shadowbox/target'
+  autoload :ZipFileTarget,    'shadowbox/zip_file_target'
 
   @root_dir = File.expand_path('../..', __FILE__)
   @source_dir = File.join(@root_dir, 'source')
   @examples_dir = File.join(@root_dir, 'examples')
-  @build_dir = File.join(@root_dir, 'build')
 
   # Get the current version of the code from the source.
   @version = File.open(File.join(@source_dir, 'shadowbox.js'), 'r') do |f|
@@ -15,13 +19,14 @@ module Shadowbox
   end
 
   class << self
-    attr_reader :root_dir, :source_dir, :examples_dir, :build_dir, :version
+    attr_reader :root_dir, :source_dir, :examples_dir, :version
   end
 
-  def self.compile!(target_dir, options={})
-    target = Target.new(target_dir, options[:compress])
+  def self.compile!(output_file, options={})
     compiler = Compiler.new(options)
-    compiler.run!(target)
+    target_class = /\.zip$/ === output_file ? ZipFileTarget : DirectoryTarget
+    target = target_class.new(output_file)
+    target.flush!(compiler, options[:compress])
   end
 
   class Index
@@ -36,9 +41,7 @@ module Shadowbox
   end
 
   def self.examples_app
-    require 'rack'
-    dirs = [build_dir, examples_dir]
-    app = Rack::Cascade.new(dirs.map {|dir| Rack::File.new(dir) })
-    Index.new(app)
+    Index.new(Rack::File.new(examples_dir))
   end
+
 end

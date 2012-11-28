@@ -2,16 +2,16 @@ require 'shadowbox'
 
 module Shadowbox
   class Compiler
+
     def initialize(options)
       @source_dir = options[:source_dir] || Shadowbox.source_dir
       raise ArgumentError, %{Invalid directory: #{@source_dir}} unless File.directory?(@source_dir)
       raise ArgumentError, %{Directory "#{@source_dir}" is not readable} unless File.readable?(@source_dir)
       @support_flash = !!options[:support_flash]
       @support_video = !!options[:support_video]
-      @combine_files = !!options[:combine_files]
     end
 
-    attr_accessor :source_dir, :support_flash, :support_video, :combine_files
+    attr_accessor :source_dir, :support_flash, :support_video
 
     def requires_flash?
       @support_flash || @support_video
@@ -39,41 +39,26 @@ module Shadowbox
       files
     end
 
-    def run!(target)
-      date = Time.now.inspect
+    def each(&block)
+      hash = Hash.new
 
-      js = js_files.inject([]) do |memo, file|
-        name = File.basename(file)
+      hash['shadowbox.js'] = js_files.inject('') do |memo, file|
         code = File.read(file)
-
-        # Replace @VERSION marker in shadowbox.js.
-        code.sub!('@VERSION', Shadowbox.version) if name == 'shadowbox.js'
-
-        memo << [name, code]
+        code.sub!('@VERSION', Shadowbox.version) if File.basename(file) == 'shadowbox.js'
+        memo << code
       end
 
-      css = css_files.inject([]) do |memo, file|
-        name = File.basename(file)
+      hash['shadowbox.css'] = css_files.inject('') do |memo, file|
         code = File.read(file)
-
-        # Replace @VERSION marker in shadowbox.css.
-        code.sub!('@VERSION', Shadowbox.version) if name == 'shadowbox.css'
-
-        memo << [name, code]
+        code.sub!('@VERSION', Shadowbox.version) if File.basename(file) == 'shadowbox.css'
+        memo << code
       end
 
-      if @combine_files
-        # Concatenate all js/css files into shadowbox.js and shadowbox.css.
-        target['shadowbox.js'] = js.map {|name, code| code }.join("\n")
-        target['shadowbox.css'] = css.map {|name, code| code }.join("\n")
-      else
-        (js + css).each {|name, code| target[name] = code }
-      end
-
-      # Copy all other resources.
       resource_files.each do |file|
-        target[File.basename(file)] = File.read(file)
+        hash[File.basename(file)] = File.read(file)
       end
+
+      hash.each(&block)
     end
 
   private
@@ -81,5 +66,6 @@ module Shadowbox
     def source(*args)
       File.join(@source_dir, *args)
     end
+
   end
 end
