@@ -6,24 +6,24 @@
 
 (function (window, shadowbox, undefined) {
 
-  var options = shadowbox.options,
-      utils = shadowbox.utils,
-      dom = utils.dom,
-      swf = utils.swf,
-      supportsFlash = utils.supportsFlash,
-      supportsH264 = false,
-      supportsOgg = false,
-      supportsWebm = false;
+  var options = shadowbox.options;
+  var utils = shadowbox.utils;
+  var dom = utils.dom;
+  var swf = utils.swf;
+  var supportsFlash = utils.supportsFlash;
+  var supportsH264 = false;
+  var supportsOgg = false;
+  var supportsWebm = false;
 
   // The URL of the Flowplayer SWF, for flash fallback.
   shadowbox.flowplayer = "http://releases.flowplayer.org/swf/flowplayer-3.2.7.swf";
 
   // Detect video support, adapted from Modernizr.
-  var video = dom("video"),
-      canPlay = video.canPlayType && function (type) {
-        var able = video.canPlayType(type);
-        return able !== "" && able !== "no";
-      };
+  var video = dom("video");
+  var canPlay = video.canPlayType && function (type) {
+    var able = video.canPlayType(type);
+    return able != "" && able != "no";
+  };
 
   if (canPlay) {
     var mp4 = 'video/mp4; codecs="avc1.42E01E';
