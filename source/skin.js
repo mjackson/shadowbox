@@ -619,7 +619,7 @@ K.onOpen = function(obj, callback) {
         overlay.style.backgroundColor = S.options.overlayColor;
         S.setOpacity(overlay, 0);
 
-        if (!S.options.modal)
+        if (S.options.modal)
             addEvent(overlay, "click", S.close);
 
         overlayOn = true;
