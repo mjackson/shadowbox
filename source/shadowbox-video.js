@@ -4,22 +4,25 @@
  * Copyright 2007-2011 Michael Jackson
  */
 
-(function (window, shadowbox, undefined) {
+(function (global, shadowbox) {
 
-  var options = shadowbox.options;
-  var utils = shadowbox.utils;
-  var dom = utils.dom;
-  var swf = utils.swf;
-  var supportsFlash = utils.supportsFlash;
+  var mergeProperties = shadowbox.mergeProperties;
+  var removeElement = shadowbox.removeElement;
+  var removeChildren = shadowbox.removeChildren;
+  var addEvent = shadowbox.addEvent;
+  var makeDom = shadowbox.makeDom;
+  var makeSwf = shadowbox.makeSwf;
+  var supportsFlash = shadowbox.supportsFlash;
+
+  // The URL of the Flowplayer SWF to use for flash fallback.
+  shadowbox.flowplayer = "http://releases.flowplayer.org/swf/flowplayer-3.2.7.swf";
+
+  // Detect video support, adapted from Modernizr.
   var supportsH264 = false;
   var supportsOgg = false;
   var supportsWebm = false;
 
-  // The URL of the Flowplayer SWF, for flash fallback.
-  shadowbox.flowplayer = "http://releases.flowplayer.org/swf/flowplayer-3.2.7.swf";
-
-  // Detect video support, adapted from Modernizr.
-  var video = dom("video");
+  var video = makeDom("video");
   var canPlay = video.canPlayType && function (type) {
     var able = video.canPlayType(type);
     return able != "" && able != "no";
@@ -32,53 +35,33 @@
     supportsWebm = canPlay('video/webm; codecs="vp8, vorbis"');
   }
 
+  shadowbox.supportsH264 = supportsH264;
+  shadowbox.supportsOgg = supportsOgg;
+  shadowbox.supportsWebm = supportsWebm;
+
   var extRe = /\.(mp4|m4v|ogg|webm|flv)/i;
 
-  var encodingsMap = {
-    "mp4": "h264",
-    "m4v": "h264",
-    "ogg": "ogg",
-    "webm": "webm",
-    "flv": "flv"
+  /**
+   * A map of common video file extensions to the encodings they use.
+   */
+  shadowbox.encodings = {
+    mp4: "h264",
+    m4v: "h264",
+    ogg: "ogg",
+    webm: "webm",
+    flv: "flv"
   };
 
-  /**
-   * Tries to automatically detect the encoding of a video from the file
-   * extension it uses.
-   */
-  function detectEncoding(url) {
-    var encoding;
-
-    var match = url.match(extRe);
-    if (match) {
-      return encodingsMap[match[1].toLowerCase()];
-    }
-
-    return encoding;
-  }
-
-  function addClass(el, className) {
-    if (el.className) {
-      el.className = el.className + " " + className;
-    } else {
-      el.className = className;
-    }
-  }
-
-  function removeClass(el, className) {
-    var classRe = new RegExp("\\s*" + className + "\\s*", "g");
-    el.className = (el.className || "").replace(classRe, " ");
-  }
-
-  function Video(obj, id) {
-    this.url = obj.url;
-    this.width = parseInt(obj.width, 10) || 640;
-    this.height = parseInt(obj.height, 10) || 480;
-    this.posterUrl = obj.posterUrl;
+  shadowbox.VideoPlayer = VideoPlayer;
+  function VideoPlayer(object, id) {
+    this.url = object.url;
+    this.width = parseInt(object.width, 10) || 640;
+    this.height = parseInt(object.height, 10) || 480;
+    this.posterUrl = object.posterUrl;
     this.id = id;
 
-    if (obj.encodings) {
-      this.encodings = obj.encodings;
+    if (object.encodings) {
+      this.encodings = object.encodings;
     } else {
       this.encodings = {};
     }
@@ -92,10 +75,10 @@
     }
   }
 
-  utils.apply(Video.prototype, {
+  mergeProperties(VideoPlayer.prototype, {
 
     _createVideo: function (url) {
-      var attrs = {
+      var properties = {
         id: this.id,
         src: url,
         preload: "auto",
@@ -106,13 +89,13 @@
       };
 
       if (this.posterUrl) {
-        attrs.poster = this.posterUrl;
+        properties.poster = this.posterUrl;
       }
 
-      this._el = dom("video", attrs);
+      this.element = makeDom("video", properties);
 
       // Working with an HTML5 <video> element.
-      utils.apply(this, html5Methods);
+      mergeProperties(this, videoMethods);
     },
 
     _createSwf: function (url) {
@@ -148,7 +131,7 @@
       var config = "{" + configProps.join(",") + "}";
       var apiId = this.id + "_api";
 
-      this._el = swf(shadowbox.flowplayer, {
+      this.element = makeSwf(shadowbox.flowplayer, {
         id: apiId,
         name: apiId,
         width: this.width,
@@ -162,7 +145,7 @@
       });
 
       // Working with a Flowplayer <object> element.
-      utils.apply(this, flashMethods);
+      mergeProperties(this, flashMethods);
     },
 
     /**
@@ -177,9 +160,8 @@
 
     /**
      * Inserts this object as the only child of the given DOM element.
-     * Returns the newly created element, false if none was created.
      */
-    insert: function (element) {
+    injectInto: function (element) {
       if (supportsH264 && this.encodings.h264) {
         this._createVideo(this.encodings.h264);
       } else if (supportsFlash && (this.encodings.flv || this.encodings.h264)) {
@@ -190,14 +172,12 @@
         this._createVideo(this.encodings.webm);
       }
 
-      if (!this._el) {
-        return false;
-      }
+      if (!this.element) return;
 
-      utils.empty(element);
+      removeChildren(element);
 
       // Append the <video>/<object> to the DOM.
-      dom(element, this._el);
+      makeDom(element, this.element);
 
       // The Shadowbox video controls markup:
       //
@@ -207,50 +187,45 @@
       //   <div id="sb-volume"></div>
       // </div>
 
-      var controls = dom("div", {id: "sb-controls"});
-      var rewind = dom("div", {id: "sb-rewind"});
-      var play = dom("div", {id: "sb-play"});
-      var volume = dom("div", {id: "sb-volume"});
+      var controls = makeDom("div", { id: "sb-controls" });
+      var rewind = makeDom("div", { id: "sb-rewind" });
+      var play = makeDom("div", { id: "sb-play" });
+      var volume = makeDom("div", { id: "sb-volume" });
 
       // Append #sb-controls to the DOM.
-      dom(element, [
-        dom(controls, [rewind, play, volume])
+      makeDom(element, [
+        makeDom(controls, [ rewind, play, volume ])
       ]);
 
       this._controls = controls;
 
       var self = this;
 
-      utils.addEvent(rewind, "click", utils.cancel(function () {
-        self.seek(self.time() - 30);
-      }));
+      addEvent(rewind, "click", function (event) {
+        event.stopPropagation();
+        self.rewind(30);
+      });
 
-      utils.addEvent(play, "click", utils.cancel(function () {
+      addEvent(play, "click", function (event) {
+        event.stopPropagation();
         self.togglePlay();
-      }));
+      });
 
-      utils.addEvent(volume, "click", utils.cancel(function () {
-        if (self.isMuted()) {
-          self.unmute();
-        } else {
-          self.mute();
-        }
-      }));
+      addEvent(volume, "click", function (event) {
+        event.stopPropagation();
+        self.toggleMute();
+      });
 
-      if (this._init) {
-        this._init();
-      }
-
-      return this._el;
+      this._init();
     },
 
     /**
      * Removes this object from the DOM.
      */
     remove: function () {
-      if (this._el) {
-        utils.remove(this._el);
-        this._el = null;
+      if (this.element) {
+        removeElement(this.element);
+        delete this.element;
       }
     },
 
@@ -322,35 +297,45 @@
       removeClass(this._controls, "muted");
     },
 
+    toggleMute: function () {
+      if (this.isMuted()) {
+        this.unmute();
+      } else {
+        this.mute();
+      }
+    },
+
     seek: function (time) {
-      var to = Math.max(Math.min(time, this.length()), 0);
-      this._seek(to);
+      this._seek(Math.max(Math.min(time, this.length()), 0));
+    },
+
+    rewind: function (amount) {
+      this.seek(this.time() - amount);
     }
 
   });
 
-  shadowbox.register(Video, ["mp4", "m4v", "ogg", "webm", "flv"]);
-
   // Methods for controlling an HTML5 <video> element.
-  var html5Methods = {
+  var videoMethods = {
 
     _init: function () {
       var self = this;
 
-      utils.addEvent(this._el, "click", utils.cancel(function () {
+      addEvent(this.element, "click", function (event) {
+        event.stopPropagation();
         self.togglePlay();
-      }));
+      });
 
-      utils.addEvent(this._el, "ended", function () {
+      addEvent(this.element, "ended", function () {
         self.pause();
         self.seek(0);
       });
 
-      utils.addEvent(this._el, "play", function () {
+      addEvent(this.element, "play", function () {
         self.showPlaying();
       });
 
-      utils.addEvent(this._el, "pause", function () {
+      addEvent(this.element, "pause", function () {
         self.showPaused();
       });
 
@@ -363,39 +348,39 @@
     },
 
     _length: function () {
-      return this._el.duration;
+      return this.element.duration;
     },
 
     _time: function () {
-      return this._el.currentTime;
+      return this.element.currentTime;
     },
 
     _seek: function (time) {
-      this._el.currentTime = time;
+      this.element.currentTime = time;
     },
 
     _isPaused: function () {
-      return this._el.paused;
+      return this.element.paused;
     },
 
     _play: function () {
-      return this._el.play();
+      return this.element.play();
     },
 
     _pause: function () {
-      return this._el.pause();
+      return this.element.pause();
     },
 
     _isMuted: function () {
-      return !!this._el.muted;
+      return !!this.element.muted;
     },
 
     _mute: function () {
-      this._el.muted = true;
+      this.element.muted = true;
     },
 
     _unmute: function () {
-      this._el.muted = false;
+      this.element.muted = false;
     }
 
   };
@@ -403,57 +388,89 @@
   // Methods for controlling a Flowplayer <object> element.
   var flashMethods = {
 
+    _init: shadowbox.K,
+
     _length: function () {
-      var status = this._el.fp_getStatus();
+      var status = this.element.fp_getStatus();
       return status.bufferEnd;
     },
 
     _time: function () {
-      return this._el.fp_getTime();
+      return this.element.fp_getTime();
     },
 
     _seek: function (time) {
-      this._el.fp_seek(Math.round(time));
+      this.element.fp_seek(Math.round(time));
     },
 
     _isPaused: function () {
-      return this._el.fp_isPaused();
+      return this.element.fp_isPaused();
     },
 
     _play: function () {
-      return this._el.fp_play();
+      return this.element.fp_play();
     },
 
     _pause: function () {
-      return this._el.fp_pause();
+      return this.element.fp_pause();
     },
 
     _isMuted: function () {
-      return this._el.fp_isMuted();
+      return this.element.fp_isMuted();
     },
 
     // The calls to fp_mute, fp_unmute, and fp_setVolume log an error
     // that is uncatchable. However, they still work. :/
 
     _mute: function () {
-      this._el.fp_logging("suppress");
-      this._el.fp_mute();
-      this._el.fp_logging("error");
+      this.element.fp_logging("suppress");
+      this.element.fp_mute();
+      this.element.fp_logging("error");
     },
 
     _unmute: function () {
-      this._el.fp_logging("suppress");
-      this._el.fp_unmute();
-      this._el.fp_logging("error");
+      this.element.fp_logging("suppress");
+      this.element.fp_unmute();
+      this.element.fp_logging("error");
     },
 
     _setVolume: function (level) {
-      this._el.fp_logging("suppress");
-      this._el.fp_setVolume(level);
-      this._el.fp_logging("error");
+      this.element.fp_logging("suppress");
+      this.element.fp_setVolume(level);
+      this.element.fp_logging("error");
     }
 
   };
+
+  /**
+   * Tries to automatically detect the encoding of a video from the file
+   * extension it uses.
+   */
+  function detectEncoding(url) {
+    var match = url.match(extRe);
+    if (match) {
+      var extension = match[1].toLowerCase();
+      return shadowbox.encodings[extension];
+    }
+
+    return null;
+  }
+
+  function addClass(element, className) {
+    if (element.className) {
+      element.className = element.className + " " + className;
+    } else {
+      element.className = className;
+    }
+  }
+
+  function removeClass(element, className) {
+    var classRe = new RegExp("\\s*" + className + "\\s*", "g");
+    element.className = (element.className || "").replace(classRe, " ");
+  }
+
+  // Register the video player for common video extensions.
+  shadowbox.registerPlayer(shadowbox.VideoPlayer, [ "mp4", "m4v", "ogg", "webm", "flv" ]);
 
   // Need to hijack flowplayer.fireEvent because it is the interface that
   // the Flash player uses to send events to the JavaScript.
@@ -478,10 +495,9 @@
     }
   }
 
-  if (window.flowplayer) {
-    var _fireEvent = window.flowplayer.fireEvent;
-
-    window.flowplayer.fireEvent = function () {
+  if (global.flowplayer) {
+    var _fireEvent = global.flowplayer.fireEvent;
+    global.flowplayer.fireEvent = function () {
       var result = fireEvent.apply(this, arguments);
 
       if (result == null) {
@@ -491,16 +507,9 @@
       return result;
     };
   } else {
-    window.flowplayer = {
+    global.flowplayer = {
       fireEvent: fireEvent
     };
   }
 
-  // Expose.
-  shadowbox.Video = Video;
-  shadowbox.encodings = encodingsMap;
-  utils.supportsH264 = supportsH264;
-  utils.supportsOgg = supportsOgg;
-  utils.supportsWebm = supportsWebm;
-
-})(this, shadowbox);
+}(this, this.shadowbox));

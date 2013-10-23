@@ -4,15 +4,18 @@
  * Copyright 2007-2011 Michael Jackson
  */
 
-(function (shadowbox, undefined) {
+(function (global, shadowbox) {
 
-  var utils = shadowbox.utils,
-      dom = utils.dom,
-      supportsFlash = false;
+  var forEach = shadowbox.forEach;
+  var mergeProperties = shadowbox.mergeProperties;
+  var makeDom = shadowbox.makeDom;
+  var removeElement = shadowbox.removeElement;
+  var removeChildren = shadowbox.removeChildren;
 
   // Detect Flash support.
+  var supportsFlash = false;
   if (navigator.plugins && navigator.plugins.length) {
-    utils.each(navigator.plugins, function(i, plugin) {
+    forEach(navigator.plugins, function (plugin) {
       if (plugin.name === "Shockwave Flash") {
         supportsFlash = true;
         return false; // Exit the loop.
@@ -22,19 +25,31 @@
     try {
       var axo = new ActiveXObject("ShockwaveFlash.ShockwaveFlash");
       supportsFlash = true;
-    } catch(e) {}
+    } catch (error) {}
   }
 
-  function Flash(obj, id) {
-    this.url = obj.url;
-    this.width = parseInt(obj.width, 10) || 300;
-    this.height = parseInt(obj.height, 10) || 300;
-    this.params = obj.flashParams || {};
-    this.vars = obj.flashVars || {};
+  shadowbox.supportsFlash = supportsFlash;
+
+  shadowbox.FlashPlayer = FlashPlayer;
+  function FlashPlayer(object, id) {
+    this.url = object.url;
+    this.width = parseInt(object.width, 10) || 300;
+    this.height = parseInt(object.height, 10) || 300;
+    this.params = object.flashParams || {};
+
+    if (object.flashVars) {
+      var flashVars = [];
+      for (var varName in object.flashVars) {
+        flashVars.push(varName + '=' + object.flashVars[varName]);
+      }
+
+      this.params.flashvars = flashVars.join('&');
+    }
+
     this.id = id;
   }
 
-  utils.apply(Flash.prototype, {
+  mergeProperties(FlashPlayer.prototype, {
 
     /**
      * Returns true if this player is supported on this browser.
@@ -45,82 +60,63 @@
 
     /**
      * Inserts this object as the only child of the given DOM element.
-     * Returns the newly created element, false if none was created.
      */
-    insert: function (element) {
-      if (!supportsFlash) {
-        return false;
+    injectInto: function (element) {
+      if (supportsFlash) {
+        this.element = makeSwf(this.url, {
+          id: this.id,
+          width: this.width,
+          height: this.height
+        }, mergeProperties({}, this.params));
+
+        removeChildren(element);
+
+        makeDom(element, this.element);
       }
-
-      var vars = [];
-      for (var varName in this.vars) {
-        vars.push(varName + "=" + this.vars[varName]);
-      }
-
-      var params = utils.apply({}, this.params, {flashvars: vars.join("&")});
-
-      this._el = swf(this.url, {
-        id: this.id,
-        width: this.width,
-        height: this.height
-      }, params);
-
-      utils.empty(element);
-      dom(element, this._el);
-
-      return this._el;
     },
 
     /**
      * Removes this object from the DOM.
      */
     remove: function () {
-      if (this._el) {
-        utils.remove(this._el);
-        this._el = null;
+      if (this.element) {
+        removeElement(this.element);
+        delete this.element;
       }
     }
 
   });
 
-  shadowbox.register(Flash, "swf");
+  var isExplorer = /*@cc_on!@*/false;
 
-  var isIE = /*@cc_on!@*/false;
-
-  function swf(url, attributes, params) {
-    attributes = attributes || {};
-    params = params || {};
-
-    var obj;
-    if (isIE) {
+  shadowbox.makeSwf = makeSwf;
+  function makeSwf(url, properties, params) {
+    var object;
+    if (isExplorer) {
       // Need to use innerHTML here for IE.
-      var div = dom("div");
+      var div = makeDom("div");
       div.innerHTML = '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"><param name="movie" value="' + url + '"></object>';
-      obj = div.firstChild;
+      object = div.firstChild;
     } else {
-      obj = dom("object", {
+      object = makeDom("object", {
         type: "application/x-shockwave-flash",
         data: url
       });
     }
 
-    var paramElements = [];
-    for (var paramName in params) {
-      paramElements.push(dom("param", {
-        name: paramName,
-        value: params[paramName]
-      }));
+    var children = [];
+    if (params) {
+      for (var paramName in params) {
+        children.push(makeDom('param', { name: paramName, value: params[paramName] }));
+      }
     }
 
-    // Set <object> attributes and append <param> elements.
-    dom(obj, attributes, paramElements);
+    makeDom(object, properties, children);
 
-    return obj;
+    return object;
   }
 
-  // Expose.
-  shadowbox.Flash = Flash;
-  utils.supportsFlash = supportsFlash;
-  utils.swf = swf;
+  // Register the flash player for the .swf extension.
+  shadowbox.registerPlayer(shadowbox.FlashPlayer, 'swf');
 
-})(shadowbox);
+}(this, this.shadowbox));

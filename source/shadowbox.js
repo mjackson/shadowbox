@@ -4,46 +4,40 @@
  * Copyright 2007-2011 Michael Jackson
  */
 
-(function (window, undefined) {
+(function (global) {
 
-  var root = document.documentElement,
-      guid = 1,
-      initialized = false,
-      current = -1,
-      gallery = [],
-      player = null,
-      options = {},
+  var documentElement = document.documentElement;
 
-      // True if the browser supports opacity.
-      supportsOpacity = "opacity" in root.style && typeof root.style.opacity === "string",
-
-      // True if the browser supports fixed positioning.
-      supportsFixed = false,
-
-      // True if the browser is on a touch-based device.
-      supportsTouch = "createTouch" in document;
+  // Detect support for opacity.
+  var supportsOpacity = "opacity" in documentElement.style && typeof documentElement.style.opacity === "string";
 
   // Detect support for fixed positioning.
-  var div = document.createElement("div");
-  div.style.position = "fixed";
-  div.style.margin = 0;
-  div.style.top = "20px";
-  root.appendChild(div, root.firstChild);
-  supportsFixed = (div.offsetTop == 20);
-  root.removeChild(div);
+  var fixedDiv = document.createElement("div");
+  fixedDiv.style.position = "fixed";
+  fixedDiv.style.margin = 0;
+  fixedDiv.style.top = "20px";
+  documentElement.appendChild(fixedDiv, documentElement.firstChild);
+  var supportsFixed = (fixedDiv.offsetTop == 20);
+  documentElement.removeChild(fixedDiv);
 
-  var shadowbox = open;
+  // Detect touch-based devices.
+  var supportsTouch = ("createTouch" in document);
+
+  var guid = 1;
+
+  var currentIndex = -1,
+      currentGallery = [],
+      currentPlayer = null,
+      options = {};
+
+  var shadowbox = openShadowbox;
 
   /**
    * The current version of Shadowbox.
    */
   shadowbox.version = "4.0.0";
 
-  /**
-   * A map of file extensions to the player class that should be used to play
-   * files with that extension.
-   */
-  shadowbox.players = {};
+  shadowbox.K = function () { return this; };
 
   /**
    * The default set of options.
@@ -68,68 +62,71 @@
     // Enable control of Shadowbox via the keyboard?
     enableKeys: true,
 
-    // The amount of margin to maintain around the edge of Shadowbox at all
-    // times.
+    // The space to maintain around the edge of Shadowbox at all times.
     margin: 40,
 
     // A hook function that is called when closing.
-    onClose: noop,
+    onClose: shadowbox.K,
 
     // A hook function that is called when a player is finished loading and
     // all display transitions are complete. Receives the player object as
     // its only argument.
-    onDone: noop,
+    onDone: shadowbox.K,
 
     // A hook function that is called when opening.
-    onOpen: noop,
+    onOpen: shadowbox.K,
 
     // A hook function that is called when a player is ready to be
     // displayed. Receives the player object as its only argument.
-    onShow: noop,
+    onShow: shadowbox.K,
 
     // Background color for the overlay.
-    overlayColor: "#333",
+    overlayColor: "black",
 
     // Opacity for the overlay.
     overlayOpacity: 0.5,
 
-    // The index in the current gallery at which to start when first
-    // opening.
+    // The index in the current gallery at which to start when first opening.
     startIndex: 0
 
   };
 
   /**
+   * A map of file extensions to the player class that should be used to play
+   * files with that extension.
+   */
+  shadowbox.players = {};
+
+  /**
    * Registers the given player class to be used with the given file
    * extensions.
    *
-   *   shadowbox.register(shadowbox.Video, "mov");
-   *   shadowbox.register(shadowbox.Photo, ["jpg", "jpeg"]);
+   *   shadowbox.registerPlayer(shadowbox.VideoPlayer, "mov");
+   *   shadowbox.registerPlayer(shadowbox.PhotoPlayer, [ "jpg", "jpeg" ]);
    */
-  function register(player, exts) {
-    exts = exts || [];
+  shadowbox.registerPlayer = registerPlayer;
+  function registerPlayer(playerClass, extensions) {
+    extensions = extensions || [];
 
-    if (!Array.isArray(exts)) {
-      exts = [exts];
+    if (!isArray(extensions)) {
+      extensions = [ extensions ];
     }
 
-    for (var i = 0, len = exts.length; i < len; ++i) {
-      shadowbox.players[exts[i]] = player;
-    }
+    forEach(extensions, function (extension) {
+      shadowbox.players[extension] = playerClass;
+    });
   }
 
   // Cache references to oft-used DOM elements for speed.
   var container, overlay, wrapper, cover, content;
 
   /**
-   * Appends Shadowbox' to the DOM.
+   * Appends Shadowbox to the DOM and initializes DOM references.
    */
   function initialize() {
-    if (initialized) {
-      return;
+    if (container) {
+      return; // Don't initialize twice!
     }
-
-    initialized = true;
 
     // The Shadowbox markup:
     //
@@ -146,22 +143,22 @@
     //   </div>
     // </div>
 
-    container = dom("div", {id: "shadowbox"});
-    overlay = dom("div", {id: "sb-overlay"});
-    wrapper = dom("div", {id: "sb-wrapper"});
-    var body = dom("div", {id: "sb-body"});
-    content = dom("div", {id: "sb-content"});
-    cover = dom("div", {id: "sb-cover"});
-    var closeEl = dom("div", {id: "sb-close"});
-    var nextEl = dom("div", {id: "sb-next"});
-    var previousEl = dom("div", {id: "sb-prev"});
+    container = makeDom("div", { id: "shadowbox" });
+    overlay = makeDom("div", { id: "sb-overlay" });
+    wrapper = makeDom("div", { id: "sb-wrapper" });
+    var body = makeDom("div", { id: "sb-body" });
+    content = makeDom("div", { id: "sb-content" });
+    cover = makeDom("div", { id: "sb-cover" });
+    var closeEl = makeDom("div", { id: "sb-close" });
+    var nextEl = makeDom("div", { id: "sb-next" });
+    var previousEl = makeDom("div", { id: "sb-prev" });
 
     // Append #shadowbox to the DOM.
-    dom(document.body, [
-      dom(container, [
+    makeDom(document.body, [
+      makeDom(container, [
         overlay,
-        dom(wrapper, [
-          dom(body, [content, cover]),
+        makeDom(wrapper, [
+          makeDom(body, [ content, cover ]),
           closeEl,
           nextEl,
           previousEl
@@ -169,19 +166,19 @@
       ])
     ]);
 
-    // Setup a click listener on the overlay to close Shadowbox.
-    addEvent(overlay, "click", close);
-
-    // Setup callbacks on navigation elements.
-    addEvent(closeEl, "click", cancel(close));
-    addEvent(nextEl, "click", cancel(next));
-    addEvent(previousEl, "click", cancel(previous));
-
     if (!supportsFixed) {
       // Use an absolutely positioned container in browsers that don't
       // support fixed positioning.
       setStyle(container, "position", "absolute");
     }
+
+    // Setup a click listener on the overlay to close Shadowbox.
+    addEvent(overlay, "click", shadowbox.close);
+
+    // Setup callbacks on navigation elements.
+    addEvent(closeEl, "click", cancel(shadowbox.close));
+    addEvent(nextEl, "click", cancel(shadowbox.showNext));
+    addEvent(previousEl, "click", cancel(shadowbox.showPrevious));
   }
 
   /**
@@ -189,8 +186,8 @@
    * the final argument.
    *
    *   shadowbox("myphoto.jpg");
-   *   shadowbox(["myphoto1.jpg", "myphoto2.jpg"]);
-   *   shadowbox(["myphoto1.jpg", "myphoto2.jpg"], {
+   *   shadowbox([ "myphoto1.jpg", "myphoto2.jpg" ]);
+   *   shadowbox([ "myphoto1.jpg", "myphoto2.jpg" ], {
    *     animate:         false,
    *     overlayColor:    "white",
    *     overlayOpacity:  0.8
@@ -199,36 +196,40 @@
    * Options may be any of shadowbox.options. Returns the number of objects
    * that were able to be opened.
    */
-  function open(objs, opts) {
-    if (!Array.isArray(objs)) {
-      objs = [objs];
+  shadowbox.open = openShadowbox;
+  function openShadowbox(objects, opts) {
+    if (!isArray(objects)) {
+      objects = [ objects ];
     }
 
-    options = apply({}, shadowbox.options, opts || {});
+    options = mergeProperties({}, shadowbox.options);
+
+    if (opts) {
+      mergeProperties(options, opts);
+    }
 
     // Clear the gallery.
-    gallery = [];
+    currentGallery = [];
 
     // Normalize into player objects and append them to the gallery.
-    var index = options.startIndex, player;
-    for (var i = 0, len = objs.length; i < len; ++i) {
-      player = makePlayer(objs[i]);
+    var startIndex = options.startIndex;
+    forEach(objects, function (object, index) {
+      var player = makePlayer(object);
 
       if (player) {
-        gallery.push(player);
+        currentGallery.push(player);
       } else {
-        if (i < index) {
-          index -= 1;
-        } else if (i == index) {
-          index = 0;
+        if (index < startIndex) {
+          startIndex -= 1;
+        } else if (index === startIndex) {
+          startIndex = 0;
         }
       }
-    }
+    });
 
-    // Display the first item in the gallery (if there's anything left
-    // to display).
-    if (gallery.length > 0) {
-      if (current == -1) {
+    // Display the first item in the gallery, if there's anything left.
+    if (currentGallery.length > 0) {
+      if (currentIndex == -1) {
         initialize();
 
         if (isFunction(options.onOpen)) {
@@ -246,63 +247,57 @@
         animateStyle(overlay, "opacity", options.overlayOpacity, 0.35, function () {
           setWrapperSize(340, 200);
           setStyle(wrapper, "visibility", "visible");
-          show(index);
+          showItemAtIndex(startIndex);
         });
       } else {
-        show(index);
+        showItemAtIndex(startIndex);
       }
     }
 
-    return gallery.length;
+    return currentGallery.length;
   }
 
   /**
    * Displays the gallery item at the given index in Shadowbox. Assumes that
    * Shadowbox is already initialized and open.
    */
-  function show(index) {
-    // Guard against invalid indices.
-    if (index < 0 || !gallery[index]) {
+  shadowbox.show = showItemAtIndex;
+  function showItemAtIndex(index) {
+    // Guard against invalid indices and no-ops.
+    if (index < 0 || !currentGallery[index] || currentIndex === index) {
       return;
     }
 
     toggleControls(0);
     toggleWindowHandlers(0);
-    toggleMouseHandlers(0);
-    toggleKeyHandlers(0);
+    toggleMouseMoveHandler(0);
+    toggleKeyDownHandler(0);
 
     setStyle(cover, "display", "block");
     setStyle(cover, "opacity", 1);
 
-    if (player) {
-      player.remove();
+    if (currentPlayer) {
+      currentPlayer.remove();
     }
 
-    // Update current gallery position.
-    current = index;
-    player = gallery[current];
+    // Update current* variables.
+    currentIndex = index;
+    currentPlayer = currentGallery[currentIndex];
 
-    // Wait for the player to be ready before proceeding.
-    var timer = setInterval(function () {
-      if (!player) {
-        clearInterval(timer);
-        timer = null;
-        return;
+    function playerIsReady() {
+      return !currentPlayer || currentPlayer.ready !== false;
+    }
+
+    waitUntil(playerIsReady, function () {
+      if (!currentPlayer) {
+        return; // Shadowbox was closed.
       }
-
-      if (player.ready === false) {
-        return;
-      }
-
-      clearInterval(timer);
-      timer = null;
 
       if (isFunction(options.onShow)) {
-        options.onShow(player);
+        options.onShow(currentPlayer);
       }
 
       var size = getWrapperSize();
-
       var fromWidth = parseInt(getStyle(wrapper, "width")) || 0,
           fromHeight = parseInt(getStyle(wrapper, "height")) || 0,
           toWidth = size[0],
@@ -310,136 +305,126 @@
           changeWidth = toWidth - fromWidth,
           changeHeight = toHeight - fromHeight;
 
-      // Open to the correct dimensions. Use the low-level animation
-      // primitive to make this transition as smooth as possible.
-      animate(0, 1, 0.5, function (value) {
-        if (!player) {
-          return false; // Cancel the animation.
+      function frameHandler(value) {
+        if (!currentPlayer) {
+          return false; // Shadowbox was closed, cancel the animation.
         }
 
-        setWrapperSize(fromWidth + (changeWidth * value),
-          fromHeight + (changeHeight * value));
+        setWrapperSize(fromWidth + (changeWidth * value), fromHeight + (changeHeight * value));
+      }
 
-        if (value === 1) {
-          if (player.fadeCover) {
-            player.insert(content);
-            animateStyle(cover, "opacity", 0, 0.5, function () {
-              if (player) done();
-            });
+      // Open to the correct dimensions. Use the low-level animation
+      // primitive to make this transition as smooth as possible.
+      animate(0, 1, 0.5, frameHandler, function () {
+        if (currentPlayer) {
+          currentPlayer.injectInto(content);
+
+          if (currentPlayer.fadeCover) {
+            animateStyle(cover, "opacity", 0, 0.5, finishShow);
           } else {
-            done();
-            player.insert(content);
+            finishShow();
           }
         }
       });
-    }, 10);
+    });
   }
 
-  function done() {
-    setStyle(cover, "display", "none");
+  function finishShow() {
+    if (currentPlayer) {
+      setStyle(cover, "display", "none");
 
-    toggleWindowHandlers(1);
-    toggleMouseHandlers(1);
-    toggleKeyHandlers(1);
+      toggleWindowHandlers(1);
+      toggleMouseMoveHandler(1);
+      toggleKeyDownHandler(1);
 
-    if (isFunction(options.onDone)) {
-      options.onDone(player);
+      if (isFunction(options.onDone)) {
+        options.onDone(currentPlayer);
+      }
     }
   }
 
   /**
    * Closes Shadowbox immediately.
    */
-  function close() {
-    if (!isOpen()) {
-      return;
+  shadowbox.close = closeShadowbox;
+  function closeShadowbox() {
+    if (shadowbox.isOpen()) {
+      currentIndex = -1;
+      currentPlayer = null;
+
+      setStyle(wrapper, "visibility", "hidden");
+      setStyle(cover, "opacity", 1);
+      content.innerHTML = "";
+
+      toggleControls(0);
+      toggleWindowHandlers(0);
+      toggleMouseMoveHandler(0);
+      toggleKeyDownHandler(0);
+
+      animateStyle(overlay, "opacity", 0, 0.5, function () {
+        setStyle(container, "visibility", "hidden");
+        setStyle(container, "display", "none");
+        toggleTroubleElements(1);
+
+        if (isFunction(options.onClose)) {
+          options.onClose();
+        }
+      });
     }
-
-    current = -1;
-    player = null;
-
-    setStyle(wrapper, "visibility", "hidden");
-    setStyle(cover, "opacity", 1);
-    content.innerHTML = "";
-
-    toggleControls(0);
-    toggleWindowHandlers(0);
-    toggleMouseHandlers(0);
-    toggleKeyHandlers(0);
-
-    animateStyle(overlay, "opacity", 0, 0.5, function () {
-      setStyle(container, "visibility", "hidden");
-      setStyle(container, "display", "none");
-      toggleTroubleElements(1);
-
-      if (isFunction(options.onClose)) {
-        options.onClose();
-      }
-    });
-  }
-
-  /**
-   * Gets the current player instance.
-   */
-  function getPlayer() {
-    return player;
-  }
-
-  /**
-   * Gets the index of the next item in the gallery, -1 if there is none.
-   */
-  function getNext() {
-    if (current == gallery.length - 1) {
-      return (options.continuous && current != 0) ? 0 : -1;
-    }
-
-    return current + 1;
-  }
-
-  /**
-   * Returns true if there is a next item in the gallery.
-   */
-  function hasNext() {
-    return getNext() >= 0;
-  }
-
-  /**
-   * Opens the next item in the gallery.
-   */
-  function next() {
-    show(getNext());
-  }
-
-  /**
-   * Gets the index of the previous item in the gallery, -1 if there is none.
-   */
-  function getPrevious() {
-    if (current == 0) {
-      return options.continuous ? gallery.length - 1 : -1;
-    }
-
-    return current - 1;
-  }
-
-  /**
-   * Returns true if there is a previous item in the gallery.
-   */
-  function hasPrevious() {
-    return getPrevious() >= 0;
-  }
-
-  /**
-   * Opens the previous item in the gallery.
-   */
-  function previous() {
-    show(getPrevious());
   }
 
   /**
    * Returns true if Shadowbox is currently open.
    */
+  shadowbox.isOpen = isOpen;
   function isOpen() {
-    return current != -1;
+    return currentIndex !== -1;
+  }
+
+  /**
+   * Gets the current player instance.
+   */
+  shadowbox.getPlayer = getPlayer;
+  function getPlayer() {
+    return currentPlayer;
+  }
+
+  /**
+   * Opens the previous item in the gallery.
+   */
+  shadowbox.showPrevious = showPreviousItem;
+  function showPreviousItem() {
+    shadowbox.show(getPreviousIndex());
+  }
+
+  /**
+   * Gets the index of the previous item in the gallery, -1 if there is none.
+   */
+  function getPreviousIndex() {
+    if (currentIndex == 0) {
+      return options.continuous ? (currentGallery.length - 1) : -1;
+    }
+
+    return currentIndex - 1;
+  }
+
+  /**
+   * Opens the next item in the gallery.
+   */
+  shadowbox.showNext = showNextItem;
+  function showNextItem() {
+    shadowbox.show(getNextIndex());
+  }
+
+  /**
+   * Gets the index of the next item in the gallery, -1 if there is none.
+   */
+  function getNextIndex() {
+    if (currentIndex == currentGallery.length - 1) {
+      return (options.continuous && currentIndex != 0) ? 0 : -1;
+    }
+
+    return currentIndex + 1;
   }
 
   /**
@@ -448,7 +433,7 @@
    */
   function getWrapperSize() {
     var margin = Math.max(options.margin, 20); // Minimum 20px margin.
-    var size = constrainSize(player.width, player.height,
+    var size = constrainSize(currentPlayer.width, currentPlayer.height,
       overlay.offsetWidth, overlay.offsetHeight, margin);
 
     return size;
@@ -469,19 +454,19 @@
    * maximum width and height, allowing for margin. Returns an array of the
    * constrained [width, height].
    */
-  function constrainSize(width, height, maxWidth, maxHeight, extra) {
+  function constrainSize(width, height, maxWidth, maxHeight, margin) {
     var originalWidth = width,
         originalHeight = height;
 
     // Constrain height/width to max.
-    var extraWidth = 2 * extra;
-    if (width + extraWidth > maxWidth) {
-      width = maxWidth - extraWidth;
+    var marginWidth = 2 * margin;
+    if (width + marginWidth > maxWidth) {
+      width = maxWidth - marginWidth;
     }
 
-    var extraHeight = 2 * extra;
-    if (height + extraHeight > maxHeight) {
-      height = maxHeight - extraHeight;
+    var marginHeight = 2 * margin;
+    if (height + marginHeight > maxHeight) {
+      height = maxHeight - marginHeight;
     }
 
     // Calculate the change in height/width.
@@ -492,23 +477,23 @@
     if (changeWidth > 0 || changeHeight > 0) {
       // Preserve original aspect ratio according to greatest change.
       if (changeWidth > changeHeight) {
-        height = round((originalHeight / originalWidth) * width);
+        height = Math.round((originalHeight / originalWidth) * width);
       } else if (changeHeight > changeWidth) {
-        width = round((originalWidth / originalHeight) * height);
+        width = Math.round((originalWidth / originalHeight) * height);
       }
     }
 
-    return [width, height];
+    return [ width, height ];
   }
 
   /**
    * Sets the size of the container element to the size of the window.
    */
   function setContainerSize() {
-    setStyle(container, "width", root.clientWidth + "px");
-    setStyle(container, "height", root.clientHeight + "px");
+    setStyle(container, "width", documentElement.clientWidth + "px");
+    setStyle(container, "height", documentElement.clientHeight + "px");
 
-    if (player) {
+    if (currentPlayer) {
       var size = getWrapperSize();
       setWrapperSize(size[0], size[1]);
     }
@@ -519,49 +504,54 @@
    * the window. Necessary when using absolute positioning instead of fixed.
    */
   function setContainerPosition() {
-    setStyle(container, "left", root.scrollLeft + "px");
-    setStyle(container, "top", root.scrollTop + "px");
+    setStyle(container, "left", documentElement.scrollLeft + "px");
+    setStyle(container, "top", documentElement.scrollTop + "px");
   }
 
-  var troubleElements = ["select", "object", "embed", "canvas"],
-      visibilityCache = [];
+  var troubleElementTagNames = [ "select", "object", "embed", "canvas" ];
+  var troubleVisibilityCache = [];
 
   /**
    * Toggles the visibility of elements that are troublesome for overlays.
    */
   function toggleTroubleElements(on) {
     if (on) {
-      each(visibilityCache, function(i, el){
-        setStyle(el[0], "visibility", el[1] || "");
+      forEach(troubleVisibilityCache, function (item) {
+        setStyle(item.element, "visibility", item.visibility || "");
       });
     } else {
-      visibilityCache = [];
-      each(troubleElements, function(i, tagName) {
-        each(document.getElementsByTagName(tagName), function(j, el) {
-          visibilityCache.push([el, getStyle(el, "visibility")]);
-          setStyle(el, "visibility", "hidden");
+      troubleVisibilityCache = [];
+
+      forEach(troubleElementTagNames, function (tagName) {
+        forEach(document.getElementsByTagName(tagName), function (element) {
+          troubleVisibilityCache.push({
+            element: element,
+            visibility: getStyle(element, "visibility")
+          });
+
+          setStyle(element, "visibility", "hidden");
         });
       });
     }
   }
 
   /**
-   * Creates a new player object based on the attributes in the given object.
-   * Valid attributes include:
+   * Creates a new player object based on the properties of the given object.
+   * Valid properties include:
    *
-   *   - url      The URL of the content to display
-   *   - width    (optional) The width of the content
-   *   - height   (optional) The height of the content
-   *   - player   (optional) The player class to use to play the content.
-   *          Can be guessed in most cases from the URL
-   *   - encodings  (video only) Encoding name/URL pairs of alternate URL's
-   *          for the video. Possible encoding names are "h264", "ogg"
-   *          "webm", and "flv"
-   *   - posterUrl  (video only) The URL to a poster image of the video
+   *   - url          The URL of the content to display
+   *   - width        (optional) The width of the content
+   *   - height       (optional) The height of the content
+   *   - playerClass  (optional) The player class to use to play the content.
+   *                  Can be guessed in most cases from the URL
+   *   - encodings    (video only) Encoding name/URL pairs of alternate URL's
+   *                  for the video. Possible encoding names are "h264", "ogg"
+   *                  "webm", and "flv"
+   *   - posterUrl    (video only) The URL to a poster image of the video
    *   - flashParams  (flash only) Name/value pairs of <param>'s to use for
-   *          the Flash <object>
-   *   - flashVars  (flash only) Name/value pairs of variables to pass to
-   *          the Flash object as variables
+   *                  the Flash <object>
+   *   - flashVars    (flash only) Name/value pairs of variables to pass to
+   *                  the Flash object as variables
    *
    * If a string is given, it will be used as the value of the URL. If a DOM
    * element is given, it should have an href property (i.e. either an <a> or
@@ -570,50 +560,52 @@
    * in a JSON string.
    *
    * If no player is specified, it will be guessed using the registered player
-   * for the URL's file extension (see shadowbox.register).
+   * for the URL's file extension (see shadowbox.registerPlayer).
    *
-   * Returns false if no player is able to be created, or this browser does
+   * Returns null if no player is able to be created, or this browser does
    * not have proper support for that content.
    */
-  function makePlayer(obj) {
-    if (typeof obj == "string") {
-      obj = {url: obj};
-    } else if (obj.nodeType === 1 && obj.href) {
+  shadowbox.makePlayer = makePlayer;
+  function makePlayer(object) {
+    if (typeof object === "string") {
+      object = { url: object };
+    } else if (object.nodeType === 1 && object.href) {
       // The object is a DOM element. Should be an <a> or <area>. The
       // data-shadowbox attribute may contain a JSON string specifying
       // options for the player object.
-      var data = obj.getAttribute("data-shadowbox");
+      var data = object.getAttribute("data-shadowbox");
 
-      obj = {url: obj.href};
+      object = { url: object.href };
 
       if (data) {
-        apply(obj, parseJson(data));
+        mergeProperties(object, parseJson(data));
       }
     }
 
-    if (obj && typeof obj.url == "string") {
-      var id = "sb-player-" + String(guid++), playerFn;
+    if (object && typeof object.url === "string") {
+      var id = "sb-player-" + String(guid++), playerClass;
 
-      if (obj.player) {
-        playerFn = obj.player;
+      if (object.playerClass) {
+        playerClass = object.playerClass;
       } else {
         // Guess the player class using the URL's file extension.
-        var match = obj.url.match(/\.([0-9a-z]+)(\?.*)?$/i);
+        var match = object.url.match(/\.([0-9a-z]+)(\?.*)?$/i);
         if (match) {
-          playerFn = shadowbox.players[match[1].toLowerCase()];
+          var extension = match[1].toLowerCase();
+          playerClass = shadowbox.players[extension];
         }
       }
 
-      playerFn = playerFn || Frame;
+      playerClass = playerClass || FramePlayer;
 
-      var player = new playerFn(obj, id);
+      var player = new playerClass(object, id);
 
       if (player.isSupported()) {
         return player;
       }
     }
 
-    return false;
+    return null;
   }
 
   // Toggles visibility of clickable controls on and off.
@@ -622,78 +614,84 @@
 
     if (on) {
       name += "active";
-      if (hasNext()) name += " has-next";
-      if (hasPrevious()) name += " has-prev";
+      if (getNextIndex() !== -1) {
+        name += " has-next";
+      }
+      if (getPreviousIndex() !== -1) {
+        name += " has-prev";
+      }
     }
 
     container.className = name;
   }
 
-  var windowResizeTimer, windowScrollTimer, mouseMoveTimer;
+  var resizeTimer, scrollTimer, mouseMoveTimer;
 
   // Toggles window resize/scroll handlers on/off.
   function toggleWindowHandlers(on) {
-    var fn;
+    var action;
     if (on) {
-      fn = addEvent;
+      action = addEvent;
     } else {
-      fn = removeEvent;
+      action = removeEvent;
 
       // Clear cached timers.
-      if (windowResizeTimer) {
-        clearTimeout(windowResizeTimer);
-        windowResizeTimer = null;
+      if (resizeTimer) {
+        clearTimeout(resizeTimer);
+        resizeTimer = null;
       }
 
-      if (windowScrollTimer) {
-        clearTimeout(windowScrollTimer);
-        windowScrollTimer = null;
+      if (scrollTimer) {
+        clearTimeout(scrollTimer);
+        scrollTimer = null;
       }
     }
 
-    fn(window, "resize", handleWindowResize);
+    action(window, "resize", handleWindowResize);
 
     if (!supportsFixed) {
-      fn(window, "scroll", handleWindowScroll);
+      action(window, "scroll", handleWindowScroll);
     }
   }
 
   // Updates the size of the container when the window size changes.
   function handleWindowResize() {
-    if (windowResizeTimer) {
-      clearTimeout(windowResizeTimer);
+    if (resizeTimer) {
+      clearTimeout(resizeTimer);
+      resizeTimer = null;
     }
 
-    windowResizeTimer = setTimeout(function () {
-      windowResizeTimer = null;
+    resizeTimer = setTimeout(function () {
+      resizeTimer = null;
       setContainerSize();
     }, 10);
   }
 
   // Updates the position of the container when the window scrolls.
   function handleWindowScroll() {
-    if (windowScrollTimer) {
-      clearTimeout(windowScrollTimer);
+    if (scrollTimer) {
+      clearTimeout(scrollTimer);
+      scrollTimer = null;
     }
 
-    windowScrollTimer = setTimeout(function () {
-      windowScrollTimer = null;
+    scrollTimer = setTimeout(function () {
+      scrollTimer = null;
       setContainerPosition();
     }, 10);
   }
 
   // Toggles document mouse move handler on/off.
-  function toggleMouseHandlers(on) {
+  function toggleMouseMoveHandler(on) {
     if (supportsTouch) {
       toggleControls(on);
       return;
     }
 
-    var fn;
+    var action;
     if (on) {
-      fn = addEvent;
+      action = addEvent;
     } else {
-      fn = removeEvent;
+      action = removeEvent;
 
       // Clear cached timers.
       if (mouseMoveTimer) {
@@ -702,124 +700,124 @@
       }
     }
 
-    fn(document, "mousemove", handleMouseMove);
+    action(document, "mousemove", handleMouseMove);
   }
 
-  var lastX, lastY;
+  var lastMouseX, lastMouseY;
 
   // Shows clickable controls when the mouse moves.
-  function handleMouseMove(e) {
+  function handleMouseMove(event) {
     // Ignore consecutive mousemove events from the same location.
-    if (lastX === e.clientX && lastY === e.clientY) {
-      return;
-    }
+    if (lastMouseX !== event.clientX || lastMouseY !== event.clientY) {
+      lastMouseX = event.clientX;
+      lastMouseY = event.clientY;
 
-    lastX = e.clientX;
-    lastY = e.clientY;
-
-    if (mouseMoveTimer) {
-      clearTimeout(mouseMoveTimer);
-    } else {
-      toggleControls(1);
-    }
-
-    mouseMoveTimer = setTimeout(function () {
-      mouseMoveTimer = null;
-      toggleControls(0);
-    }, 1500);
-  }
-
-  function toggleKeyHandlers(on) {
-    (on ? addEvent : removeEvent)(document, "keydown", handleKey);
-  }
-
-  function handleKey(e) {
-    if (!options.enableKeys) {
-      return;
-    }
-
-    // Don't handle events with modifier keys.
-    if (e.metaKey || e.shiftKey || e.altKey || e.ctrlKey) {
-      return;
-    }
-
-    var handler;
-    switch (e.keyCode) {
-    case 81: // q
-    case 88: // x
-    case 27: // esc
-      handler = close;
-      break;
-    case 37: // left
-      handler = previous;
-      break;
-    case 39: // right
-      handler = next;
-      break;
-    case 32: // space
-      if (player && typeof player.togglePlay == "function") {
-        player.togglePlay();
+      if (mouseMoveTimer) {
+        clearTimeout(mouseMoveTimer);
+        mouseMoveTimer = null;
+      } else {
+        toggleControls(1);
       }
-      break;
-    }
 
-    if (handler) {
-      e.preventDefault();
-      handler();
+      mouseMoveTimer = setTimeout(function () {
+        mouseMoveTimer = null;
+        toggleControls(0);
+      }, 1500);
     }
   }
 
-  function handleClick(e) {
-    var target = e.target;
+  function toggleKeyDownHandler(on) {
+    (on ? addEvent : removeEvent)(document, "keydown", handleDocumentKeyDown);
+  }
 
-    if (target.nodeType !== 1) {
-      return;
-    }
+  var KEY_ESCAPE = 27;
+  var KEY_SPACE = 32;
+  var KEY_LEFT = 37;
+  var KEY_RIGHT = 39;
+  var KEY_Q = 81;
+  var KEY_X = 88;
 
-    var matcher = /^(?:shadow|light)box(?:\[(\w+)\])?$/i,
-        links = [],
-        index = 0,
-        match;
-
-    // Find an ancestor node with rel="shadowbox" attribute.
-    while (target) {
-      match = (target.rel || "").match(matcher);
-
-      if (match) {
-        // Look for other anchor elements in the document that also have
-        // rel="shadowbox" attribute with the same gallery.
-        if (match[1]) {
-          var galleryMatcher = new RegExp("^(shadow|light)box\\[" + match[1] + "\\]$", "i");
-
-          each(document.getElementsByTagName("a"), function (i, link) {
-            if (link.rel && galleryMatcher.test(link.rel)) {
-              if (link == target) {
-                index = links.length;
-              }
-
-              links.push(link);
-            }
-          });
-        } else {
-          links.push(target);
+  function handleDocumentKeyDown(event) {
+    if (options.enableKeys && !eventHasModifierKeys(event)) {
+      switch (event.keyCode) {
+      case KEY_ESCAPE:
+      case KEY_Q:
+      case KEY_X:
+        event.preventDefault();
+        shadowbox.close();
+        break;
+      case KEY_LEFT:
+        event.preventDefault();
+        shadowbox.showPrevious();
+        break;
+      case KEY_RIGHT:
+        event.preventDefault();
+        shadowbox.showNext();
+        break;
+      case KEY_SPACE:
+        if (currentPlayer && isFunction(currentPlayer.togglePlay)) {
+          event.preventDefault();
+          currentPlayer.togglePlay();
         }
-
         break;
       }
-
-      target = target.parentNode;
-    }
-
-    // Good for debugging.
-    // e.preventDefault();
-
-    if (links.length > 0 && open(links, {startIndex: index})) {
-      // Prevent the browser from following the link.
-      e.preventDefault();
     }
   }
 
-  addEvent(document, "click", handleClick);
+  function eventHasModifierKeys(event) {
+    return event.metaKey || event.shiftKey || event.altKey || event.ctrlKey;
+  }
+
+  function toggleClickHandler(on) {
+    (on ? addEvent : removeEvent)(document, 'click', handleDocumentClick);
+  }
+
+  function handleDocumentClick(event) {
+    var target = event.target;
+
+    if (target.nodeType === Node.ELEMENT_NODE) {
+      var matcher = /^(?:shadow|light)box(?:\[(\w+)\])?$/i,
+          links = [],
+          index = 0,
+          match;
+
+      // Find an ancestor node with rel="shadowbox" attribute.
+      while (target) {
+        match = (target.rel || "").match(matcher);
+
+        if (match) {
+          // Look for other anchor elements in the document that also have
+          // rel="shadowbox" attribute with the same gallery.
+          if (match[1]) {
+            var galleryMatcher = new RegExp("^(shadow|light)box\\[" + match[1] + "\\]$", "i");
+
+            forEach(document.getElementsByTagName('a'), function (link) {
+              if (link.rel && galleryMatcher.test(link.rel)) {
+                if (link == target) {
+                  index = links.length;
+                }
+
+                links.push(link);
+              }
+            });
+          } else {
+            links.push(target);
+          }
+
+          break;
+        }
+
+        target = target.parentNode;
+      }
+
+      // Good for debugging.
+      // event.preventDefault();
+
+      if (links.length > 0 && shadowbox.open(links, { startIndex: index })) {
+        event.preventDefault(); // Prevent the browser from following the link.
+      }
+    }
+  }
 
 
   //// PLAYERS ////
@@ -829,10 +827,11 @@
    * The iframe player is the default Shadowbox player. It is used for plain
    * web pages or when no other player is suitable for a piece of content.
    */
-  function Frame(obj, id) {
-    this.url = obj.url;
-    this.width = obj.width ? parseInt(obj.width, 10) : root.clientWidth;
-    this.height = obj.height ? parseInt(obj.height, 10) : root.clientHeight;
+  shadowbox.FramePlayer = FramePlayer;
+  function FramePlayer(object, id) {
+    this.url = object.url;
+    this.width = object.width ? parseInt(object.width, 10) : documentElement.clientWidth;
+    this.height = object.height ? parseInt(object.height, 10) : documentElement.clientHeight;
     this.id = id;
 
     // Preload the iframe so it's ready when needed.
@@ -840,10 +839,10 @@
     this._preload();
   }
 
-  apply(Frame.prototype, {
+  mergeProperties(FramePlayer.prototype, {
 
     _preload: function () {
-      var iframe = dom("iframe");
+      var iframe = makeDom("iframe");
 
       iframe.id = this.id;
       iframe.name = this.id;
@@ -871,7 +870,7 @@
       // Starts the actual loading of the iframe.
       document.body.appendChild(iframe);
 
-      this._el = iframe;
+      this.element = iframe;
     },
 
     /**
@@ -883,32 +882,29 @@
 
     /**
      * Inserts this object as the only child of the given DOM element.
-     * Returns the newly created element, false if none was created.
      */
-    insert: function (element) {
-      empty(element);
+    injectInto: function (element) {
+      removeChildren(element);
 
-      this._el.style.visibility = "hidden";
-      this._el.width = "100%";
-      this._el.height = "100%";
-      element.appendChild(this._el);
-      this._el.style.visibility = "";
-
-      return this._el;
+      this.element.style.visibility = "hidden";
+      this.element.width = "100%";
+      this.element.height = "100%";
+      element.appendChild(this.element);
+      this.element.style.visibility = "";
     },
 
     /**
      * Removes this object from the DOM.
      */
     remove: function () {
-      if (this._el) {
-        remove(this._el);
-        this._el = null;
+      if (this.element) {
+        removeElement(this.element);
+        delete this.element;
 
         // Needed for Firefox, IE <= 8 throws error.
         try {
           delete window.frames[this.id];
-        } catch (err) {}
+        } catch (error) {}
       }
     }
 
@@ -917,10 +913,11 @@
   /**
    * The photo player is used for displaying images.
    */
-  function Photo(obj, id) {
-    this.url = obj.url;
-    this.width = parseInt(obj.width, 10);
-    this.height = parseInt(obj.height, 10);
+  shadowbox.PhotoPlayer = PhotoPlayer;
+  function PhotoPlayer(object, id) {
+    this.url = object.url;
+    this.width = parseInt(object.width, 10);
+    this.height = parseInt(object.height, 10);
     this.id = id;
 
     // Preload the image so it's ready when needed.
@@ -928,27 +925,28 @@
     this._preload();
   }
 
-  apply(Photo.prototype, {
+  mergeProperties(PhotoPlayer.prototype, {
 
     fadeCover: true,
 
     _preload: function () {
-      var self = this,
-        pre = new Image;
+      var preloader = new Image;
 
-      pre.onload = function () {
+      var self = this;
+      preloader.onload = function () {
         // Width and height default to image dimensions.
-        self.width = self.width || pre.width;
-        self.height = self.height || pre.height;
+        self.width = self.width || preloader.width;
+        self.height = self.height || preloader.height;
 
         // Ready to go.
         self.ready = true;
 
         // Clean up to prevent memory leak in IE.
-        pre.onload = pre = null;
-      }
+        preloader.onload = preloader = null;
+      };
 
-      pre.src = this.url;
+      // Start loading the image.
+      preloader.src = this.url;
     },
 
     /**
@@ -960,79 +958,63 @@
 
     /**
      * Inserts this object as the only child of the given DOM element.
-     * Returns the newly created element, false if none was created.
      */
-    insert: function (element) {
-      element.innerHTML = '<img id="' + this.id + '" width="100%" ' +
-        'height="100%" src="' + this.url + '">';
-
-      this._el = element.firstChild;
-
-      return this._el;
+    injectInto: function (element) {
+      element.innerHTML = '<img id="' + this.id + '" src="' + this.url + '" width="100%" height="100%">';
+      this.element = element.firstChild;
     },
 
     /**
      * Removes this object from the DOM.
      */
     remove: function () {
-      if (this._el) {
-        remove(this._el);
-        this._el = null;
+      if (this.element) {
+        removeElement(this.element);
+        delete this.element;
       }
     }
 
   });
 
-  register(Photo, ["gif", "jpg", "jpeg", "png", "bmp"]);
-
 
   //// JAVASCRIPT UTILITIES ////
 
 
-  var round = Math.round;
-  var toString = Object.prototype.toString;
-
-  Array.isArray = Array.isArray || function (obj) {
-    return toString.call(obj) === "[object Array]";
+  var isArray = Array.isArray || function (object) {
+    return Object.prototype.toString.call(object) === "[object Array]";
   };
 
-  function isFunction(obj) {
-    return typeof obj === "function";
+  function isFunction(object) {
+    return object && typeof object === "function";
   }
-
-  function noop() {}
 
   /**
    * Calls the given callback function for each element in the given object,
    * which must be an array-like object. Return false from any callback to
    * stop execution.
    */
-  function each(obj, callback) {
-    var i = 0, len = obj.length;
-    for (var v = obj[0]; i < len && callback.call(v, i, v) !== false; v = obj[++i]) {}
+  function forEach(object, callback) {
+    var length = object.length, index = 0, item;
+    for (item = object[0]; index < length && callback.call(object, item, index, object) !== false; item = object[++index]) {}
   }
 
   /**
-   * Applies all properties of additional arguments to the given object.
+   * Merges all properties of extension into the given object.
    */
-  function apply(obj) {
-    var len = arguments.length, ext;
-
-    for (var i = 1; i < len; ++i) {
-      ext = arguments[i];
-
-      for (var prop in ext) {
-        obj[prop] = ext[prop];
+  function mergeProperties(object, extension) {
+    for (var property in extension) {
+      if (extension.hasOwnProperty(property)) {
+        object[property] = extension[property];
       }
     }
 
-    return obj;
+    return object;
   }
 
   /**
    * Gets the current time in milliseconds.
    */
-  function now() {
+  function getTime() {
     return (new Date).getTime();
   }
 
@@ -1053,11 +1035,16 @@
    * calling the given callback for each frame with the eased value. Return
    * false from the callback at any time to cancel the animation.
    */
-  function animate(from, to, duration, callback) {
+  function animate(from, to, duration, frameHandler, callback) {
     var delta = to - from;
 
     if (delta === 0 || duration === 0 || !options.animate) {
-      callback(to);
+      frameHandler(to);
+
+      if (isFunction(callback)) {
+        callback();
+      }
+
       return; // Don't animate!
     }
 
@@ -1065,22 +1052,37 @@
     duration = (duration || 0.35) * 1000;
 
     var ease = options.ease,
-        begin = now(),
+        begin = getTime(),
         end = begin + duration,
         time;
 
-    var timer = setInterval(function() {
-      time = now();
+    var timer = setInterval(function () {
+      time = getTime();
 
       if (time >= end) {
         clearInterval(timer);
         timer = null;
-        callback(to);
-      } else if (callback(from + ease((time - begin) / duration) * delta) === false) {
+
+        frameHandler(to);
+
+        if (isFunction(callback)) {
+          callback();
+        }
+      } else if (frameHandler(from + ease((time - begin) / duration) * delta) === false) {
         clearInterval(timer);
         timer = null;
       }
-    }, 10); // 10 ms interval is minimum on WebKit.
+    }, 10);
+  }
+
+  function waitUntil(check, callback) {
+    var timer = setInterval(function () {
+      if (check()) {
+        clearInterval(timer);
+        timer = null;
+        callback();
+      }
+    }, 10);
   }
 
 
@@ -1091,30 +1093,27 @@
    * Multipurpose utility function for creating DOM elements, assigning
    * attributes, and appending child nodes.
    */
-  function dom(element, attrs, children) {
-    if (typeof element == "string") {
+  function makeDom(element, properties, children) {
+    if (typeof element === "string") {
       element = document.createElement(element);
     }
 
-    if (Array.isArray(attrs)) {
-      children = attrs;
-      attrs = null;
-    } else if (attrs && attrs.nodeType) {
-      children = [attrs];
-      attrs = null;
+    if (isArray(properties)) {
+      children = properties;
+      properties = null;
+    } else if (properties && properties.nodeType) {
+      children = [ properties ];
+      properties = null;
     }
 
-    if (attrs) {
-      for (var attr in attrs) {
-        // element.setAttribute(attr, attrs[attr]);
-        element[attr] = attrs[attr];
-      }
+    if (properties) {
+      mergeProperties(element, properties);
     }
 
-    if (Array.isArray(children)) {
-      for (var i = 0, len = children.length; i < len; ++i) {
-        element.appendChild(children[i]);
-      }
+    if (isArray(children)) {
+      forEach(children, function (child) {
+        element.appendChild(child);
+      });
     }
 
     return element;
@@ -1123,18 +1122,18 @@
   /**
    * Removes the given element from the DOM.
    */
-  function remove(element) {
+  function removeElement(element) {
     return element.parentNode.removeChild(element);
   }
 
   /**
    * Removes all child nodes from the given element.
    */
-  function empty(element) {
+  function removeChildren(element) {
     var child = element.firstChild;
 
     while (child) {
-      remove(child);
+      element.removeChild(child);
       child = element.firstChild;
     }
   }
@@ -1144,11 +1143,11 @@
    * event bubbling when called.
    */
   function cancel(callback) {
-    return function (e) {
-      e.preventDefault();
-      callback(e);
-      return false;
-    }
+    return function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      callback(event);
+    };
   }
 
   /**
@@ -1156,32 +1155,25 @@
    * the given duration. Calls the given callback when complete.
    */
   function animateStyle(element, style, to, duration, callback) {
-    callback = callback || noop;
     var from = parseFloat(getStyle(element, style)) || 0;
 
-    var setter;
+    var frameHandler;
     if (style === "opacity") {
-      setter = function (value) {
+      frameHandler = function (value) {
         setStyle(element, style, value);
-        if (value === to) {
-          callback();
-        }
-      }
+      };
     } else {
       // Assume pixel values for all styles besides opacity.
-      setter = function (value) {
-        setStyle(element, style, round(value) + "px");
-        if (value === to) {
-          callback();
-        }
-      }
+      frameHandler = function (value) {
+        setStyle(element, style, Math.round(value) + "px");
+      };
     }
 
-    animate(from, to, duration, setter);
+    animate(from, to, duration, frameHandler, callback);
   }
 
-  var opacityRe = /opacity=([^)]*)/i,
-      getComputedStyle = document.defaultView && document.defaultView.getComputedStyle;
+  var opacityRe = /opacity=([^)]*)/i;
+  var getComputedStyle = document.defaultView && document.defaultView.getComputedStyle;
 
   /**
    * Gets the current value of the given style on the given element. The style
@@ -1238,7 +1230,7 @@
         s.zoom = 1; // Trigger hasLayout.
 
         if (value == 1) {
-          if (typeof s.filter == "string" && (/alpha/i).test(s.filter)) {
+          if (typeof s.filter === "string" && (/alpha/i).test(s.filter)) {
             s.filter = s.filter.replace(/\s*[\w\.]*alpha\([^\)]*\);?/gi, "");
           }
         } else {
@@ -1294,17 +1286,25 @@
     }
   }
 
-  function handleEvent(e) {
-    e = e || fixEvent(((this.ownerDocument || this.document || this).parentWindow || window).event);
+  function handleEvent(event) {
+    event = event || fixEvent(((this.ownerDocument || this.document || this).parentWindow || window).event);
 
-    var handlers = this.events[e.type], result = true;
+    var handlers = this.events[event.type], result = true;
     for (var id in handlers) {
-      if (handlers[id].call(this, e) === false) {
+      if (handlers[id].call(this, event) === false) {
         result = false;
       }
     }
 
     return result;
+  }
+
+  function fixEvent(event) {
+    event.preventDefault = preventDefault;
+    event.stopPropagation = stopPropagation;
+    event.target = event.srcElement;
+    event.keyCode = event.which;
+    return event;
   }
 
   function preventDefault() {
@@ -1313,14 +1313,6 @@
 
   function stopPropagation() {
     this.cancelBubble = true;
-  }
-
-  function fixEvent(e) {
-    e.preventDefault = preventDefault;
-    e.stopPropagation = stopPropagation;
-    e.target = e.srcElement;
-    e.keyCode = e.which;
-    return e;
   }
 
   /**
@@ -1336,38 +1328,22 @@
     }
   }
 
+  // Setup document click handler.
+  toggleClickHandler(1);
+
+  // Register the photo player for common image extensions.
+  shadowbox.registerPlayer(shadowbox.PhotoPlayer, [ "gif", "jpg", "jpeg", "png", "bmp" ]);
+
+  // Expose for the sake of shadowbox-flash.js and shadowbox-video.js.
+  shadowbox.forEach = forEach;
+  shadowbox.mergeProperties = mergeProperties;
+  shadowbox.makeDom = makeDom;
+  shadowbox.removeElement = removeElement;
+  shadowbox.removeChildren = removeChildren;
+  shadowbox.addEvent = addEvent;
+  shadowbox.removeEvent = removeEvent;
+
   // Expose.
-  apply(shadowbox, {
-    register: register,
-    show: show,
-    close: close,
-    getPlayer: getPlayer,
-    next: next,
-    previous: previous,
-    isOpen: isOpen,
-    makePlayer: makePlayer,
-    Frame: Frame,
-    Photo: Photo,
-    utils: {
-      supportsOpacity: supportsOpacity,
-      supportsFixed: supportsFixed,
-      supportsTouch: supportsTouch,
-      each: each,
-      apply: apply,
-      now: now,
-      animate: animate,
-      dom: dom,
-      remove: remove,
-      empty: empty,
-      cancel: cancel,
-      animateStyle: animateStyle,
-      getStyle: getStyle,
-      setStyle: setStyle,
-      addEvent: addEvent,
-      removeEvent: removeEvent
-    }
-  });
+  global.shadowbox = shadowbox;
 
-  window.shadowbox = shadowbox;
-
-})(this);
+}(this));
