@@ -121,7 +121,8 @@
       configProps.push('"playlist":' + playlist);
 
       // Hide Flowplayer's controls, see http://flowplayer.org/forum/2/20734.
-      configProps.push('"play":null,"plugins":{"controls":null}');
+      configProps.push('"play":null');
+      configProps.push('"plugins":{"controls":null}');
 
       // configProps.push('"debug":true');
 
@@ -476,14 +477,13 @@
     var player = shadowbox.getPlayer();
 
     if (player && player.id == id) {
-      if (name == "onStart") {
-        // Need to adjust volume to match <video> players.
-        player._setVolume(100);
-      } else if (name == "onPause") {
+      if (name === "onStart") {
+        player._setVolume(100); // Adjust volume to match <video> players.
+      } else if (name === "onPause") {
         player.showPaused();
-      } else if (name == "onResume") {
+      } else if (name === "onResume") {
         player.showPlaying();
-      } else if (name == "onFinish") {
+      } else if (name === "onFinish") {
         player.pause();
         player.seek(0);
       }
@@ -495,13 +495,7 @@
   if (global.flowplayer) {
     var _fireEvent = global.flowplayer.fireEvent;
     global.flowplayer.fireEvent = function () {
-      var result = fireEvent.apply(this, arguments);
-
-      if (result == null) {
-        return _fireEvent.apply(this, arguments);
-      }
-
-      return result;
+      return fireEvent.apply(this, arguments) || _fireEvent.apply(this, arguments);
     };
   } else {
     global.flowplayer = {
