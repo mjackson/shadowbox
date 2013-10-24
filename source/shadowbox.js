@@ -567,22 +567,21 @@
   function makePlayer(object) {
     if (typeof object === "string") {
       object = { url: object };
-    } else if (object.nodeType === 1 && object.href) {
+    } else if (isElement(object) && object.href) {
       // The object is a DOM element. Should be an <a> or <area>. The
-      // data-shadowbox attribute may contain a JSON string specifying
-      // options for the player object.
+      // data-shadowbox attribute may contain a string specifying
+      // options for the player object (see parseData).
       var data = object.getAttribute("data-shadowbox");
 
       object = { url: object.href };
 
       if (data) {
-        mergeProperties(object, parseJson(data));
+        mergeProperties(object, parseData(data));
       }
     }
 
     if (object && typeof object.url === "string") {
-      var id = "sb-player-" + String(guid++), playerClass;
-
+      var playerClass;
       if (object.playerClass) {
         playerClass = object.playerClass;
       } else {
@@ -596,7 +595,7 @@
 
       playerClass = playerClass || FramePlayer;
 
-      var player = new playerClass(object, id);
+      var player = new playerClass(object, "sb-player-" + String(guid++));
 
       if (player.isSupported()) {
         return player;
@@ -773,7 +772,7 @@
   function handleDocumentClick(event) {
     var target = event.target;
 
-    if (target.nodeType === Node.ELEMENT_NODE) {
+    if (isElement(target)) {
       var matcher = /^(?:shadow|light)box(?:\[(\w+)\])?$/i,
           links = [],
           index = 0,
@@ -784,10 +783,12 @@
         match = (target.rel || "").match(matcher);
 
         if (match) {
-          // Look for other anchor elements in the document that also have
+          var galleryName = match[1];
+
+          // Look for other <a> elements in the document that also have
           // rel="shadowbox" attribute with the same gallery.
-          if (match[1]) {
-            var galleryMatcher = new RegExp("^(shadow|light)box\\[" + match[1] + "\\]$", "i");
+          if (galleryName) {
+            var galleryMatcher = new RegExp("^(shadow|light)box\\[" + galleryName + "\\]$", "i");
 
             forEach(document.getElementsByTagName('a'), function (link) {
               if (link.rel && galleryMatcher.test(link.rel)) {
@@ -1017,15 +1018,31 @@
   }
 
   /**
-   * Parse and return an object from the given `json` string.
+   * Parses the value of the data-shadowbox attribute which is a string
+   * of key=value pairs separated by commas, e.g.:
+   *
+   * "margin=40,url=http://example.com" => { margin: 40, url: "http://example.com" }
    */
-  function parseJson(json) {
-    if (typeof JSON !== "undefined" && JSON.parse) {
-      return JSON.parse(json);
-    }
+  function parseData(data) {
+    var hash = {};
+    var pairs = data.split(/\s*,\s*/);
 
-    // Poor man's JSON.parse.
-    return eval("(" + json + ")");
+    forEach(pairs, function (pair) {
+      var split = pair.split(/\s*=\s*/);
+      if (split.length === 2) {
+        hash[split[0]] = parseValue(split[1]);
+      } else {
+        throw new Error('Invalid data: ' + pair);
+      }
+    });
+
+    return hash;
+  }
+
+  var numericRe = /^(\d+)?\.?\d+$/;
+
+  function parseValue(value) {
+    return numericRe.test(value) ? parseFloat(value, 10) : value;
   }
 
   /**
@@ -1086,6 +1103,10 @@
 
   //// DOM UTILITIES ////
 
+
+  function isElement(object) {
+    return object && object.nodeType === Node.ELEMENT_NODE;
+  }
 
   /**
    * Multipurpose utility function for creating DOM elements, assigning
