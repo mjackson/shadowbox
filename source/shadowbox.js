@@ -116,13 +116,13 @@
   }
 
   // Cache references to oft-used DOM elements for speed.
-  var container, overlay, wrapper, cover, content;
+  var containerElement, overlayElement, wrapperElement, bodyElement, contentElement, coverElement;
 
   /**
    * Appends Shadowbox to the DOM and initializes DOM references.
    */
   function initialize() {
-    if (container) {
+    if (containerElement) {
       return; // Don't initialize twice!
     }
 
@@ -141,25 +141,25 @@
     //   </div>
     // </div>
 
-    container = makeDom("div", { id: "shadowbox" });
-    overlay = makeDom("div", { id: "sb-overlay" });
-    wrapper = makeDom("div", { id: "sb-wrapper" });
-    var body = makeDom("div", { id: "sb-body" });
-    content = makeDom("div", { id: "sb-content" });
-    cover = makeDom("div", { id: "sb-cover" });
-    var closeEl = makeDom("div", { id: "sb-close" });
-    var nextEl = makeDom("div", { id: "sb-next" });
-    var previousEl = makeDom("div", { id: "sb-prev" });
+    containerElement = makeDom("div", { id: "shadowbox" });
+    overlayElement = makeDom("div", { id: "sb-overlay" });
+    wrapperElement = makeDom("div", { id: "sb-wrapper" });
+    bodyElement = makeDom("div", { id: "sb-body" });
+    contentElement = makeDom("div", { id: "sb-content" });
+    coverElement = makeDom("div", { id: "sb-cover" });
+    var closeElement = makeDom("div", { id: "sb-close" });
+    var nextElement = makeDom("div", { id: "sb-next" });
+    var previousElement = makeDom("div", { id: "sb-prev" });
 
     // Append #shadowbox to the DOM.
     makeDom(document.body, [
-      makeDom(container, [
-        overlay,
-        makeDom(wrapper, [
-          makeDom(body, [ content, cover ]),
-          closeEl,
-          nextEl,
-          previousEl
+      makeDom(containerElement, [
+        overlayElement,
+        makeDom(wrapperElement, [
+          makeDom(bodyElement, [ contentElement, coverElement ]),
+          closeElement,
+          nextElement,
+          previousElement
         ])
       ])
     ]);
@@ -167,16 +167,16 @@
     if (!supportsFixed) {
       // Use an absolutely positioned container in browsers that don't
       // support fixed positioning.
-      setStyle(container, "position", "absolute");
+      setStyle(containerElement, "position", "absolute");
     }
 
     // Setup a click listener on the overlay to close Shadowbox.
-    addEvent(overlay, "click", shadowbox.close);
+    addEvent(overlayElement, "click", shadowbox.close);
 
     // Setup callbacks on navigation elements.
-    addEvent(closeEl, "click", cancel(shadowbox.close));
-    addEvent(nextEl, "click", cancel(shadowbox.showNext));
-    addEvent(previousEl, "click", cancel(shadowbox.showPrevious));
+    addEvent(closeElement, "click", cancel(shadowbox.close));
+    addEvent(nextElement, "click", cancel(shadowbox.showNext));
+    addEvent(previousElement, "click", cancel(shadowbox.showPrevious));
   }
 
   /**
@@ -234,17 +234,17 @@
           options.onOpen();
         }
 
-        setStyle(container, "display", "block");
+        setStyle(containerElement, "display", "block");
         setContainerPosition();
         setContainerSize();
         toggleTroubleElements(0);
-        setStyle(overlay, "backgroundColor", options.overlayColor);
-        setStyle(overlay, "opacity", 0);
-        setStyle(container, "visibility", "visible");
+        setStyle(overlayElement, "backgroundColor", options.overlayColor);
+        setStyle(overlayElement, "opacity", 0);
+        setStyle(containerElement, "visibility", "visible");
 
-        animateStyle(overlay, "opacity", options.overlayOpacity, 0.35, function () {
+        animateStyle(overlayElement, "opacity", options.overlayOpacity, 0.35, function () {
           setWrapperSize(340, 200);
-          setStyle(wrapper, "visibility", "visible");
+          setStyle(wrapperElement, "visibility", "visible");
           showItemAtIndex(startIndex);
         });
       } else {
@@ -271,8 +271,8 @@
     toggleMouseMoveHandler(0);
     toggleKeyDownHandler(0);
 
-    setStyle(cover, "display", "block");
-    setStyle(cover, "opacity", 1);
+    setStyle(coverElement, "display", "block");
+    setStyle(coverElement, "opacity", 1);
 
     if (currentPlayer) {
       currentPlayer.remove();
@@ -296,8 +296,8 @@
       }
 
       var size = getWrapperSize();
-      var fromWidth = parseInt(getStyle(wrapper, "width")) || 0,
-          fromHeight = parseInt(getStyle(wrapper, "height")) || 0,
+      var fromWidth = parseInt(getStyle(wrapperElement, "width")) || 0,
+          fromHeight = parseInt(getStyle(wrapperElement, "height")) || 0,
           toWidth = size[0],
           toHeight = size[1],
           changeWidth = toWidth - fromWidth,
@@ -315,10 +315,10 @@
       // primitive to make this transition as smooth as possible.
       animate(0, 1, 0.5, frameHandler, function () {
         if (currentPlayer) {
-          currentPlayer.injectInto(content);
+          currentPlayer.injectInto(contentElement);
 
           if (currentPlayer.fadeCover) {
-            animateStyle(cover, "opacity", 0, 0.5, finishShow);
+            animateStyle(coverElement, "opacity", 0, 0.5, finishShow);
           } else {
             finishShow();
           }
@@ -329,7 +329,7 @@
 
   function finishShow() {
     if (currentPlayer) {
-      setStyle(cover, "display", "none");
+      setStyle(coverElement, "display", "none");
 
       toggleWindowHandlers(1);
       toggleMouseMoveHandler(1);
@@ -350,18 +350,18 @@
       currentIndex = -1;
       currentPlayer = null;
 
-      setStyle(wrapper, "visibility", "hidden");
-      setStyle(cover, "opacity", 1);
-      content.innerHTML = "";
+      setStyle(wrapperElement, "visibility", "hidden");
+      setStyle(coverElement, "opacity", 1);
+      contentElement.innerHTML = "";
 
       toggleControls(0);
       toggleWindowHandlers(0);
       toggleMouseMoveHandler(0);
       toggleKeyDownHandler(0);
 
-      animateStyle(overlay, "opacity", 0, 0.5, function () {
-        setStyle(container, "visibility", "hidden");
-        setStyle(container, "display", "none");
+      animateStyle(overlayElement, "opacity", 0, 0.5, function () {
+        setStyle(containerElement, "visibility", "hidden");
+        setStyle(containerElement, "display", "none");
         toggleTroubleElements(1);
 
         if (isFunction(options.onClose)) {
@@ -432,7 +432,7 @@
   function getWrapperSize() {
     var margin = Math.max(options.margin, 20); // Minimum 20px margin.
     var size = constrainSize(currentPlayer.width, currentPlayer.height,
-      overlay.offsetWidth, overlay.offsetHeight, margin);
+      overlayElement.offsetWidth, overlayElement.offsetHeight, margin);
 
     return size;
   }
@@ -441,10 +441,10 @@
    * Sets the size and position of the wrapper.
    */
   function setWrapperSize(width, height) {
-    setStyle(wrapper, "width", width + "px");
-    setStyle(wrapper, "marginLeft", (-width / 2) + "px");
-    setStyle(wrapper, "height", height + "px");
-    setStyle(wrapper, "marginTop", (-height / 2) + "px");
+    setStyle(wrapperElement, "width", width + "px");
+    setStyle(wrapperElement, "marginLeft", (-width / 2) + "px");
+    setStyle(wrapperElement, "height", height + "px");
+    setStyle(wrapperElement, "marginTop", (-height / 2) + "px");
   }
 
   /**
@@ -488,8 +488,8 @@
    * Sets the size of the container element to the size of the window.
    */
   function setContainerSize() {
-    setStyle(container, "width", documentElement.clientWidth + "px");
-    setStyle(container, "height", documentElement.clientHeight + "px");
+    setStyle(containerElement, "width", documentElement.clientWidth + "px");
+    setStyle(containerElement, "height", documentElement.clientHeight + "px");
 
     if (currentPlayer) {
       var size = getWrapperSize();
@@ -502,8 +502,8 @@
    * the window. Necessary when using absolute positioning instead of fixed.
    */
   function setContainerPosition() {
-    setStyle(container, "left", documentElement.scrollLeft + "px");
-    setStyle(container, "top", documentElement.scrollTop + "px");
+    setStyle(containerElement, "left", documentElement.scrollLeft + "px");
+    setStyle(containerElement, "top", documentElement.scrollTop + "px");
   }
 
   var troubleElementTagNames = [ "select", "object", "embed", "canvas" ];
@@ -619,7 +619,7 @@
       }
     }
 
-    container.className = name;
+    containerElement.className = name;
   }
 
   var resizeTimer, scrollTimer, mouseMoveTimer;
@@ -867,7 +867,7 @@
       }
 
       // Starts the actual loading of the iframe.
-      document.body.appendChild(iframe);
+      makeDom(document.body, iframe);
 
       this.element = iframe;
     },
