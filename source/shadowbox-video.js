@@ -1,9 +1,6 @@
 /**
- * This file is part of Shadowbox
- * http://shadowbox-js.com/
- * Copyright 2007-2011 Michael Jackson
+ * This file is part of Shadowbox <http://shadowbox-js.com/>
  */
-
 (function (global, shadowbox) {
 
   var mergeProperties = shadowbox.mergeProperties;

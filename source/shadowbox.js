@@ -1,9 +1,7 @@
 /*!
- * Shadowbox, version @VERSION
- * http://shadowbox-js.com/
- * Copyright 2007-2011 Michael Jackson
+ * Shadowbox, version @VERSION <http://shadowbox-js.com/>
+ * Copyright 2007-2013 Michael Jackson
  */
-
 (function (global) {
 
   var documentElement = document.documentElement;
