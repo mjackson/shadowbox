@@ -3,11 +3,11 @@
  */
 (function (global, shadowbox) {
 
-  var forEach = shadowbox.forEach;
-  var mergeProperties = shadowbox.mergeProperties;
-  var makeDom = shadowbox.makeDom;
-  var removeElement = shadowbox.removeElement;
-  var removeChildren = shadowbox.removeChildren;
+  var forEach = shadowbox.forEach,
+      mergeProperties = shadowbox.mergeProperties,
+      makeDom = shadowbox.makeDom,
+      removeElement = shadowbox.removeElement,
+      removeChildren = shadowbox.removeChildren;
 
   // Detect Flash support.
   var supportsFlash = false;
@@ -26,6 +26,37 @@
   }
 
   shadowbox.supportsFlash = supportsFlash;
+
+  var userAgent = navigator.userAgent.toLowerCase();
+  var isExplorer = /msie/.test(userAgent);
+
+  shadowbox.makeSwf = function (url, properties, params) {
+    var object;
+    if (isExplorer) {
+      // Need to use innerHTML here for IE.
+      var div = makeDom("div");
+      div.innerHTML = '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"><param name="movie" value="' + url + '"></object>';
+      object = div.firstChild;
+    } else {
+      object = makeDom("object", {
+        type: "application/x-shockwave-flash",
+        data: url
+      });
+    }
+
+    var children = [];
+    if (params) {
+      for (var paramName in params) {
+        if (params.hasOwnProperty(paramName)) {
+          children.push(makeDom('param', { name: paramName, value: params[paramName] }));
+        }
+      }
+    }
+
+    makeDom(object, properties, children);
+
+    return object;
+  };
 
   shadowbox.FlashPlayer = FlashPlayer;
   function FlashPlayer(object, id) {
@@ -60,15 +91,18 @@
      */
     injectInto: function (element) {
       if (supportsFlash) {
-        this.element = makeSwf(this.url, {
+        var params = mergeProperties({}, this.params);
+        var properties = {
           id: this.id,
           width: this.width,
           height: this.height
-        }, mergeProperties({}, this.params));
+        };
+
+        this.element = shadowbox.makeSwf(this.url, properties, params);
 
         removeChildren(element);
 
-        makeDom(element, this.element);
+        element.appendChild(this.element);
       }
     },
 
@@ -83,35 +117,6 @@
     }
 
   });
-
-  var isExplorer = /*@cc_on!@*/false;
-
-  shadowbox.makeSwf = makeSwf;
-  function makeSwf(url, properties, params) {
-    var object;
-    if (isExplorer) {
-      // Need to use innerHTML here for IE.
-      var div = makeDom("div");
-      div.innerHTML = '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"><param name="movie" value="' + url + '"></object>';
-      object = div.firstChild;
-    } else {
-      object = makeDom("object", {
-        type: "application/x-shockwave-flash",
-        data: url
-      });
-    }
-
-    var children = [];
-    if (params) {
-      for (var paramName in params) {
-        children.push(makeDom('param', { name: paramName, value: params[paramName] }));
-      }
-    }
-
-    makeDom(object, properties, children);
-
-    return object;
-  }
 
   // Register the flash player for the .swf extension.
   shadowbox.registerPlayer(shadowbox.FlashPlayer, 'swf');

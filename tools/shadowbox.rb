@@ -19,9 +19,9 @@ module Shadowbox
   end
 
   def self.compile!(output_file, options={})
-    compiler = Compiler.new(options)
     target_class = /\.zip$/ === output_file ? ZipFileTarget : DirectoryTarget
     target = target_class.new(output_file)
+    compiler = Compiler.new(options)
     compiler.flush!(target, options[:compress])
     target.finish!
   end

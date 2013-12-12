@@ -21,21 +21,21 @@
   // Detect touch-based devices.
   var supportsTouch = ("createTouch" in document);
 
-  var guid = 1;
-
   var currentIndex = -1,
       currentGallery = [],
       currentPlayer = null,
       options = {};
-
-  var shadowbox = openShadowbox;
 
   /**
    * The current version of Shadowbox.
    */
   shadowbox.version = "4.0.0";
 
-  shadowbox.K = function () { return this; };
+  shadowbox.guid = 1;
+
+  shadowbox.K = function () {
+    return this;
+  };
 
   /**
    * The default set of options.
@@ -102,8 +102,7 @@
    *   shadowbox.registerPlayer(shadowbox.VideoPlayer, "mov");
    *   shadowbox.registerPlayer(shadowbox.PhotoPlayer, [ "jpg", "jpeg" ]);
    */
-  shadowbox.registerPlayer = registerPlayer;
-  function registerPlayer(playerClass, extensions) {
+  shadowbox.registerPlayer = function (playerClass, extensions) {
     extensions = extensions || [];
 
     if (!isArray(extensions)) {
@@ -113,7 +112,7 @@
     forEach(extensions, function (extension) {
       shadowbox.players[extension] = playerClass;
     });
-  }
+  };
 
   // Cache references to oft-used DOM elements for speed.
   var containerElement, overlayElement, wrapperElement, bodyElement, contentElement, coverElement;
@@ -194,8 +193,7 @@
    * Options may be any of shadowbox.options. Returns the number of objects
    * that were able to be opened.
    */
-  shadowbox.open = openShadowbox;
-  function openShadowbox(objects, opts) {
+  function shadowbox(objects, opts) {
     if (!isArray(objects)) {
       objects = [ objects ];
     }
@@ -212,7 +210,7 @@
     // Normalize into player objects and append them to the gallery.
     var startIndex = options.startIndex;
     forEach(objects, function (object, index) {
-      var player = makePlayer(object);
+      var player = shadowbox.makePlayer(object);
 
       if (player) {
         currentGallery.push(player);
@@ -245,10 +243,10 @@
         animateStyle(overlayElement, "opacity", options.overlayOpacity, 0.35, function () {
           setWrapperSize(340, 200);
           setStyle(wrapperElement, "visibility", "visible");
-          showItemAtIndex(startIndex);
+          shadowbox.show(startIndex);
         });
       } else {
-        showItemAtIndex(startIndex);
+        shadowbox.show(startIndex);
       }
     }
 
@@ -259,8 +257,7 @@
    * Displays the gallery item at the given index in Shadowbox. Assumes that
    * Shadowbox is already initialized and open.
    */
-  shadowbox.show = showItemAtIndex;
-  function showItemAtIndex(index) {
+  shadowbox.show = function (index) {
     // Guard against invalid indices and no-ops.
     if (index < 0 || !currentGallery[index] || currentIndex === index) {
       return;
@@ -325,7 +322,7 @@
         }
       });
     });
-  }
+  };
 
   function finishShow() {
     if (currentPlayer) {
@@ -344,8 +341,7 @@
   /**
    * Closes Shadowbox immediately.
    */
-  shadowbox.close = closeShadowbox;
-  function closeShadowbox() {
+  shadowbox.close = function () {
     if (shadowbox.isOpen()) {
       currentIndex = -1;
       currentPlayer = null;
@@ -369,31 +365,28 @@
         }
       });
     }
-  }
+  };
 
   /**
    * Returns true if Shadowbox is currently open.
    */
-  shadowbox.isOpen = isOpen;
-  function isOpen() {
+  shadowbox.isOpen = function () {
     return currentIndex !== -1;
-  }
+  };
 
   /**
    * Gets the current player instance.
    */
-  shadowbox.getPlayer = getPlayer;
-  function getPlayer() {
+  shadowbox.getPlayer = function () {
     return currentPlayer;
-  }
+  };
 
   /**
    * Opens the previous item in the gallery.
    */
-  shadowbox.showPrevious = showPreviousItem;
-  function showPreviousItem() {
+  shadowbox.showPrevious = function () {
     shadowbox.show(getPreviousIndex());
-  }
+  };
 
   /**
    * Gets the index of the previous item in the gallery, -1 if there is none.
@@ -409,10 +402,9 @@
   /**
    * Opens the next item in the gallery.
    */
-  shadowbox.showNext = showNextItem;
-  function showNextItem() {
+  shadowbox.showNext = function () {
     shadowbox.show(getNextIndex());
-  }
+  };
 
   /**
    * Gets the index of the next item in the gallery, -1 if there is none.
@@ -563,8 +555,7 @@
    * Returns null if no player is able to be created, or this browser does
    * not have proper support for that content.
    */
-  shadowbox.makePlayer = makePlayer;
-  function makePlayer(object) {
+  shadowbox.makePlayer = function (object) {
     if (typeof object === "string") {
       object = { url: object };
     } else if (isElement(object) && object.href) {
@@ -595,7 +586,7 @@
 
       playerClass = playerClass || FramePlayer;
 
-      var player = new playerClass(object, "sb-player-" + String(guid++));
+      var player = new playerClass(object, "sb-player-" + String(shadowbox.guid++));
 
       if (player.isSupported()) {
         return player;
@@ -603,7 +594,7 @@
     }
 
     return null;
-  }
+  };
 
   // Toggles visibility of clickable controls on and off.
   function toggleControls(on) {
@@ -885,11 +876,14 @@
     injectInto: function (element) {
       removeChildren(element);
 
-      this.element.style.visibility = "hidden";
-      this.element.width = "100%";
-      this.element.height = "100%";
-      element.appendChild(this.element);
-      this.element.style.visibility = "";
+      var iframe = this.element;
+      iframe.style.visibility = "hidden";
+      iframe.width = "100%";
+      iframe.height = "100%";
+
+      element.appendChild(iframe);
+
+      iframe.style.visibility = "";
     },
 
     /**
@@ -1284,7 +1278,7 @@
       }
 
       if (!handler.__guid) {
-        handler.__guid = guid++;
+        handler.__guid = shadowbox.guid++;
       }
 
       if (!element.events) {

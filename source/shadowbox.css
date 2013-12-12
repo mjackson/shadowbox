@@ -36,7 +36,9 @@
   top: 50%;
 }
 
-#sb-body, #sb-content, #sb-cover {
+#sb-body,
+#sb-content,
+#sb-cover {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -50,14 +52,18 @@
   background: black;
 }
 
-#sb-close, #sb-next, #sb-prev {
+#sb-close,
+#sb-next,
+#sb-prev {
   position: absolute;
   display: none;
   background: url("shadowbox-icons.png") no-repeat;
   cursor: pointer;
 }
 
-#shadowbox.active #sb-close, #shadowbox.has-next #sb-next, #shadowbox.has-prev #sb-prev {
+#shadowbox.active #sb-close,
+#shadowbox.has-next #sb-next,
+#shadowbox.has-prev #sb-prev {
   display: block;
 }
 

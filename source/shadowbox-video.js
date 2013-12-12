@@ -3,21 +3,21 @@
  */
 (function (global, shadowbox) {
 
-  var mergeProperties = shadowbox.mergeProperties;
-  var removeElement = shadowbox.removeElement;
-  var removeChildren = shadowbox.removeChildren;
-  var addEvent = shadowbox.addEvent;
-  var makeDom = shadowbox.makeDom;
-  var makeSwf = shadowbox.makeSwf;
-  var supportsFlash = shadowbox.supportsFlash;
+  var mergeProperties = shadowbox.mergeProperties,
+      removeElement = shadowbox.removeElement,
+      removeChildren = shadowbox.removeChildren,
+      addEvent = shadowbox.addEvent,
+      makeDom = shadowbox.makeDom,
+      makeSwf = shadowbox.makeSwf,
+      supportsFlash = shadowbox.supportsFlash;
 
   // The URL of the Flowplayer SWF to use for flash fallback.
   shadowbox.flowplayer = "http://releases.flowplayer.org/swf/flowplayer-3.2.7.swf";
 
   // Detect video support, adapted from Modernizr.
-  var supportsH264 = false;
-  var supportsOgg = false;
-  var supportsWebm = false;
+  var supportsH264 = false,
+      supportsOgg = false,
+      supportsWebm = false;
 
   var video = makeDom("video");
   var canPlay = video.canPlayType && function (type) {
@@ -96,12 +96,12 @@
     },
 
     _createSwf: function (url) {
-      var clipProps = [];
-
-      clipProps.push('"url":"' + url + '"');
-      clipProps.push('"scaling":"fit"');
-      clipProps.push('"autoBuffering":true')
-      clipProps.push('"autoPlay":true');
+      var clipProps = [
+        '"url":"' + url + '"',
+        '"scaling":"fit"',
+        '"autoBuffering":true',
+        '"autoPlay":true'
+      ];
 
       var clip = "{" + clipProps.join(",") + "}";
 
@@ -114,17 +114,16 @@
 
       var playlist = "[" + playlistItems.join(",") + "]";
 
-      var configProps = [];
+      var configProps = [
+        '"playerId":"' + this.id + '"',
+        '"clip":{}',
+        '"playlist":' + playlist,
+        // '"debug":true',
 
-      configProps.push('"playerId":"' + this.id + '"');
-      configProps.push('"clip":{}');
-      configProps.push('"playlist":' + playlist);
-
-      // Hide Flowplayer's controls, see http://flowplayer.org/forum/2/20734.
-      configProps.push('"play":null');
-      configProps.push('"plugins":{"controls":null}');
-
-      // configProps.push('"debug":true');
+        // Hide Flowplayer's controls, see http://flowplayer.org/forum/2/20734.
+        '"play":null',
+        '"plugins":{"controls":null}'
+      ];
 
       var config = "{" + configProps.join(",") + "}";
       var apiId = this.id + "_api";
