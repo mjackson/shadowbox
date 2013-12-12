@@ -12,15 +12,14 @@ module Shadowbox
 
     attr_reader :output_file
 
-    def flush!(compiler, compress=false)
-      super
-      @zip_file.close
-    end
-
-    def write(file, contents)
-      @zip_file.get_output_stream(file) do |io|
+    def write(file_name, contents)
+      @zip_file.get_output_stream(file_name) do |io|
         io.puts(contents)
       end
+    end
+
+    def finish!
+      @zip_file.close
     end
 
   end

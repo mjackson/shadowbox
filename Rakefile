@@ -1,8 +1,6 @@
 require 'bundler/setup'
-require 'rack'
-require 'thin'
 
-tools_path = File.expand_path("../tools", __FILE__)
+tools_path = File.expand_path('../tools', __FILE__)
 $LOAD_PATH.unshift(tools_path) unless $LOAD_PATH.include?(tools_path)
 
 require 'shadowbox'
@@ -29,24 +27,4 @@ end
 desc "Remove all auto-generated files"
 task :clean do
   sh 'rm -f shadowbox-*.zip'
-  rm_f 'examples/shadowbox.js'
-  rm_f 'examples/shadowbox.css'
-  rm_f 'examples/shadowbox-icons.png'
-  rm_f 'examples/shadowbox-controls.png'
-end
-
-def default_port
-  (ENV['PORT'] || 3000).to_i
-end
-
-desc "Serve examples over HTTP on $PORT, defaults to #{default_port}"
-task :serve do
-  # Create versions of assets that we can use to run the examples.
-  Shadowbox.compile! Shadowbox.examples_dir, \
-    :compress => false,
-    :support_flash => true,
-    :support_video => true
-
-  app = Rack::CommonLogger.new(Shadowbox.examples_app)
-  Rack::Handler::Thin.run(app, :Port => default_port)
 end

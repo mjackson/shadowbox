@@ -1,3 +1,4 @@
+require 'yuicompressor'
 require 'shadowbox'
 
 module Shadowbox
@@ -19,23 +20,23 @@ module Shadowbox
 
     def js_files
       files = []
-      files << source('shadowbox.js')
-      files << source('shadowbox-flash.js') if requires_flash?
-      files << source('shadowbox-video.js') if @support_video
+      files << source_path('shadowbox.js')
+      files << source_path('shadowbox-flash.js') if requires_flash?
+      files << source_path('shadowbox-video.js') if @support_video
       files
     end
 
     def css_files
       files = []
-      files << source('shadowbox.css')
-      files << source('shadowbox-video.css') if @support_video
+      files << source_path('shadowbox.css')
+      files << source_path('shadowbox-video.css') if @support_video
       files
     end
 
     def resource_files
       files = []
-      files << source('shadowbox-icons.png')
-      files << source('shadowbox-controls.png') if @support_video
+      files << source_path('shadowbox-icons.png')
+      files << source_path('shadowbox-controls.png') if @support_video
       files
     end
 
@@ -61,10 +62,32 @@ module Shadowbox
       hash.each(&block)
     end
 
+    def flush!(target, compress=false)
+      each do |file_name, contents|
+        if compress
+          case file_name
+          when /\.js$/  then target.write(file_name, compress_js(contents))
+          when /\.css$/ then target.write(file_name, compress_css(contents))
+          else target.write(file_name, contents)
+          end
+        else
+          target.write(file_name, contents)
+        end
+      end
+    end
+
   private
 
-    def source(*args)
+    def source_path(*args)
       File.join(@source_dir, *args)
+    end
+
+    def compress_js(code)
+      YUICompressor.compress_js(code, :munge => true)
+    end
+
+    def compress_css(code)
+      YUICompressor.compress_css(code)
     end
 
   end

@@ -1,5 +1,3 @@
-require 'rack'
-
 module Shadowbox
 
   autoload :Compiler,         'shadowbox/compiler'
@@ -7,9 +5,7 @@ module Shadowbox
   autoload :Target,           'shadowbox/target'
   autoload :ZipFileTarget,    'shadowbox/zip_file_target'
 
-  @root_dir = File.expand_path('../..', __FILE__)
-  @source_dir = File.join(@root_dir, 'source')
-  @examples_dir = File.join(@root_dir, 'examples')
+  @source_dir = File.expand_path('../../source', __FILE__)
 
   # Get the current version of the code from the source.
   @version = File.open(File.join(@source_dir, 'shadowbox.js'), 'r') do |f|
@@ -19,29 +15,15 @@ module Shadowbox
   end
 
   class << self
-    attr_reader :root_dir, :source_dir, :examples_dir, :version
+    attr_reader :source_dir, :version
   end
 
   def self.compile!(output_file, options={})
     compiler = Compiler.new(options)
     target_class = /\.zip$/ === output_file ? ZipFileTarget : DirectoryTarget
     target = target_class.new(output_file)
-    target.flush!(compiler, options[:compress])
-  end
-
-  class Index
-    def initialize(app)
-      @app = app
-    end
-
-    def call(env)
-      env['PATH_INFO'] = '/index.html' if env['PATH_INFO'] == '/'
-      @app.call(env)
-    end
-  end
-
-  def self.examples_app
-    Index.new(Rack::File.new(examples_dir))
+    compiler.flush!(target, options[:compress])
+    target.finish!
   end
 
 end
