@@ -114,7 +114,7 @@
     });
   };
 
-  // Cache references to oft-used DOM elements for speed.
+  // Cache references to oft-used DOM elements.
   var containerElement, overlayElement, wrapperElement, bodyElement, contentElement, coverElement;
 
   /**
@@ -180,7 +180,7 @@
 
   /**
    * Opens an object (or an array of objects) in Shadowbox. Takes options as
-   * the final argument.
+   * the second argument.
    *
    *   shadowbox("myphoto.jpg");
    *   shadowbox([ "myphoto1.jpg", "myphoto2.jpg" ]);
@@ -194,6 +194,10 @@
    * that were able to be opened.
    */
   function shadowbox(objects, opts) {
+    if (typeof opts === 'number') {
+      opts = { startIndex: opts };
+    }
+
     if (!isArray(objects)) {
       objects = [ objects ];
     }
@@ -252,6 +256,8 @@
 
     return currentGallery.length;
   }
+
+  shadowbox.open = shadowbox;
 
   /**
    * Displays the gallery item at the given index in Shadowbox. Assumes that
@@ -803,7 +809,7 @@
       // Good for debugging.
       // event.preventDefault();
 
-      if (links.length > 0 && shadowbox.open(links, { startIndex: index })) {
+      if (links.length > 0 && shadowbox.open(links, index) > 0) {
         event.preventDefault(); // Prevent the browser from following the link.
       }
     }
