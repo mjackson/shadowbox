@@ -58,7 +58,7 @@
   function VideoPlayer(object, id) {
     this.url = object.url;
     this.width = parseInt(object.width, 10) || 640;
-    this.height = parseInt(object.height, 10) || 480;
+    this.height = parseInt(object.height, 10) || Math.round(this.width * 0.75);
     this.posterUrl = object.posterUrl;
     this.id = id;
 
