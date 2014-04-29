@@ -1,6 +1,7 @@
 /**
  * This file is part of Shadowbox <http://shadowbox-js.com/>
  */
+
 (function (global) {
 
   var shadowbox = global.shadowbox;

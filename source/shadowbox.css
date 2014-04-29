@@ -1,7 +1,7 @@
-/*!
- * Shadowbox, version @VERSION <http://shadowbox-js.com/>
- * Copyright 2007-2013 Michael Jackson
+/**
+ * This file is part of Shadowbox <http://shadowbox-js.com/>
  */
+
 #shadowbox {
   position: fixed;
   margin: 0;
