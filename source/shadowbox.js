@@ -22,11 +22,6 @@
   // Detect touch-based devices.
   var supportsTouch = ("createTouch" in document);
 
-  var currentIndex = -1,
-      currentGallery = [],
-      currentPlayer = null,
-      options = {};
-
   /**
    * The current version of Shadowbox.
    */
@@ -176,6 +171,11 @@
     addEvent(previousElement, "click", cancel(shadowbox.showPrevious));
   }
 
+  var currentIndex = -1,
+      currentGallery,
+      currentPlayer,
+      currentOptions;
+
   /**
    * Opens an object (or an array of objects) in Shadowbox. Takes options as
    * the second argument.
@@ -191,23 +191,22 @@
    * Options may be any of shadowbox.options. Returns the number of objects
    * that were able to be opened.
    */
-  function shadowbox(objects, opts) {
-    if (typeof opts === 'number')
-      opts = { startIndex: opts };
+  function shadowbox(objects, options) {
+    if (typeof options === 'number')
+      options = { startIndex: options };
 
     if (!isArray(objects))
       objects = [ objects ];
 
-    options = mergeProperties({}, shadowbox.options);
+    currentOptions = mergeProperties({}, shadowbox.options);
 
-    if (opts)
-      mergeProperties(options, opts);
+    if (options)
+      mergeProperties(currentOptions, options);
 
-    // Clear the gallery.
     currentGallery = [];
 
     // Normalize into player objects and append them to the gallery.
-    var startIndex = options.startIndex;
+    var startIndex = currentOptions.startIndex;
     forEach(objects, function (object, index) {
       var player = shadowbox.makePlayer(object);
 
@@ -227,19 +226,19 @@
       if (currentIndex == -1) {
         initialize();
 
-        if (isFunction(options.onOpen))
-          options.onOpen();
+        if (isFunction(currentOptions.onOpen))
+          currentOptions.onOpen();
 
         setStyle(containerElement, "display", "block");
         setContainerPosition();
         setContainerSize();
         toggleTroubleElements(0);
-        setStyle(overlayElement, "backgroundColor", options.overlayColor);
+        setStyle(overlayElement, "backgroundColor", currentOptions.overlayColor);
         setStyle(overlayElement, "opacity", 0);
         setStyle(containerElement, "visibility", "visible");
 
-        animateStyle(overlayElement, "opacity", options.overlayOpacity, 0.35, function () {
-          setWrapperSize(340, 200);
+        animateStyle(overlayElement, "opacity", currentOptions.overlayOpacity, 0.35, function () {
+          setWrapperSize({ width: 340, height: 200 });
           setStyle(wrapperElement, "visibility", "visible");
           shadowbox.show(startIndex);
         });
@@ -274,7 +273,6 @@
     if (currentPlayer)
       currentPlayer.remove();
 
-    // Update current* variables.
     currentIndex = index;
     currentPlayer = currentGallery[currentIndex];
 
@@ -286,14 +284,14 @@
       if (!currentPlayer)
         return; // Shadowbox was closed.
 
-      if (isFunction(options.onShow))
-        options.onShow(currentPlayer);
+      if (isFunction(currentOptions.onShow))
+        currentOptions.onShow(currentPlayer);
 
       var size = getWrapperSize();
       var fromWidth = parseInt(getStyle(wrapperElement, "width")) || 0,
           fromHeight = parseInt(getStyle(wrapperElement, "height")) || 0,
-          toWidth = size[0],
-          toHeight = size[1],
+          toWidth = size.width,
+          toHeight = size.height,
           changeWidth = toWidth - fromWidth,
           changeHeight = toHeight - fromHeight;
 
@@ -301,7 +299,10 @@
         if (!currentPlayer)
           return false; // Shadowbox was closed, cancel the animation.
 
-        setWrapperSize(fromWidth + (changeWidth * value), fromHeight + (changeHeight * value));
+        setWrapperSize({
+          width: fromWidth + (changeWidth * value),
+          height: fromHeight + (changeHeight * value)
+        });
       }
 
       // Open to the correct dimensions. Use the low-level animation
@@ -328,8 +329,8 @@
       toggleMouseMoveHandler(1);
       toggleKeyDownHandler(1);
 
-      if (isFunction(options.onDone))
-        options.onDone(currentPlayer);
+      if (isFunction(currentOptions.onDone))
+        currentOptions.onDone(currentPlayer);
     }
   }
 
@@ -355,8 +356,8 @@
         setStyle(containerElement, "display", "none");
         toggleTroubleElements(1);
 
-        if (isFunction(options.onClose))
-          options.onClose();
+        if (isFunction(currentOptions.onClose))
+          currentOptions.onClose();
       });
     }
   };
@@ -387,7 +388,7 @@
    */
   function getPreviousIndex() {
     if (currentIndex === 0)
-      return options.continuous ? (currentGallery.length - 1) : -1;
+      return currentOptions.continuous ? (currentGallery.length - 1) : -1;
 
     return currentIndex - 1;
   }
@@ -403,8 +404,8 @@
    * Gets the index of the next item in the gallery, -1 if there is none.
    */
   function getNextIndex() {
-    if (currentIndex == currentGallery.length - 1)
-      return (options.continuous && currentIndex != 0) ? 0 : -1;
+    if (currentIndex === currentGallery.length - 1)
+      return (currentOptions.continuous && currentIndex !== 0) ? 0 : -1;
 
     return currentIndex + 1;
   }
@@ -414,21 +415,20 @@
    * called when Shadowbox is open and has a player that is ready.
    */
   function getWrapperSize() {
-    var margin = Math.max(options.margin, 20); // Minimum 20px margin.
-    var size = constrainSize(currentPlayer.width, currentPlayer.height,
-      overlayElement.offsetWidth, overlayElement.offsetHeight, margin);
+    var margin = Math.max(currentOptions.margin, 20); // Minimum 20px margin.
 
-    return size;
+    return constrainSize(currentPlayer.width, currentPlayer.height,
+      overlayElement.offsetWidth, overlayElement.offsetHeight, margin);
   }
 
   /**
    * Sets the size and position of the wrapper.
    */
-  function setWrapperSize(width, height) {
-    setStyle(wrapperElement, "width", width + "px");
-    setStyle(wrapperElement, "marginLeft", (-width / 2) + "px");
-    setStyle(wrapperElement, "height", height + "px");
-    setStyle(wrapperElement, "marginTop", (-height / 2) + "px");
+  function setWrapperSize(size) {
+    setStyle(wrapperElement, "width", size.width + "px");
+    setStyle(wrapperElement, "marginLeft", (-size.width / 2) + "px");
+    setStyle(wrapperElement, "height", size.height + "px");
+    setStyle(wrapperElement, "marginTop", (-size.height / 2) + "px");
   }
 
   /**
@@ -439,7 +439,7 @@
   function constrainSize(width, height, maxWidth, maxHeight, margin) {
     var originalWidth = width, originalHeight = height;
 
-    // Constrain height/width to max.
+    // Constrain width/height to max.
     var marginWidth = 2 * margin;
     if (width + marginWidth > maxWidth)
       width = maxWidth - marginWidth;
@@ -448,11 +448,10 @@
     if (height + marginHeight > maxHeight)
       height = maxHeight - marginHeight;
 
-    // Calculate the change in height/width.
     var changeWidth = (originalWidth - width) / originalWidth;
     var changeHeight = (originalHeight - height) / originalHeight;
 
-    // Adjust height/width if oversized.
+    // Adjust width/height if oversized.
     if (changeWidth > 0 || changeHeight > 0) {
       // Preserve original aspect ratio according to greatest change.
       if (changeWidth > changeHeight) {
@@ -462,7 +461,7 @@
       }
     }
 
-    return [ width, height ];
+    return { width: width, height: height };
   }
 
   /**
@@ -472,10 +471,8 @@
     setStyle(containerElement, "width", documentElement.clientWidth + "px");
     setStyle(containerElement, "height", documentElement.clientHeight + "px");
 
-    if (currentPlayer) {
-      var size = getWrapperSize();
-      setWrapperSize(size[0], size[1]);
-    }
+    if (currentPlayer)
+      setWrapperSize(getWrapperSize());
   }
 
   /**
@@ -713,7 +710,7 @@
   var KEY_X = 88;
 
   function handleDocumentKeyDown(event) {
-    if (options.enableKeys && !eventHasModifierKey(event)) {
+    if (currentOptions.enableKeys && !eventHasModifierKey(event)) {
       switch (event.keyCode) {
       case KEY_ESCAPE:
       case KEY_Q:
@@ -1037,7 +1034,7 @@
   function animate(from, to, duration, frameHandler, callback) {
     var delta = to - from;
 
-    if (delta === 0 || duration === 0 || !options.animate) {
+    if (delta === 0 || duration === 0 || !currentOptions.animate) {
       frameHandler(to);
 
       if (isFunction(callback))
@@ -1049,7 +1046,7 @@
     // Convert duration to milliseconds.
     duration = (duration || 0.35) * 1000;
 
-    var ease = options.ease,
+    var ease = currentOptions.ease,
         begin = getTime(),
         end = begin + duration,
         time;
