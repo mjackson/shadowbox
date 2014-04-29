@@ -1,7 +1,12 @@
 /**
  * This file is part of Shadowbox <http://shadowbox-js.com/>
  */
-(function (global, shadowbox) {
+(function (global) {
+
+  var shadowbox = global.shadowbox;
+
+  if (!shadowbox)
+    throw new Error('You must load shadowbox.js before shadowbox-video.js');
 
   var mergeProperties = shadowbox.mergeProperties,
       removeElement = shadowbox.removeElement,
@@ -502,4 +507,4 @@
     };
   }
 
-}(this, this.shadowbox));
+}(this));

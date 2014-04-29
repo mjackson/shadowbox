@@ -1,7 +1,12 @@
 /**
  * This file is part of Shadowbox <http://shadowbox-js.com/>
  */
-(function (global, shadowbox) {
+(function (global) {
+
+  var shadowbox = global.shadowbox;
+
+  if (!shadowbox)
+    throw new Error('You must load shadowbox.js before shadowbox-flash.js');
 
   var forEach = shadowbox.forEach,
       mergeProperties = shadowbox.mergeProperties,
@@ -121,4 +126,4 @@
   // Register the flash player for the .swf extension.
   shadowbox.registerPlayer(shadowbox.FlashPlayer, 'swf');
 
-}(this, this.shadowbox));
+}(this));
