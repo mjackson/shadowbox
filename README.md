@@ -28,7 +28,7 @@ Next, add a `rel="shadowbox"` attribute to any links to photos or videos in the 
 When linking to a video, you need to explicitly tell Shadowbox the dimensions to use for the video. You can do this by setting the value of the `data-shadowbox` attribute like this:
 
 ```html
-<a href="vacation.m4v" rel="shadowbox" data-shadowbox="width=640,height=360">My Vacation</a>
+<a href="vacation.m4v" rel="shadowbox" data-shadowbox="width=640,height=480">My Vacation</a>
 ```
 
 If you'd like to let the user open Shadowbox by clicking on a small thumbnail version of the photo or video, simply wrap the thumbnail image in a link like the ones above.
@@ -42,9 +42,9 @@ If you'd like to let the user open Shadowbox by clicking on a small thumbnail ve
 To show an entire gallery of content, simply include the gallery name between square brackets in your `rel` attribute on multiple links. This could be very useful if you have a grid of photo thumbnails on a page, for example. You can even mix multiple types of content into the same gallery.
 
 ```html
-<a href="picture-one.jpg" rel="shadowbox[vacation]">First Picture</a>
-<a href="picture-two.jpg" rel="shadowbox[vacation]">Second Picture</a>
-<a href="video-one.m4v" rel="shadowbox[vacation]" data-shadowbox="width=640,height=360">The Video</a>
+<a href="my-first-photo.jpg" rel="shadowbox[vacation]">First Photo</a>
+<a href="my-second-photo.jpg" rel="shadowbox[vacation]">Second Photo</a>
+<a href="my-movie.m4v" rel="shadowbox[vacation]" data-shadowbox="width=640,height=480">A Movie</a>
 ```
 
 Note: For best results, it is recommended that you encode your videos using h264. Please read Mark Pilgrim's [excellent guide to HTML5 video](http://diveintohtml5.info/video.html) to learn more. Also, please note that Shadowbox supports displaying the same video in multiple encodings. Please see the API section on HTML5 video properties for more information.
@@ -56,16 +56,16 @@ Shadowbox exposes a single `shadowbox` function in the global namespace. All oth
 In the most common case, you can open a photo or video by passing the URL of the content you want to display to the `shadowbox` function directly.
 
 ```js
-shadowbox("http://example.com/mypicture.jpg");
+shadowbox("my-photo.jpg");
 ```
 
 When you need to specify additional content attributes (e.g. when linking to a video you must explicitly specify its width and height), you can pass an object to the function, using the URL of the content as the value of the `url` property.
 
 ```js
 shadowbox({
-  url: "http://example.com/myvideo.m4v",
+  url: "my-movie.m4v",
   width: 640,
-  height: 360
+  height: 480
 });
 ```
 
@@ -75,33 +75,25 @@ To display a gallery of content, pass an array instead of a single object to the
 
 ```js
 shadowbox([
-  "http://example.com/a-picture.jpg",
-  { url: "http://example.com/myvideo.m4v", width: 640, height: 360 },
-  "http://example.com/index.html"
+  "my-photo.jpg",
+  { url: "my-video.m4v", width: 640, height: 480 },
+  "my-web-page.html"
 ]);
-```
-
-A second argument may be used to specify various options that control how Shadowbox looks and behaves. Properties of this object may be any of `shadowbox.options`.
-
-```js
-shadowbox("http://example.com/a-picture.jpg", { overlayColor: "white" });
 ```
 
 #### HTML5 Video Properties
 
-When playing HTML5 video, you may use the `posterUrl` and `encodings` properties on your content object. If present, the `posterUrl` property is used to display a poster image before your video starts playing.
-
-The `encodings` property may be used to specify the URLs of several different versions of the same file that use different encodings. When Shadowbox runs, it automatically detects the capabilities of the browser and uses the version of the video that is best suited to that browser.
+In addition to the `width` and `height` properties, you may use the `posterUrl` and `encodings` properties on HTML5 video content objects. If present, the `posterUrl` property is used to display a poster image before your video starts playing. The `encodings` property may be used to specify the URLs of several different versions of the same file that use different encodings. When Shadowbox runs, it automatically detects the capabilities of the browser and uses the version of the video that is best suited to that browser.
 
 ```js
 shadowbox({
-  posterUrl: "http://example.com/my-poster.jpg",
-  encodings: {
-    h264: "http://example.com/my-video.m4v",
-    ogg:  "http://example.com/my-video.ogg"
-  },
   width: 640,
-  height: 360
+  height: 480,
+  posterUrl: "my-poster.jpg",
+  encodings: {
+    h264: "my-movie.m4v",
+    ogg:  "my-movie.ogg"
+  }
 });
 ```
 
@@ -113,12 +105,56 @@ You may use the `flashParams` property to specify `<param>` name/value pairs whe
 
 ```js
 shadowbox({
-  url: "http://example.com/my-movie.swf",
+  url: "my-movie.swf",
   flashParams: {
     play: false,
     loop: true
   }
 });
+```
+
+#### Options
+
+A second `options` argument may be passed to the `shadowbox` function to control how Shadowbox looks and behaves. Properties of this object may be any of `shadowbox.options`.
+
+```js
+shadowbox("my-photo.jpg", { overlayColor: "white" });
+```
+
+Available options include the following:
+
+| Option           | Description                                                                                        |
+|------------------|----------------------------------------------------------------------------------------------------|
+| animate          | `false` to disable animating width/height transitions. Defaults to `true`.                         |
+| autoClose        | `true` to automatically close when movies finish playing. Defaults to `false`.                     |
+| continuous       | `true` to loop continuously through the items in a gallery. Defaults to `false`.                   |
+| ease             | An easing function to use for width/height transitions.                                            |
+| enableKeys       | `false` to disable keyboard navigation through galleries. Defaults to `true`.                      |
+| margin           | The amount of space (pixels) to keep around the edge of Shadowbox at all times.                    |
+| onClose          | A hook function that is called when Shadowbox closes.                                              |
+| onDone           | A hook function that is called when a player is finished loading and all transitions are complete. |
+| onOpen           | A hook function that is called when Shadowbox opens.                                               |
+| onShow           | A hook function that is called when a player is ready to be displayed.                             |
+| overlayColor     | The background color to use for the modal overlay. Defaults to "black".                            |
+| overlayOpacity   | The opacity to use for the modal overlay. Defaults to 0.5.                                         |
+| startIndex       | The index of the object in the current gallery to show first. Defaults to 0.                       |
+
+#### Manual Control
+
+You may manually control how and when Shadowbox displays content using `shadowbox.show`, `shadowbox.showPrevious`, `shadowbox.showNext`, and `shadowbox.close`.
+
+```js
+shadowbox([
+  "my-first-photo.png",
+  "my-second-photo.jpg",
+  "my-third-photo.jpg"
+]);
+
+// Then, sometime later.
+shadowbox.showNext();
+
+// Finally, when you're ready to close.
+shadowbox.close();
 ```
 
 ### Bugs
