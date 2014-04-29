@@ -52,9 +52,8 @@
     var children = [];
     if (params) {
       for (var paramName in params) {
-        if (params.hasOwnProperty(paramName)) {
+        if (params.hasOwnProperty(paramName))
           children.push(makeDom('param', { name: paramName, value: params[paramName] }));
-        }
       }
     }
 
@@ -64,6 +63,10 @@
   };
 
   shadowbox.FlashPlayer = FlashPlayer;
+
+  /**
+   * A player that is capable of displaying Flash content.
+   */
   function FlashPlayer(object, id) {
     this.url = object.url;
     this.width = parseInt(object.width, 10) || 300;
@@ -72,9 +75,9 @@
 
     if (object.flashVars) {
       var flashVars = [];
-      for (var varName in object.flashVars) {
+
+      for (var varName in object.flashVars)
         flashVars.push(varName + '=' + object.flashVars[varName]);
-      }
 
       this.params.flashvars = flashVars.join('&');
     }

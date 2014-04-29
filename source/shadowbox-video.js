@@ -16,9 +16,6 @@
       makeSwf = shadowbox.makeSwf,
       supportsFlash = shadowbox.supportsFlash;
 
-  // The URL of the Flowplayer SWF to use for flash fallback.
-  shadowbox.flowplayer = "http://releases.flowplayer.org/swf/flowplayer-3.2.7.swf";
-
   // Detect video support, adapted from Modernizr.
   var supportsH264 = false,
       supportsOgg = false,
@@ -41,12 +38,15 @@
   shadowbox.supportsOgg = supportsOgg;
   shadowbox.supportsWebm = supportsWebm;
 
-  var extRe = /\.(mp4|m4v|ogg|webm|flv)/i;
+  /**
+   * The URL of the Flowplayer SWF to use for the Flash fallback.
+   */
+  shadowbox.flowplayerUrl = "http://releases.flowplayer.org/swf/flowplayer-3.2.7.swf";
 
   /**
    * A map of common video file extensions to the encodings they use.
    */
-  shadowbox.encodings = {
+  shadowbox.videoEncodings = {
     mp4: "h264",
     m4v: "h264",
     ogg: "ogg",
@@ -54,7 +54,26 @@
     flv: "flv"
   };
 
+  var extRe = /\.(mp4|m4v|ogg|webm|flv)/i;
+
+  /**
+   * Tries to automatically detect the encoding of a video from the file
+   * extension it uses.
+   */
+  shadowbox.detectVideoEncoding = function (url) {
+    var match = url.match(extRe);
+
+    if (match)
+      return shadowbox.videoEncodings[match[1].toLowerCase()];
+
+    return null;
+  };
+
   shadowbox.VideoPlayer = VideoPlayer;
+
+  /**
+   * A player that displays video content using HTML5 <video> with a Flash fallback.
+   */
   function VideoPlayer(object, id) {
     this.url = object.url;
     this.width = parseInt(object.width, 10) || 640;
@@ -69,12 +88,12 @@
     }
 
     // Try to automatically detect the video encoding.
-    var encoding = detectEncoding(this.url);
-    if (encoding) {
-      this.encodings[encoding] = this.url;
-    } else {
+    var encoding = shadowbox.detectVideoEncoding(this.url);
+
+    if (!encoding)
       throw new Error("Cannot detect video encoding from URL: " + this.url);
-    }
+
+    this.encodings[encoding] = this.url;
   }
 
   mergeProperties(VideoPlayer.prototype, {
@@ -90,9 +109,8 @@
         height: this.height
       };
 
-      if (this.posterUrl) {
+      if (this.posterUrl)
         properties.poster = this.posterUrl;
-      }
 
       this.element = makeDom("video", properties);
 
@@ -112,9 +130,9 @@
 
       var playlistItems = [];
 
-      if (this.posterUrl) {
+      if (this.posterUrl)
         playlistItems.push('"' + this.posterUrl + '"');
-      }
+
       playlistItems.push(clip);
 
       var playlist = "[" + playlistItems.join(",") + "]";
@@ -133,7 +151,7 @@
       var config = "{" + configProps.join(",") + "}";
       var apiId = this.id + "_api";
 
-      this.element = makeSwf(shadowbox.flowplayer, {
+      this.element = makeSwf(shadowbox.flowplayerUrl, {
         id: apiId,
         name: apiId,
         width: this.width,
@@ -174,7 +192,8 @@
         this._createVideo(this.encodings.webm);
       }
 
-      if (!this.element) return;
+      if (!this.element)
+        return;
 
       removeChildren(element);
 
@@ -443,20 +462,6 @@
     }
 
   };
-
-  /**
-   * Tries to automatically detect the encoding of a video from the file
-   * extension it uses.
-   */
-  function detectEncoding(url) {
-    var match = url.match(extRe);
-    if (match) {
-      var extension = match[1].toLowerCase();
-      return shadowbox.encodings[extension];
-    }
-
-    return null;
-  }
 
   function addClass(element, className) {
     if (element.className) {

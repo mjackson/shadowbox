@@ -105,9 +105,8 @@
   shadowbox.registerPlayer = function (playerClass, extensions) {
     extensions = extensions || [];
 
-    if (!isArray(extensions)) {
+    if (!isArray(extensions))
       extensions = [ extensions ];
-    }
 
     forEach(extensions, function (extension) {
       shadowbox.players[extension] = playerClass;
@@ -121,9 +120,8 @@
    * Appends Shadowbox to the DOM and initializes DOM references.
    */
   function initialize() {
-    if (containerElement) {
+    if (containerElement)
       return; // Don't initialize twice!
-    }
 
     // The Shadowbox markup:
     //
@@ -163,11 +161,10 @@
       ])
     ]);
 
-    if (!supportsFixed) {
-      // Use an absolutely positioned container in browsers that don't
-      // support fixed positioning.
+    // Use an absolutely positioned container in browsers that don't
+    // support fixed positioning.
+    if (!supportsFixed)
       setStyle(containerElement, "position", "absolute");
-    }
 
     // Setup a click listener on the overlay to close Shadowbox.
     addEvent(overlayElement, "click", shadowbox.close);
@@ -194,19 +191,16 @@
    * that were able to be opened.
    */
   function shadowbox(objects, opts) {
-    if (typeof opts === 'number') {
+    if (typeof opts === 'number')
       opts = { startIndex: opts };
-    }
 
-    if (!isArray(objects)) {
+    if (!isArray(objects))
       objects = [ objects ];
-    }
 
     options = mergeProperties({}, shadowbox.options);
 
-    if (opts) {
+    if (opts)
       mergeProperties(options, opts);
-    }
 
     // Clear the gallery.
     currentGallery = [];
@@ -232,9 +226,8 @@
       if (currentIndex == -1) {
         initialize();
 
-        if (isFunction(options.onOpen)) {
+        if (isFunction(options.onOpen))
           options.onOpen();
-        }
 
         setStyle(containerElement, "display", "block");
         setContainerPosition();
@@ -257,6 +250,7 @@
     return currentGallery.length;
   }
 
+  // Alias.
   shadowbox.open = shadowbox;
 
   /**
@@ -265,9 +259,8 @@
    */
   shadowbox.show = function (index) {
     // Guard against invalid indices and no-ops.
-    if (index < 0 || !currentGallery[index] || currentIndex === index) {
+    if (index < 0 || !currentGallery[index] || currentIndex === index)
       return;
-    }
 
     toggleControls(0);
     toggleWindowHandlers(0);
@@ -277,26 +270,23 @@
     setStyle(coverElement, "display", "block");
     setStyle(coverElement, "opacity", 1);
 
-    if (currentPlayer) {
+    if (currentPlayer)
       currentPlayer.remove();
-    }
 
     // Update current* variables.
     currentIndex = index;
     currentPlayer = currentGallery[currentIndex];
 
     function playerIsReady() {
-      return !currentPlayer || currentPlayer.ready !== false;
+      return !currentPlayer || currentPlayer.isReady !== false;
     }
 
     waitUntil(playerIsReady, function () {
-      if (!currentPlayer) {
+      if (!currentPlayer)
         return; // Shadowbox was closed.
-      }
 
-      if (isFunction(options.onShow)) {
+      if (isFunction(options.onShow))
         options.onShow(currentPlayer);
-      }
 
       var size = getWrapperSize();
       var fromWidth = parseInt(getStyle(wrapperElement, "width")) || 0,
@@ -307,9 +297,8 @@
           changeHeight = toHeight - fromHeight;
 
       function frameHandler(value) {
-        if (!currentPlayer) {
+        if (!currentPlayer)
           return false; // Shadowbox was closed, cancel the animation.
-        }
 
         setWrapperSize(fromWidth + (changeWidth * value), fromHeight + (changeHeight * value));
       }
@@ -338,9 +327,8 @@
       toggleMouseMoveHandler(1);
       toggleKeyDownHandler(1);
 
-      if (isFunction(options.onDone)) {
+      if (isFunction(options.onDone))
         options.onDone(currentPlayer);
-      }
     }
   }
 
@@ -366,9 +354,8 @@
         setStyle(containerElement, "display", "none");
         toggleTroubleElements(1);
 
-        if (isFunction(options.onClose)) {
+        if (isFunction(options.onClose))
           options.onClose();
-        }
       });
     }
   };
@@ -398,9 +385,8 @@
    * Gets the index of the previous item in the gallery, -1 if there is none.
    */
   function getPreviousIndex() {
-    if (currentIndex == 0) {
+    if (currentIndex === 0)
       return options.continuous ? (currentGallery.length - 1) : -1;
-    }
 
     return currentIndex - 1;
   }
@@ -416,9 +402,8 @@
    * Gets the index of the next item in the gallery, -1 if there is none.
    */
   function getNextIndex() {
-    if (currentIndex == currentGallery.length - 1) {
+    if (currentIndex == currentGallery.length - 1)
       return (options.continuous && currentIndex != 0) ? 0 : -1;
-    }
 
     return currentIndex + 1;
   }
@@ -451,23 +436,20 @@
    * constrained [width, height].
    */
   function constrainSize(width, height, maxWidth, maxHeight, margin) {
-    var originalWidth = width,
-        originalHeight = height;
+    var originalWidth = width, originalHeight = height;
 
     // Constrain height/width to max.
     var marginWidth = 2 * margin;
-    if (width + marginWidth > maxWidth) {
+    if (width + marginWidth > maxWidth)
       width = maxWidth - marginWidth;
-    }
 
     var marginHeight = 2 * margin;
-    if (height + marginHeight > maxHeight) {
+    if (height + marginHeight > maxHeight)
       height = maxHeight - marginHeight;
-    }
 
     // Calculate the change in height/width.
-    var changeWidth = (originalWidth - width) / originalWidth,
-        changeHeight = (originalHeight - height) / originalHeight;
+    var changeWidth = (originalWidth - width) / originalWidth;
+    var changeHeight = (originalHeight - height) / originalHeight;
 
     // Adjust height/width if oversized.
     if (changeWidth > 0 || changeHeight > 0) {
@@ -572,9 +554,8 @@
 
       object = { url: object.href };
 
-      if (data) {
+      if (data)
         mergeProperties(object, parseData(data));
-      }
     }
 
     if (object && typeof object.url === "string") {
@@ -584,6 +565,7 @@
       } else {
         // Guess the player class using the URL's file extension.
         var match = object.url.match(/\.([0-9a-z]+)(\?.*)?$/i);
+
         if (match) {
           var extension = match[1].toLowerCase();
           playerClass = shadowbox.players[extension];
@@ -594,26 +576,25 @@
 
       var player = new playerClass(object, "sb-player-" + String(shadowbox.guid++));
 
-      if (player.isSupported()) {
+      if (player.isSupported())
         return player;
-      }
     }
 
     return null;
   };
 
-  // Toggles visibility of clickable controls on and off.
+  // Toggles the visibility of clickable controls.
   function toggleControls(on) {
     var name = "";
 
     if (on) {
       name += "active";
-      if (getNextIndex() !== -1) {
+
+      if (getNextIndex() !== -1)
         name += " has-next";
-      }
-      if (getPreviousIndex() !== -1) {
+
+      if (getPreviousIndex() !== -1)
         name += " has-prev";
-      }
     }
 
     containerElement.className = name;
@@ -621,13 +602,13 @@
 
   var resizeTimer, scrollTimer, mouseMoveTimer;
 
-  // Toggles window resize/scroll handlers on/off.
+  // Toggles window resize and scroll event handlers.
   function toggleWindowHandlers(on) {
-    var action;
+    var addOrRemoveEvent;
     if (on) {
-      action = addEvent;
+      addOrRemoveEvent = addEvent;
     } else {
-      action = removeEvent;
+      addOrRemoveEvent = removeEvent;
 
       // Clear cached timers.
       if (resizeTimer) {
@@ -641,11 +622,10 @@
       }
     }
 
-    action(window, "resize", handleWindowResize);
+    addOrRemoveEvent(window, "resize", handleWindowResize);
 
-    if (!supportsFixed) {
-      action(window, "scroll", handleWindowScroll);
-    }
+    if (!supportsFixed)
+      addOrRemoveEvent(window, "scroll", handleWindowScroll);
   }
 
   // Updates the size of the container when the window size changes.
@@ -681,11 +661,11 @@
       return;
     }
 
-    var action;
+    var addOrRemoveEvent;
     if (on) {
-      action = addEvent;
+      addOrRemoveEvent = addEvent;
     } else {
-      action = removeEvent;
+      addOrRemoveEvent = removeEvent;
 
       // Clear cached timers.
       if (mouseMoveTimer) {
@@ -694,7 +674,7 @@
       }
     }
 
-    action(document, "mousemove", handleMouseMove);
+    addOrRemoveEvent(document, "mousemove", handleMouseMove);
   }
 
   var lastMouseX, lastMouseY;
@@ -732,7 +712,7 @@
   var KEY_X = 88;
 
   function handleDocumentKeyDown(event) {
-    if (options.enableKeys && !eventHasModifierKeys(event)) {
+    if (options.enableKeys && !eventHasModifierKey(event)) {
       switch (event.keyCode) {
       case KEY_ESCAPE:
       case KEY_Q:
@@ -758,8 +738,8 @@
     }
   }
 
-  function eventHasModifierKeys(event) {
-    return event.metaKey || event.shiftKey || event.altKey || event.ctrlKey;
+  function eventHasModifierKey(event) {
+    return event.ctrlKey || event.metaKey;
   }
 
   function toggleClickHandler(on) {
@@ -789,9 +769,8 @@
 
             forEach(document.getElementsByTagName('a'), function (link) {
               if (link.rel && galleryMatcher.test(link.rel)) {
-                if (link == target) {
+                if (link == target)
                   index = links.length;
-                }
 
                 links.push(link);
               }
@@ -809,9 +788,8 @@
       // Good for debugging.
       // event.preventDefault();
 
-      if (links.length > 0 && shadowbox.open(links, index) > 0) {
+      if (links.length > 0 && shadowbox.open(links, index) > 0)
         event.preventDefault(); // Prevent the browser from following the link.
-      }
     }
   }
 
@@ -819,11 +797,13 @@
   //// PLAYERS ////
 
 
-  /**
-   * The iframe player is the default Shadowbox player. It is used for plain
-   * web pages or when no other player is suitable for a piece of content.
-   */
   shadowbox.FramePlayer = FramePlayer;
+
+  /**
+   * A player that displays its content inside an <iframe>. This is the default
+   * player for Shadowbox that is used when no other player is suitable for a
+   * piece of content.
+   */
   function FramePlayer(object, id) {
     this.url = object.url;
     this.width = object.width ? parseInt(object.width, 10) : documentElement.clientWidth;
@@ -831,7 +811,7 @@
     this.id = id;
 
     // Preload the iframe so it's ready when needed.
-    this.ready = false;
+    this.isReady = false;
     this._preload();
   }
 
@@ -855,11 +835,11 @@
 
       if (iframe.attachEvent) {
         iframe.attachEvent("onload", function () {
-          self.ready = true;
+          self.isReady = true;
         });
       } else {
         iframe.onload = function () {
-          self.ready = true;
+          self.isReady = true;
         };
       }
 
@@ -909,10 +889,11 @@
 
   });
 
-  /**
-   * The photo player is used for displaying images.
-   */
   shadowbox.PhotoPlayer = PhotoPlayer;
+
+  /**
+   * A player that is used for displaying images.
+   */
   function PhotoPlayer(object, id) {
     this.url = object.url;
     this.width = parseInt(object.width, 10);
@@ -920,7 +901,7 @@
     this.id = id;
 
     // Preload the image so it's ready when needed.
-    this.ready = false;
+    this.isReady = false;
     this._preload();
   }
 
@@ -938,7 +919,7 @@
         self.height = self.height || preloader.height;
 
         // Ready to go.
-        self.ready = true;
+        self.isReady = true;
 
         // Clean up to prevent memory leak in IE.
         preloader.onload = preloader = null;
@@ -979,12 +960,15 @@
   //// JAVASCRIPT UTILITIES ////
 
 
-  var isArray = Array.isArray || function (object) {
-    return Object.prototype.toString.call(object) === "[object Array]";
-  };
-
   function isFunction(object) {
-    return object && typeof object === "function";
+    return typeof object === "function";
+  }
+
+  function isArray(object) {
+    if (isFunction(Array.isArray))
+      return Array.isArray(object);
+
+    return Object.prototype.toString.call(object) === "[object Array]";
   }
 
   /**
@@ -1002,9 +986,8 @@
    */
   function mergeProperties(object, extension) {
     for (var property in extension) {
-      if (extension.hasOwnProperty(property)) {
+      if (extension.hasOwnProperty(property))
         object[property] = extension[property];
-      }
     }
 
     return object;
@@ -1056,9 +1039,8 @@
     if (delta === 0 || duration === 0 || !options.animate) {
       frameHandler(to);
 
-      if (isFunction(callback)) {
+      if (isFunction(callback))
         callback();
-      }
 
       return; // Don't animate!
     }
@@ -1080,9 +1062,8 @@
 
         frameHandler(to);
 
-        if (isFunction(callback)) {
+        if (isFunction(callback))
           callback();
-        }
       } else if (frameHandler(from + ease((time - begin) / duration) * delta) === false) {
         clearInterval(timer);
         timer = null;
@@ -1105,7 +1086,7 @@
 
 
   function isElement(object) {
-    return object && object.nodeType === Node.ELEMENT_NODE;
+    return object && object.nodeType === 1; // Node.ELEMENT_NODE
   }
 
   /**
@@ -1113,9 +1094,8 @@
    * attributes, and appending child nodes.
    */
   function makeDom(element, properties, children) {
-    if (typeof element === "string") {
+    if (typeof element === "string")
       element = document.createElement(element);
-    }
 
     if (isArray(properties)) {
       children = properties;
@@ -1125,9 +1105,8 @@
       properties = null;
     }
 
-    if (properties) {
+    if (properties)
       mergeProperties(element, properties);
-    }
 
     if (isArray(children)) {
       forEach(children, function (child) {
@@ -1205,9 +1184,8 @@
     var value = "";
 
     if (!supportsOpacity && style == "opacity" && element.currentStyle) {
-      if (opacityRe.test(element.currentStyle.filter || "")) {
+      if (opacityRe.test(element.currentStyle.filter || ""))
         value = (parseFloat(RegExp.$1) / 100) + "";
-      }
 
       return value == "" ? "1" : value;
     }
@@ -1215,13 +1193,11 @@
     if (getComputedStyle) {
       var computedStyle = getComputedStyle(element, null);
 
-      if (computedStyle) {
+      if (computedStyle)
         value = computedStyle[style];
-      }
 
-      if (style == "opacity" && value == "") {
+      if (style == "opacity" && value == "")
         value = "1";
-      }
     } else {
       value = element.currentStyle[style];
     }
@@ -1235,10 +1211,10 @@
    *
    * Note: This function is not safe for setting float values.
    */
-  function setStyle(element, style, value) {
-    var s = element.style;
+  function setStyle(element, styleName, value) {
+    var elementStyle = element.style;
 
-    if (style == "opacity") {
+    if (styleName == "opacity") {
       if (value == 1) {
         value = "";
       } else {
@@ -1246,14 +1222,13 @@
       }
 
       if (!supportsOpacity) {
-        s.zoom = 1; // Trigger hasLayout.
+        elementStyle.zoom = 1; // Trigger hasLayout.
 
         if (value == 1) {
-          if (typeof s.filter === "string" && (/alpha/i).test(s.filter)) {
-            s.filter = s.filter.replace(/\s*[\w\.]*alpha\([^\)]*\);?/gi, "");
-          }
+          if (typeof elementStyle.filter === "string" && (/alpha/i).test(elementStyle.filter))
+            elementStyle.filter = elementStyle.filter.replace(/\s*[\w\.]*alpha\([^\)]*\);?/gi, "");
         } else {
-          s.filter = (s.filter || "").replace(/\s*[\w\.]*alpha\([^\)]*\)/gi, "") +
+          elementStyle.filter = (elementStyle.filter || "").replace(/\s*[\w\.]*alpha\([^\)]*\)/gi, "") +
             " alpha(opacity=" + (value * 100) + ")";
         }
 
@@ -1261,7 +1236,7 @@
       }
     }
 
-    s[style] = value;
+    elementStyle[styleName] = value;
   }
 
   // Event handling functions modified from originals by Dean Edwards.
@@ -1275,28 +1250,25 @@
     if (element.addEventListener) {
       element.addEventListener(type, handler, false);
     } else {
-      if (element.nodeType === 3 || element.nodeType === 8) {
+      if (element.nodeType === 3 || element.nodeType === 8) // Node.TEXT_NODE or Node.COMMENT_NODE
         return;
-      }
 
-      if (element.setInterval && (element !== window && !element.frameElement)) {
+      if (element.setInterval && (element !== window && !element.frameElement))
         element = window;
-      }
 
-      if (!handler.__guid) {
+      if (!handler.__guid)
         handler.__guid = shadowbox.guid++;
-      }
 
-      if (!element.events) {
+      if (!element.events)
         element.events = {};
-      }
 
       var handlers = element.events[type];
+
       if (!handlers) {
         handlers = element.events[type] = {};
-        if (element["on" + type]) {
+
+        if (element["on" + type])
           handlers[0] = element["on" + type];
-        }
       }
 
       handlers[handler.__guid] = handler;
@@ -1309,10 +1281,10 @@
     event = event || fixEvent(((this.ownerDocument || this.document || this).parentWindow || window).event);
 
     var handlers = this.events[event.type], result = true;
+
     for (var id in handlers) {
-      if (handlers[id].call(this, event) === false) {
+      if (handlers[id].call(this, event) === false)
         result = false;
-      }
     }
 
     return result;
@@ -1341,9 +1313,8 @@
     if (element.removeEventListener) {
       element.removeEventListener(type, handler, false);
     } else {
-      if (element.events && element.events[type] && handler.__guid) {
+      if (element.events && element.events[type] && handler.__guid)
         delete element.events[type][handler.__guid];
-      }
     }
   }
 
