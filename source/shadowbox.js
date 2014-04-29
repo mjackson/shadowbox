@@ -335,6 +335,40 @@
   }
 
   /**
+   * Opens the previous item in the gallery.
+   */
+  shadowbox.showPrevious = function () {
+    shadowbox.show(getPreviousIndex());
+  };
+
+  /**
+   * Gets the index of the previous item in the gallery, -1 if there is none.
+   */
+  function getPreviousIndex() {
+    if (currentIndex === 0)
+      return currentOptions.continuous ? (currentGallery.length - 1) : -1;
+
+    return currentIndex - 1;
+  }
+
+  /**
+   * Opens the next item in the gallery.
+   */
+  shadowbox.showNext = function () {
+    shadowbox.show(getNextIndex());
+  };
+
+  /**
+   * Gets the index of the next item in the gallery, -1 if there is none.
+   */
+  function getNextIndex() {
+    if (currentIndex === currentGallery.length - 1)
+      return (currentOptions.continuous && currentIndex !== 0) ? 0 : -1;
+
+    return currentIndex + 1;
+  }
+  
+  /**
    * Closes Shadowbox immediately.
    */
   shadowbox.close = function () {
@@ -375,40 +409,6 @@
   shadowbox.getPlayer = function () {
     return currentPlayer;
   };
-
-  /**
-   * Opens the previous item in the gallery.
-   */
-  shadowbox.showPrevious = function () {
-    shadowbox.show(getPreviousIndex());
-  };
-
-  /**
-   * Gets the index of the previous item in the gallery, -1 if there is none.
-   */
-  function getPreviousIndex() {
-    if (currentIndex === 0)
-      return currentOptions.continuous ? (currentGallery.length - 1) : -1;
-
-    return currentIndex - 1;
-  }
-
-  /**
-   * Opens the next item in the gallery.
-   */
-  shadowbox.showNext = function () {
-    shadowbox.show(getNextIndex());
-  };
-
-  /**
-   * Gets the index of the next item in the gallery, -1 if there is none.
-   */
-  function getNextIndex() {
-    if (currentIndex === currentGallery.length - 1)
-      return (currentOptions.continuous && currentIndex !== 0) ? 0 : -1;
-
-    return currentIndex + 1;
-  }
 
   /**
    * Gets the size that should be used for the wrapper element. Should be
