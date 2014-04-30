@@ -1,14 +1,14 @@
 SOURCE = source
 
 SCRIPT_FILES := $(SOURCE)/shadowbox.js \
-								$(SOURCE)/shadowbox-flash.js \
-								$(SOURCE)/shadowbox-video.js
+		$(SOURCE)/shadowbox-flash.js \
+		$(SOURCE)/shadowbox-video.js
 
 STYLE_FILES  := $(SOURCE)/shadowbox.css \
-								$(SOURCE)/shadowbox-video.css
+		$(SOURCE)/shadowbox-video.css
 
 IMAGE_FILES  := $(SOURCE)/shadowbox-icons.png \
-								$(SOURCE)/shadowbox-controls.png
+		$(SOURCE)/shadowbox-controls.png
 
 TARGET ?= build
 NODE_BIN = node_modules/.bin
