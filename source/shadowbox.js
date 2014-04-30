@@ -54,7 +54,7 @@
     },
 
     // Enable control of Shadowbox via the keyboard?
-    enableKeys: true,
+    enableKeys: !supportsTouch,
 
     // The space to maintain around the edge of Shadowbox at all times.
     margin: 40,
@@ -367,7 +367,7 @@
 
     return currentIndex + 1;
   }
-  
+
   /**
    * Closes Shadowbox immediately.
    */
@@ -699,40 +699,42 @@
   }
 
   function toggleKeyDownHandler(on) {
-    (on ? addEvent : removeEvent)(document, "keydown", handleDocumentKeyDown);
+    if (currentOptions.enableKeys)
+      (on ? addEvent : removeEvent)(document, "keydown", handleDocumentKeyDown);
   }
 
-  var KEY_ESCAPE = 27;
-  var KEY_SPACE = 32;
-  var KEY_LEFT = 37;
-  var KEY_RIGHT = 39;
-  var KEY_Q = 81;
-  var KEY_X = 88;
+  var KEY_ESCAPE  = 27;
+  var KEY_SPACE   = 32;
+  var KEY_LEFT    = 37;
+  var KEY_RIGHT   = 39;
+  var KEY_Q       = 81;
+  var KEY_X       = 88;
 
   function handleDocumentKeyDown(event) {
-    if (currentOptions.enableKeys && !eventHasModifierKey(event)) {
-      switch (event.keyCode) {
-      case KEY_ESCAPE:
-      case KEY_Q:
-      case KEY_X:
+    if (eventHasModifierKey(event))
+      return;
+
+    switch (event.keyCode) {
+    case KEY_ESCAPE:
+    case KEY_Q:
+    case KEY_X:
+      event.preventDefault();
+      shadowbox.close();
+      break;
+    case KEY_LEFT:
+      event.preventDefault();
+      shadowbox.showPrevious();
+      break;
+    case KEY_RIGHT:
+      event.preventDefault();
+      shadowbox.showNext();
+      break;
+    case KEY_SPACE:
+      if (currentPlayer && isFunction(currentPlayer.togglePlay)) {
         event.preventDefault();
-        shadowbox.close();
-        break;
-      case KEY_LEFT:
-        event.preventDefault();
-        shadowbox.showPrevious();
-        break;
-      case KEY_RIGHT:
-        event.preventDefault();
-        shadowbox.showNext();
-        break;
-      case KEY_SPACE:
-        if (currentPlayer && isFunction(currentPlayer.togglePlay)) {
-          event.preventDefault();
-          currentPlayer.togglePlay();
-        }
-        break;
+        currentPlayer.togglePlay();
       }
+      break;
     }
   }
 
