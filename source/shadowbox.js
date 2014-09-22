@@ -1294,7 +1294,7 @@
     event.preventDefault = preventDefault;
     event.stopPropagation = stopPropagation;
     event.target = event.srcElement;
-    event.keyCode = event.which;
+    event.keyCode = event.which || event.keyCode;
     return event;
   }
 
