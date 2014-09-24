@@ -714,7 +714,9 @@
     if (eventHasModifierKey(event))
       return;
 
-    switch (event.keyCode) {
+    var keycode = event.which || event.keyCode;
+
+    switch (keycode) {
     case KEY_ESCAPE:
     case KEY_Q:
     case KEY_X:
@@ -1294,7 +1296,6 @@
     event.preventDefault = preventDefault;
     event.stopPropagation = stopPropagation;
     event.target = event.srcElement;
-    event.keyCode = event.which;
     return event;
   }
 
