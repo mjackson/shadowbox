@@ -80,6 +80,9 @@
     // Opacity for the overlay.
     overlayOpacity: 0.5,
 
+    // Parent element for the overlay. This should be a DOM element.
+    parentElement: document.body,
+
     // The index in the current gallery at which to start when first opening.
     startIndex: 0
 
@@ -115,7 +118,7 @@
   /**
    * Appends Shadowbox to the DOM and initializes DOM references.
    */
-  function initialize() {
+  function initialize(parentElement) {
     if (containerElement)
       return; // Don't initialize twice!
 
@@ -145,7 +148,7 @@
     var previousElement = makeDom("div", { id: "sb-prev" });
 
     // Append #shadowbox to the DOM.
-    makeDom(document.body, [
+    makeDom(parentElement, [
       makeDom(containerElement, [
         overlayElement,
         makeDom(wrapperElement, [
@@ -224,7 +227,7 @@
     // Display the first item in the gallery, if there's anything left.
     if (currentGallery.length > 0) {
       if (currentIndex == -1) {
-        initialize();
+        initialize(currentOptions.parentElement);
 
         if (isFunction(currentOptions.onOpen))
           currentOptions.onOpen();
