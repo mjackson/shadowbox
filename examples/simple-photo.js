@@ -1,7 +1,6 @@
 const Shadowbox = require('../lib/shadowbox');
 
-const myShadowbox = new Shadowbox('assets/balloon.jpg', {
+const myShadowboxA = new Shadowbox('assets/balloon.jpg');
+const myShadowboxB = new Shadowbox('assets/balloon2.jpg');
 
-});
-
-myShadowbox.open();
+myShadowboxA.open();
