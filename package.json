@@ -8,11 +8,23 @@
     "babel-core": "5.0.8",
     "babel-loader": "5.0.0",
     "babel-runtime": "5.0.8",
+    "chai": "2.2.0",
+    "karma": "0.12.31",
+    "karma-chai": "0.1.0",
+    "karma-chrome-launcher": "0.1.7",
+    "karma-mocha": "0.1.10",
+    "karma-phantomjs-launcher": "0.1.4",
+    "karma-spec-reporter": "0.0.18",
+    "karma-webpack": "1.5.0",
+    "minimist": "1.1.1",
+    "mocha": "2.2.1",
+    "sinon": "1.14.1",
     "webpack": "1.7.3",
     "webpack-dev-server": "1.8.0"
   },
   "scripts": {
-    "start": "webpack-dev-server --config webpack.config.dev.js --port 3000 --hot"
+    "start": "webpack-dev-server --config webpack.config.dev.js --port 3000 --hot",
+    "test": "./node_modules/karma/bin/karma start"
   },
   "authors": [
     "Michael Jackson",
