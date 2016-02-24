@@ -1,0 +1,31 @@
+{
+  "name": "shadowbox-js",
+  "version": "3.0.3",
+  "description": "Shadowbox is a powerful media player that displays your photos and videos in a beautiful, responsive lightbox on both mouse and touch screens.",
+  "main": "source/shadowbox.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mjackson/shadowbox.git"
+  },
+  "keywords": [
+    "shadowbox",
+    "lightbox",
+    "photo",
+    "video",
+    "media",
+    "player"
+  ],
+  "author": "Michael Jackson <mjijackson@gmail.com>",
+  "contributors": [{
+    "name": "Stefan Kecskes",
+    "email": "mr.kecskes@gmail.com"
+  }],
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/mjackson/shadowbox/issues"
+  },
+  "homepage": "https://github.com/mjackson/shadowbox#readme"
+}
