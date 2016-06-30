@@ -481,7 +481,8 @@
    */
   function setContainerPosition() {
     setStyle(containerElement, "left", documentElement.scrollLeft + "px");
-    setStyle(containerElement, "top", documentElement.scrollTop + "px");
+    // Fix for IE & Firefox [Charles Robertson 30.06.16]
+    setStyle(containerElement, "top", "0px");
   }
 
   var troubleElementTagNames = [ "select", "object", "embed", "canvas" ];
