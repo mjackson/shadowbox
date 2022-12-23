@@ -480,8 +480,10 @@
    * the window. Necessary when using absolute positioning instead of fixed.
    */
   function setContainerPosition() {
-    setStyle(containerElement, "left", documentElement.scrollLeft + "px");
-    setStyle(containerElement, "top", documentElement.scrollTop + "px");
+    if (!supportsFixed) {
+      setStyle(containerElement, "left", documentElement.scrollLeft + "px");
+      setStyle(containerElement, "top", documentElement.scrollTop + "px");
+    }
   }
 
   var troubleElementTagNames = [ "select", "object", "embed", "canvas" ];
